@@ -8,6 +8,7 @@ class CHud : public CComponent
 {
 	float m_Width, m_Height;
 	float m_AverageFPS;
+	int64 m_WarmupHideTick;
 
 	void RenderCursor();
 
@@ -15,15 +16,18 @@ class CHud : public CComponent
 	void RenderConnectionWarning();
 	void RenderTeambalanceWarning();
 	void RenderVoting();
+	void RenderNinjaBar(float x, float y, float Progress);
 	void RenderHealthAndAmmo(const CNetObj_Character *pCharacter);
 	void RenderGameTimer();
-	void RenderPauseNotification();
+	void RenderPauseTimer();
+	void RenderStartCountdown();
+	void RenderDeadNotification();
 	void RenderSuddenDeath();
 	void RenderScoreHud();
 	void RenderSpectatorHud();
+	void RenderSpectatorNotification();
+	void RenderReadyUpNotification();
 	void RenderWarmupTimer();
-
-	void MapscreenToGroup(float CenterX, float CenterY, struct CMapItemGroup *PGroup);
 public:
 	CHud();
 

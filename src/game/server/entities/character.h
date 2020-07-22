@@ -3,19 +3,11 @@
 #ifndef GAME_SERVER_ENTITIES_CHARACTER_H
 #define GAME_SERVER_ENTITIES_CHARACTER_H
 
-#include <game/server/entity.h>
-#include <game/generated/server_data.h>
-#include <game/generated/protocol.h>
+#include <generated/protocol.h>
 
 #include <game/gamecore.h>
-#include <game/server/entities/item.h>
+#include <game/server/entity.h>
 
-enum
-{
-	WEAPON_GAME = -3, // team switching etc
-	WEAPON_SELF = -2, // console kill command
-	WEAPON_WORLD = -1, // death tiles etc
-};
 
 class CCharacter : public CEntity
 {
@@ -33,6 +25,7 @@ public:
 	virtual void TickDefered();
 	virtual void TickPaused();
 	virtual void Snap(int SnappingClient);
+	virtual void PostSnap();
 
 	bool IsGrounded();
 
@@ -49,7 +42,7 @@ public:
 	void FireWeapon();
 
 	void Die(int Killer, int Weapon);
-	bool TakeDamage(vec2 Force, int Dmg, int From, int Weapon);
+	bool TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon);
 
 	void SetZomb();
 	vec2 m_PrevPos;
@@ -104,7 +97,6 @@ private:
 	{
 		int m_AmmoRegenStart;
 		int m_Ammo;
-		int m_Ammocost;
 		bool m_Got;
 
 	} m_aWeapons[NUM_WEAPONS];
@@ -115,8 +107,6 @@ private:
 
 	int m_ReloadTimer;
 	int m_AttackTick;
-
-	int m_DamageTaken;
 
 	int m_EmoteType;
 	int m_EmoteStop;
@@ -130,14 +120,26 @@ private:
 	CNetObj_PlayerInput m_LatestInput;
 
 	// input
-	CNetObj_PlayerInput m_PrevInput;
 	CNetObj_PlayerInput m_Input;
 	int m_NumInputs;
 	int m_Jumped;
 
-	int m_DamageTakenTick;
-
+	int m_Health;
 	int m_Armor;
+
+	int m_TriggeredEvents;
+
+	// ninja
+	struct
+	{
+		vec2 m_ActivationDir;
+		int m_ActivationTick;
+		int m_CurrentMoveTime;
+		int m_OldVelAmount;
+	} m_Ninja;
+
+	// the player core for the physics
+	CCharacterCore m_Core;
 
 	// info for dead reckoning
 	int m_ReckoningTick; // tick that we are performing dead reckoning From

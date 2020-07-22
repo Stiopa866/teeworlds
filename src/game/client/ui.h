@@ -5,8 +5,6 @@
 
 class CUIRect
 {
-	// TODO: Refactor: Redo UI scaling
-	float Scale() const;
 public:
 	float x, y, w, h;
 
@@ -29,20 +27,23 @@ class CUI
 	const void *m_pActiveItem;
 	const void *m_pLastActiveItem;
 	const void *m_pBecommingHotItem;
+	bool m_ActiveItemValid;
+	bool m_Clipped;
 	float m_MouseX, m_MouseY; // in gui space
 	float m_MouseWorldX, m_MouseWorldY; // in world space
 	unsigned m_MouseButtons;
 	unsigned m_LastMouseButtons;
 
 	CUIRect m_Screen;
+	CUIRect m_ClipRect;
 	class IGraphics *m_pGraphics;
 	class ITextRender *m_pTextRender;
 
 public:
 	// TODO: Refactor: Fill this in
 	void SetGraphics(class IGraphics *pGraphics, class ITextRender *pTextRender) { m_pGraphics = pGraphics; m_pTextRender = pTextRender;}
-	class IGraphics *Graphics() { return m_pGraphics; }
-	class ITextRender *TextRender() { return m_pTextRender; }
+	class IGraphics *Graphics() const { return m_pGraphics; }
+	class ITextRender *TextRender() const { return m_pTextRender; }
 
 	CUI();
 
@@ -52,13 +53,30 @@ public:
 		CORNER_TR=2,
 		CORNER_BL=4,
 		CORNER_BR=8,
+		CORNER_ITL=16,
+		CORNER_ITR=32,
+		CORNER_IBL=64,
+		CORNER_IBR=128,
 
 		CORNER_T=CORNER_TL|CORNER_TR,
 		CORNER_B=CORNER_BL|CORNER_BR,
 		CORNER_R=CORNER_TR|CORNER_BR,
 		CORNER_L=CORNER_TL|CORNER_BL,
 
-		CORNER_ALL=CORNER_T|CORNER_B
+		CORNER_IT=CORNER_ITL|CORNER_ITR,
+		CORNER_IB=CORNER_IBL|CORNER_IBR,
+		CORNER_IR=CORNER_ITR|CORNER_IBR,
+		CORNER_IL=CORNER_ITL|CORNER_IBL,
+
+		CORNER_ALL=CORNER_T|CORNER_B,
+		CORNER_INV_ALL=CORNER_IT|CORNER_IB
+	};
+
+	enum EAlignment
+	{
+		ALIGN_LEFT,
+		ALIGN_CENTER,
+		ALIGN_RIGHT,
 	};
 
 	int Update(float mx, float my, float Mwx, float Mwy, int m_Buttons);
@@ -68,33 +86,37 @@ public:
 	float MouseWorldX() const { return m_MouseWorldX; }
 	float MouseWorldY() const { return m_MouseWorldY; }
 	int MouseButton(int Index) const { return (m_MouseButtons>>Index)&1; }
-	int MouseButtonClicked(int Index) { return MouseButton(Index) && !((m_LastMouseButtons>>Index)&1) ; }
+	int MouseButtonClicked(int Index) const { return MouseButton(Index) && !((m_LastMouseButtons>>Index)&1) ; }
 
 	void SetHotItem(const void *pID) { m_pBecommingHotItem = pID; }
-	void SetActiveItem(const void *pID) { m_pActiveItem = pID; if (pID) m_pLastActiveItem = pID; }
+	void SetActiveItem(const void *pID) { m_ActiveItemValid = true; m_pActiveItem = pID; if (pID) m_pLastActiveItem = pID; }
+	bool CheckActiveItem(const void *pID) { if(m_pActiveItem == pID) { m_ActiveItemValid = true; return true; } return false; };
 	void ClearLastActiveItem() { m_pLastActiveItem = 0; }
 	const void *HotItem() const { return m_pHotItem; }
 	const void *NextHotItem() const { return m_pBecommingHotItem; }
-	const void *ActiveItem() const { return m_pActiveItem; }
+	const void *GetActiveItem() const { return m_pActiveItem; }
 	const void *LastActiveItem() const { return m_pLastActiveItem; }
 
-	int MouseInside(const CUIRect *pRect);
-	void ConvertMouseMove(float *x, float *y);
+	void StartCheck() { m_ActiveItemValid = false; };
+	void FinishCheck() { if(!m_ActiveItemValid) SetActiveItem(0); };
+
+	int MouseInside(const CUIRect *pRect) const;
+	bool MouseInsideClip() const;
+	void ConvertMouseMove(float *x, float *y) const;
 
 	CUIRect *Screen();
 	float PixelSize();
 	void ClipEnable(const CUIRect *pRect);
 	void ClipDisable();
-
-	// TODO: Refactor: Redo UI scaling
-	void SetScale(float s);
-	float Scale();
+	const CUIRect *ClipArea() const { return &m_ClipRect; };
+	inline bool IsClipped() const { return m_Clipped; };
 
 	int DoButtonLogic(const void *pID, const char *pText /* TODO: Refactor: Remove */, int Checked, const CUIRect *pRect);
+	int DoPickerLogic(const void *pID, const CUIRect *pRect, float *pX, float *pY);
+	int DoColorSelectionLogic(const CUIRect *pRect, const CUIRect *pButton);
 
 	// TODO: Refactor: Remove this?
-	void DoLabel(const CUIRect *pRect, const char *pText, float Size, int Align, int MaxWidth = -1);
-	void DoLabelScaled(const CUIRect *pRect, const char *pText, float Size, int Align, int MaxWidth = -1);
+	void DoLabel(const CUIRect *pRect, const char *pText, float Size, EAlignment Align, float LineWidth = -1.0f, bool MultiLine = true);
 };
 
 

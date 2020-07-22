@@ -4,9 +4,9 @@
 #include <engine/graphics.h>
 #include <engine/demo.h>
 
-#include <game/generated/client_data.h>
+#include <generated/client_data.h>
 #include <game/client/render.h>
-#include <game/gamecore.h>
+
 #include "particles.h"
 
 CParticles::CParticles()
@@ -45,7 +45,7 @@ void CParticles::Add(int Group, CParticle *pPart)
 	}
 	else
 	{
-		if(m_pClient->m_Snap.m_pGameInfoObj && m_pClient->m_Snap.m_pGameInfoObj->m_GameStateFlags&GAMESTATEFLAG_PAUSED)
+		if(m_pClient->m_Snap.m_pGameData && m_pClient->m_Snap.m_pGameData->m_GameStateFlags&GAMESTATEFLAG_PAUSED)
 			return;
 	}
 
@@ -148,7 +148,7 @@ void CParticles::OnRender()
 	}
 	else
 	{
-		if(m_pClient->m_Snap.m_pGameInfoObj && !(m_pClient->m_Snap.m_pGameInfoObj->m_GameStateFlags&GAMESTATEFLAG_PAUSED))
+		if(m_pClient->m_Snap.m_pGameData && !(m_pClient->m_Snap.m_pGameData->m_GameStateFlags&GAMESTATEFLAG_PAUSED))
 			Update((float)((t-LastTime)/(double)time_freq()));
 	}
 

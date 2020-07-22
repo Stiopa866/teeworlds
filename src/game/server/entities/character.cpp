@@ -1,9 +1,11 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
-#include <new>
 #include <engine/shared/config.h>
+
+#include <generated/server_data.h>
 #include <game/server/gamecontext.h>
-#include <game/mapitems.h>
+#include <game/server/gamecontroller.h>
+#include <game/server/player.h>
 
 #include "../gamemodes/zesc.h"
 
@@ -43,11 +45,11 @@ MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS)
 
 // Character, "physical" player's part
 CCharacter::CCharacter(CGameWorld *pWorld)
-: CEntity(pWorld, CGameWorld::ENTTYPE_CHARACTER)
+: CEntity(pWorld, CGameWorld::ENTTYPE_CHARACTER, vec2(0, 0), ms_PhysSize)
 {
-	m_ProximityRadius = ms_PhysSize;
 	m_Health = 0;
 	m_Armor = 0;
+	m_TriggeredEvents = 0;
 }
 
 void CCharacter::Reset()
@@ -124,13 +126,14 @@ void CCharacter::SetWeapon(int W)
 
 	if(m_ActiveWeapon < 0 || m_ActiveWeapon >= NUM_WEAPONS)
 		m_ActiveWeapon = 0;
+	m_aWeapons[m_ActiveWeapon].m_AmmoRegenStart = -1;
 }
 
 bool CCharacter::IsGrounded()
 {
-	if(GameServer()->Collision()->CheckPoint(m_Pos.x+m_ProximityRadius/2, m_Pos.y+m_ProximityRadius/2+5))
+	if(GameServer()->Collision()->CheckPoint(m_Pos.x+GetProximityRadius()/2, m_Pos.y+GetProximityRadius()/2+5))
 		return true;
-	if(GameServer()->Collision()->CheckPoint(m_Pos.x-m_ProximityRadius/2, m_Pos.y+m_ProximityRadius/2+5))
+	if(GameServer()->Collision()->CheckPoint(m_Pos.x-GetProximityRadius()/2, m_Pos.y+GetProximityRadius()/2+5))
 		return true;
 	return false;
 }
@@ -146,6 +149,10 @@ void CCharacter::HandleNinja()
 		// time's up, return
 		m_aWeapons[WEAPON_NINJA].m_Got = false;
 		m_ActiveWeapon = m_LastWeapon;
+
+		// reset velocity
+		if(m_Ninja.m_CurrentMoveTime > 0)
+			m_Core.m_Vel = m_Ninja.m_ActivationDir*m_Ninja.m_OldVelAmount;
 
 		SetWeapon(m_ActiveWeapon);
 		return;
@@ -167,7 +174,7 @@ void CCharacter::HandleNinja()
 		// Set velocity
 		m_Core.m_Vel = m_Ninja.m_ActivationDir * g_pData->m_Weapons.m_Ninja.m_Velocity;
 		vec2 OldPos = m_Pos;
-		GameServer()->Collision()->MoveBox(&m_Core.m_Pos, &m_Core.m_Vel, vec2(m_ProximityRadius, m_ProximityRadius), 0.f);
+		GameServer()->Collision()->MoveBox(&m_Core.m_Pos, &m_Core.m_Vel, vec2(GetProximityRadius(), GetProximityRadius()), 0.f);
 
 		// reset velocity so the client doesn't predict stuff
 		m_Core.m_Vel = vec2(0.f, 0.f);
@@ -176,7 +183,7 @@ void CCharacter::HandleNinja()
 		{
 			CCharacter *aEnts[MAX_CLIENTS];
 			vec2 Dir = m_Pos - OldPos;
-			float Radius = m_ProximityRadius * 2.0f;
+			float Radius = GetProximityRadius() * 2.0f;
 			vec2 Center = OldPos + Dir * 0.5f;
 			int Num = GameServer()->m_World.FindEntities(Center, Radius, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
 
@@ -196,7 +203,7 @@ void CCharacter::HandleNinja()
 					continue;
 
 				// check so we are sufficiently close
-				if (distance(aEnts[i]->m_Pos, m_Pos) > (m_ProximityRadius * 2.0f))
+				if (distance(aEnts[i]->m_Pos, m_Pos) > (GetProximityRadius() * 2.0f))
 					continue;
 
 				// Hit a player, give him damage and stuffs...
@@ -205,7 +212,7 @@ void CCharacter::HandleNinja()
 				if(m_NumObjectsHit < 10)
 					m_apHitObjects[m_NumObjectsHit++] = aEnts[i];
 
-				aEnts[i]->TakeDamage(vec2(0, -10.0f), g_pData->m_Weapons.m_Ninja.m_pBase->m_Damage, m_pPlayer->GetCID(), WEAPON_NINJA);
+				aEnts[i]->TakeDamage(vec2(0, -10.0f), m_Ninja.m_ActivationDir*-1, g_pData->m_Weapons.m_Ninja.m_pBase->m_Damage, m_pPlayer->GetCID(), WEAPON_NINJA);
 			}
 		}
 
@@ -276,7 +283,7 @@ void CCharacter::FireWeapon()
 	vec2 Direction = normalize(vec2(m_LatestInput.m_TargetX, m_LatestInput.m_TargetY));
 
 	bool FullAuto = false;
-	if(m_ActiveWeapon == WEAPON_GRENADE || m_ActiveWeapon == WEAPON_SHOTGUN || m_ActiveWeapon == WEAPON_RIFLE)
+	if(m_ActiveWeapon == WEAPON_GRENADE || m_ActiveWeapon == WEAPON_SHOTGUN || m_ActiveWeapon == WEAPON_LASER)
 		FullAuto = true;
 
 	// check if we gonna fire
@@ -303,7 +310,7 @@ void CCharacter::FireWeapon()
 		return;
 	}
 
-	vec2 ProjStartPos = m_Pos+Direction*m_ProximityRadius*0.75f;
+	vec2 ProjStartPos = m_Pos+Direction*GetProximityRadius()*0.75f;
 
 	switch(m_ActiveWeapon)
 	{
@@ -387,7 +394,7 @@ void CCharacter::FireWeapon()
 
 	case WEAPON_GUN:
 		{
-			CProjectile *pProj = new CProjectile(GameWorld(), WEAPON_GUN,
+			new CProjectile(GameWorld(), WEAPON_GUN,
 				m_pPlayer->GetCID(),
 				ProjStartPos,
 				Direction,
@@ -412,17 +419,14 @@ void CCharacter::FireWeapon()
 		{
 			int ShotSpread = 2;
 
-			CMsgPacker Msg(NETMSGTYPE_SV_EXTRAPROJECTILE);
-			Msg.AddInt(ShotSpread*2+1);
-
 			for(int i = -ShotSpread; i <= ShotSpread; ++i)
 			{
 				float Spreading[] = {-0.185f, -0.070f, 0, 0.070f, 0.185f};
-				float a = GetAngle(Direction);
+				float a = angle(Direction);
 				a += Spreading[i+2];
 				float v = 1-(absolute(i)/(float)ShotSpread);
 				float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.0f, v);
-				CProjectile *pProj = new CProjectile(GameWorld(), WEAPON_SHOTGUN,
+				new CProjectile(GameWorld(), WEAPON_SHOTGUN,
 					m_pPlayer->GetCID(),
 					ProjStartPos,
 					vec2(cosf(a), sinf(a))*Speed,
@@ -437,37 +441,25 @@ void CCharacter::FireWeapon()
 					Msg.AddInt(((int *)&p)[i]);
 			}
 
-			Server()->SendMsg(&Msg, 0,m_pPlayer->GetCID());
-
 			GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
 		} break;
 
 	case WEAPON_GRENADE:
 		{
-			CProjectile *pProj = new CProjectile(GameWorld(), WEAPON_GRENADE,
+			new CProjectile(GameWorld(), WEAPON_GRENADE,
 				m_pPlayer->GetCID(),
 				ProjStartPos,
 				Direction,
 				(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime),
-				1, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
-
-			// pack the Projectile and send it to the client Directly
-			CNetObj_Projectile p;
-			pProj->FillInfo(&p);
-
-			CMsgPacker Msg(NETMSGTYPE_SV_EXTRAPROJECTILE);
-			Msg.AddInt(1);
-			for(unsigned i = 0; i < sizeof(CNetObj_Projectile)/sizeof(int); i++)
-				Msg.AddInt(((int *)&p)[i]);
-			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
+				g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
 
 			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE);
 		} break;
 
-	case WEAPON_RIFLE:
+	case WEAPON_LASER:
 		{
 			new CLaser(GameWorld(), m_Pos, Direction, GameServer()->Tuning()->m_LaserReach, m_pPlayer->GetCID());
-			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
+			GameServer()->CreateSound(m_Pos, SOUND_LASER_FIRE);
 		} break;
 
 	case WEAPON_NINJA:
@@ -550,6 +542,7 @@ bool CCharacter::GiveWeapon(int Weapon, int Ammo)
 void CCharacter::GiveNinja()
 {
 	m_Ninja.m_ActivationTick = Server()->Tick();
+	m_Ninja.m_CurrentMoveTime = -1;
 	m_aWeapons[WEAPON_NINJA].m_Got = true;
 	m_aWeapons[WEAPON_NINJA].m_Ammo = -1;
 	if (m_ActiveWeapon != WEAPON_NINJA)
@@ -958,20 +951,17 @@ void CCharacter::TickDefered()
 		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 	}
 
-	int Events = m_Core.m_TriggeredEvents;
-	int Mask = CmaskAllExceptOne(m_pPlayer->GetCID());
-
-	if(Events&COREEVENT_GROUND_JUMP) GameServer()->CreateSound(m_Pos, SOUND_PLAYER_JUMP, Mask);
-
-	if(Events&COREEVENT_HOOK_ATTACH_PLAYER) GameServer()->CreateSound(m_Pos, SOUND_HOOK_ATTACH_PLAYER, CmaskAll());
-	if(Events&COREEVENT_HOOK_ATTACH_GROUND) GameServer()->CreateSound(m_Pos, SOUND_HOOK_ATTACH_GROUND, Mask);
-	if(Events&COREEVENT_HOOK_HIT_NOHOOK) GameServer()->CreateSound(m_Pos, SOUND_HOOK_NOATTACH, Mask);
-
+	m_TriggeredEvents |= m_Core.m_TriggeredEvents;
 
 	if(m_pPlayer->GetTeam() == TEAM_SPECTATORS)
 	{
 		m_Pos.x = m_Input.m_TargetX;
 		m_Pos.y = m_Input.m_TargetY;
+	}
+	else if(m_Core.m_Death)
+	{
+		//handkle death-tiles
+		Die(m_pPlayer->GetCID(), WEAPON_WORLD);
 	}
 
 	// update the m_SendCore if needed
@@ -996,7 +986,6 @@ void CCharacter::TickDefered()
 void CCharacter::TickPaused()
 {
 	++m_AttackTick;
-	++m_DamageTakenTick;
 	++m_Ninja.m_ActivationTick;
 	++m_ReckoningTick;
 	if(m_LastAction != -1)
@@ -1026,6 +1015,7 @@ bool CCharacter::IncreaseArmor(int Amount)
 void CCharacter::Die(int Killer, int Weapon)
 {
 	// we got to wait 0.5 secs before respawning
+	m_Alive = false;
 	m_pPlayer->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
 	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, GameServer()->m_apPlayers[Killer], Weapon);
 
@@ -1049,7 +1039,6 @@ void CCharacter::Die(int Killer, int Weapon)
 	// this is for auto respawn after 3 secs
 	m_pPlayer->m_DieTick = Server()->Tick();
 
-	m_Alive = false;
 	GameServer()->m_World.RemoveEntity(this);
 	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
 	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
@@ -1060,7 +1049,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	m_HookedItem = 0;
 }
 
-bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
+bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon)
 {
 	if(m_pPlayer->GetTeam() == TEAM_BLUE && (Weapon == WEAPON_GRENADE || Weapon == WEAPON_HAMMER))
 		m_Core.m_Vel += Force;
@@ -1253,6 +1242,7 @@ void CCharacter::Snap(int SnappingClient)
 	pCharacter->m_AmmoCount = 0;
 	pCharacter->m_Health = 0;
 	pCharacter->m_Armor = 0;
+	pCharacter->m_TriggeredEvents = m_TriggeredEvents;
 
 	pCharacter->m_Weapon = m_ActiveWeapon;
 	pCharacter->m_AttackTick = m_AttackTick;
@@ -1260,11 +1250,13 @@ void CCharacter::Snap(int SnappingClient)
 	pCharacter->m_Direction = m_Input.m_Direction;
 
 	if(m_pPlayer->GetCID() == SnappingClient || SnappingClient == -1 ||
-		(!g_Config.m_SvStrictSpectateMode && m_pPlayer->GetCID() == GameServer()->m_apPlayers[SnappingClient]->m_SpectatorID))
+		(!g_Config.m_SvStrictSpectateMode && m_pPlayer->GetCID() == GameServer()->m_apPlayers[SnappingClient]->GetSpectatorID()))
 	{
 		pCharacter->m_Health = m_Health;
 		pCharacter->m_Armor = m_Armor;
-		if(m_aWeapons[m_ActiveWeapon].m_Ammo > 0)
+		if(m_ActiveWeapon == WEAPON_NINJA)
+			pCharacter->m_AmmoCount = m_Ninja.m_ActivationTick + g_pData->m_Weapons.m_Ninja.m_Duration * Server()->TickSpeed() / 1000;
+		else if(m_aWeapons[m_ActiveWeapon].m_Ammo > 0)
 			pCharacter->m_AmmoCount = m_aWeapons[m_ActiveWeapon].m_Ammo;
 	}
 
@@ -1273,6 +1265,9 @@ void CCharacter::Snap(int SnappingClient)
 		if(250 - ((Server()->Tick() - m_LastAction)%(250)) < 5)
 			pCharacter->m_Emote = EMOTE_BLINK;
 	}
+}
 
-	pCharacter->m_PlayerFlags = GetPlayer()->m_PlayerFlags;
+void CCharacter::PostSnap()
+{
+	m_TriggeredEvents = 0;
 }

@@ -69,7 +69,7 @@ void CCollision::Init(class CLayers *pLayers)
 	}
 }
 
-int CCollision::GetTile(int x, int y)
+int CCollision::GetTile(int x, int y) const
 {
 	int Nx = clamp(x/32, 0, m_Width-1);
 	int Ny = clamp(y/32, 0, m_Height-1);
@@ -80,9 +80,9 @@ int CCollision::GetTile(int x, int y)
 		return 0;
 }
 
-bool CCollision::IsTileSolid(int x, int y)
+bool CCollision::IsTile(int x, int y, int Flag) const
 {
-	return GetTile(x, y)&COLFLAG_SOLID;
+	return GetTile(x, y)&Flag;
 }
 
 // race
@@ -236,16 +236,16 @@ int CCollision::GetTool(vec2 PrevPos, vec2 Pos, int *Num, int *Team)
 }
 
 // TODO: rewrite this smarter!
-int CCollision::IntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *pOutBeforeCollision)
+int CCollision::IntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *pOutBeforeCollision) const
 {
 	float Distance = distance(Pos0, Pos1);
 	int End(Distance+1);
 	vec2 Last = Pos0;
 
-	for(int i = 0; i < End; i++)
-	{
-		float PointOnLine = i/Distance;
-		vec2 Pos = mix(Pos0, Pos1, PointOnLine);
+	for(int i = 0; i <= End; i++){
+
+		float a = i/float(End);
+		vec2 Pos = mix(Pos0, Pos1, a);
 		if(CheckPoint(Pos.x, Pos.y))
 		{
 			if(pOutCollision)
@@ -264,7 +264,7 @@ int CCollision::IntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *p
 }
 
 // TODO: OPT: rewrite this smarter!
-void CCollision::MovePoint(vec2 *pInoutPos, vec2 *pInoutVel, float Elasticity, int *pBounces)
+void CCollision::MovePoint(vec2 *pInoutPos, vec2 *pInoutVel, float Elasticity, int *pBounces) const
 {
 	if(pBounces)
 		*pBounces = 0;
@@ -302,21 +302,21 @@ void CCollision::MovePoint(vec2 *pInoutPos, vec2 *pInoutVel, float Elasticity, i
 	}
 }
 
-bool CCollision::TestBox(vec2 Pos, vec2 Size)
+bool CCollision::TestBox(vec2 Pos, vec2 Size, int Flag) const
 {
 	Size *= 0.5f;
-	if(CheckPoint(Pos.x-Size.x, Pos.y-Size.y))
+	if(CheckPoint(Pos.x-Size.x, Pos.y-Size.y, Flag))
 		return true;
-	if(CheckPoint(Pos.x+Size.x, Pos.y-Size.y))
+	if(CheckPoint(Pos.x+Size.x, Pos.y-Size.y, Flag))
 		return true;
-	if(CheckPoint(Pos.x-Size.x, Pos.y+Size.y))
+	if(CheckPoint(Pos.x-Size.x, Pos.y+Size.y, Flag))
 		return true;
-	if(CheckPoint(Pos.x+Size.x, Pos.y+Size.y))
+	if(CheckPoint(Pos.x+Size.x, Pos.y+Size.y, Flag))
 		return true;
 	return false;
 }
 
-void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elasticity)
+void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elasticity, bool *pDeath) const
 {
 	// do the move
 	vec2 Pos = *pInoutPos;
@@ -324,6 +324,9 @@ void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elas
 
 	float Distance = length(Vel);
 	int Max = (int)Distance;
+
+	if(pDeath)
+		*pDeath = false;
 
 	if(Distance > 0.00001f)
 	{
@@ -336,6 +339,13 @@ void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elas
 				//amount = 0;
 
 			vec2 NewPos = Pos + Vel*Fraction; // TODO: this row is not nice
+
+			//You hit a deathtile, congrats to that :)
+			//Deathtiles are a bit smaller
+			if(pDeath && TestBox(vec2(NewPos.x, NewPos.y), Size*(2.0f/3.0f), COLFLAG_DEATH))
+			{
+				*pDeath = true;
+			}
 
 			if(TestBox(vec2(NewPos.x, NewPos.y), Size))
 			{
