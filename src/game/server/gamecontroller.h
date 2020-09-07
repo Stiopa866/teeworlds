@@ -28,17 +28,18 @@ class IGameController
 	void CheckReadyStates(int WithoutID = -1);
 
 	// balancing
-	enum
+	/*enum
 	{
 		TBALANCE_CHECK=-2,
 		TBALANCE_OK,
 	};
+	*/
 	int m_aTeamSize[NUM_TEAMS];
-	int m_UnbalancedTick;
+	//int m_UnbalancedTick;
 
-	virtual bool CanBeMovedOnBalance(int ClientID) const;
-	void CheckTeamBalance();
-	void DoTeamBalance();
+	//virtual bool CanBeMovedOnBalance(int ClientID) const;
+	//void CheckTeamBalance();
+	//void DoTeamBalance();
 
 	// game
 	enum EGameState
@@ -58,13 +59,13 @@ class IGameController
 	EGameState m_GameState;
 	int m_GameStateTimer;
 
-	virtual bool DoWincheckMatch();		// returns true when the match is over
+		// returns true when the match is over
 	virtual void DoWincheckRound() {};
-	bool HasEnoughPlayers() const { return (IsTeamplay() && m_aTeamSize[TEAM_RED] > 0 && m_aTeamSize[TEAM_BLUE] > 0) || (!IsTeamplay() && m_aTeamSize[TEAM_RED] > 1); }
+	bool HasEnoughPlayers() const { return (m_aTeamSize[TEAM_RED] + m_aTeamSize[TEAM_BLUE] >= 2); }
 	void ResetGame();
 	void SetGameState(EGameState GameState, int Timer=0);
 	void StartMatch();
-	void StartRound();
+	
 
 	// map
 	char m_aMapWish[128];
@@ -102,6 +103,7 @@ protected:
 	IServer *Server() const { return m_pServer; }
 
 	// game
+	
 	int m_GameStartTick;
 	int m_MatchCount;
 	int m_RoundCount;
@@ -123,11 +125,13 @@ protected:
 	} m_GameInfo;
 
 	void UpdateGameInfo(int ClientID);
+	virtual void StartRound();
 
 public:
 	IGameController(class CGameContext *pGameServer);
 	virtual ~IGameController() {};
 
+	
 	// event
 	/*
 		Function: on_CCharacter_death
@@ -164,7 +168,7 @@ public:
 			bool?
 	*/
 	virtual bool OnEntity(int Index, vec2 Pos);
-
+	virtual bool DoWincheckMatch();
 	void OnPlayerConnect(class CPlayer *pPlayer);
 	void OnPlayerDisconnect(class CPlayer *pPlayer);
 	void OnPlayerInfoChange(class CPlayer *pPlayer);
@@ -191,6 +195,7 @@ public:
 	virtual void Snap(int SnappingClient);
 	virtual void Tick();
 
+	int GetGameState() { return m_GameState; };
 	// info
 	void CheckGameInfo();
 	bool IsFriendlyFire(int ClientID1, int ClientID2) const;
@@ -216,11 +221,12 @@ public:
 	bool CanChangeTeam(CPlayer *pPplayer, int JoinTeam) const;
 
 	void DoTeamChange(class CPlayer *pPlayer, int Team, bool DoChatMsg=true);
-	void ForceTeamBalance() { if(!(m_GameFlags&GAMEFLAG_SURVIVAL)) DoTeamBalance(); }
+	//void ForceTeamBalance() { if(!(m_GameFlags&GAMEFLAG_SURVIVAL)) DoTeamBalance(); }
 
 	int GetRealPlayerNum() const { return m_aTeamSize[TEAM_RED]+m_aTeamSize[TEAM_BLUE]; }
 	int GetStartTeam();
 
+	void Zombie();
 	//static void Com_Example(IConsole::IResult *pResult, void *pContext);
 	virtual void RegisterChatCommands(CCommandManager *pManager);
 };

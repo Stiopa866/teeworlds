@@ -1,7 +1,6 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <engine/shared/config.h>
-
 #include <game/mapitems.h>
 
 #include "entities/character.h"
@@ -9,7 +8,8 @@
 #include "gamecontext.h"
 #include "gamecontroller.h"
 #include "player.h"
-
+#include <game\server\gamemodes\zesc.h>
+#include <game\server\entities\door.h>
 
 IGameController::IGameController(CGameContext *pGameServer)
 {
@@ -20,7 +20,7 @@ IGameController::IGameController(CGameContext *pGameServer)
 	// balancing
 	m_aTeamSize[TEAM_RED] = 0;
 	m_aTeamSize[TEAM_BLUE] = 0;
-	m_UnbalancedTick = TBALANCE_OK;
+	//m_UnbalancedTick = TBALANCE_OK;
 
 	// game
 	m_GameState = IGS_GAME_RUNNING;
@@ -126,7 +126,7 @@ void IGameController::SetPlayersReadyState(bool ReadyState)
 }
 
 // balancing
-bool IGameController::CanBeMovedOnBalance(int ClientID) const
+/*bool IGameController::CanBeMovedOnBalance(int ClientID) const
 {
 	return true;
 }
@@ -212,7 +212,7 @@ void IGameController::DoTeamBalance()
 
 	m_UnbalancedTick = TBALANCE_OK;
 	GameServer()->SendGameMsg(GAMEMSG_TEAM_BALANCE, -1);
-}
+}*/
 
 // event
 int IGameController::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, int Weapon)
@@ -260,12 +260,6 @@ void IGameController::OnFlagReturn(CFlag *pFlag)
 
 bool IGameController::OnEntity(int Index, vec2 Pos)
 {
-	// don't add pickups in survival
-	if(m_GameFlags&GAMEFLAG_SURVIVAL)
-	{
-		if(Index < ENTITY_SPAWN || Index > ENTITY_SPAWN_BLUE)
-			return false;
-	}
 
 	int Type = -1;
 
@@ -298,6 +292,11 @@ bool IGameController::OnEntity(int Index, vec2 Pos)
 	case ENTITY_POWERUP_NINJA:
 		if(Config()->m_SvPowerups)
 			Type = PICKUP_NINJA;
+	}
+	if ((Index >= ENTITY_DOOR_BEGIN && Index <= ENTITY_DOOR_END) || (Index >= ENTITY_ZDOOR_BEGIN && Index <= ENTITY_ZDOOR_END))
+	{
+		CDoor* pDoor = new CDoor(&GameServer()->m_World, Index - 17, 0, Pos);
+		return true;
 	}
 
 	if(Type != -1)
@@ -337,7 +336,7 @@ void IGameController::OnPlayerDisconnect(CPlayer *pPlayer)
 	if(pPlayer->GetTeam() != TEAM_SPECTATORS)
 	{
 		--m_aTeamSize[pPlayer->GetTeam()];
-		m_UnbalancedTick = TBALANCE_CHECK;
+		//m_UnbalancedTick = TBALANCE_CHECK;
 	}
 
 	CheckReadyStates(ClientID);
@@ -476,11 +475,14 @@ void IGameController::ResetGame()
 	CheckGameInfo();
 
 	// do team-balancing
-	DoTeamBalance();
+	//DoTeamBalance();
 }
 
 void IGameController::SetGameState(EGameState GameState, int Timer)
 {
+	char aBufMsg[256];
+	str_format(aBufMsg, sizeof(aBufMsg), "SetGameState executed, num of players, %d, %d",m_aTeamSize[TEAM_RED], m_aTeamSize[TEAM_BLUE]);
+	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBufMsg);
 	// change game state
 	switch(GameState)
 	{
@@ -534,18 +536,18 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 				}
 
 				// enable respawning in survival when activating warmup
-				if(m_GameFlags&GAMEFLAG_SURVIVAL)
+				/*if(m_GameFlags&GAMEFLAG_SURVIVAL)
 				{
 					for(int i = 0; i < MAX_CLIENTS; ++i)
 						if(GameServer()->m_apPlayers[i])
 							GameServer()->m_apPlayers[i]->m_RespawnDisabled = false;
-				}
+				}*/
 				GameServer()->m_World.m_Paused = false;
 			}
 			else
 			{
-				// start new match
-				StartMatch();
+				// StartTheGame
+				StartRound();
 			}
 		}
 		break;
@@ -636,7 +638,7 @@ void IGameController::StartMatch()
 
 	// start countdown if there're enough players, otherwise do warmup till there're
 	if(HasEnoughPlayers())
-		SetGameState(IGS_START_COUNTDOWN);
+		SetGameState(IGS_WARMUP_USER, 10);
 	else
 		SetGameState(IGS_WARMUP_GAME, TIMER_INFINITE);
 
@@ -648,17 +650,36 @@ void IGameController::StartMatch()
 
 void IGameController::StartRound()
 {
-	ResetGame();
+	m_GameStartTick = 0;
+	int NumOfZomb = m_aTeamSize[TEAM_BLUE] / 5;
+	NumOfZomb++;
+	if (NumOfZomb > 3)
+	{
+		NumOfZomb = 3;
+	}
+	for (int i = 0; i < NumOfZomb;)
+	{
+		int ZombId = rand() % MAX_CLIENTS;
+		if (!GameServer()->m_apPlayers[ZombId])
+			continue;
+		if (GameServer()->m_apPlayers[ZombId]->GetTeam() == TEAM_BLUE)
+		{
+			char aBuf[256];
+			str_format(aBuf, sizeof(aBuf), "tryna convert %d", ZombId);
+			GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
+			GameServer()->m_apPlayers[ZombId]->IZombie();
+			i++;
+		}
+	}
+	SetGameState(IGS_GAME_RUNNING, 0);
 
-	++m_RoundCount;
-
-	// start countdown if there're enough players, otherwise abort to warmup
-	if(HasEnoughPlayers())
-		SetGameState(IGS_START_COUNTDOWN);
-	else
-		SetGameState(IGS_WARMUP_GAME, TIMER_INFINITE);
 }
 
+void IGameController::Zombie()
+{
+	m_aTeamSize[TEAM_RED]++;
+	m_aTeamSize[TEAM_BLUE]--;
+}
 void IGameController::SwapTeamscore()
 {
 	if(!IsTeamplay())
@@ -807,7 +828,7 @@ void IGameController::Tick()
 	}
 
 	// do team-balancing (skip this in survival, done there when a round starts)
-	if(IsTeamplay() && !(m_GameFlags&GAMEFLAG_SURVIVAL))
+	/*if(IsTeamplay() && !(m_GameFlags&GAMEFLAG_SURVIVAL))
 	{
 		switch(m_UnbalancedTick)
 		{
@@ -820,7 +841,7 @@ void IGameController::Tick()
 			if(Server()->Tick() > m_UnbalancedTick+Config()->m_SvTeambalanceTime*Server()->TickSpeed()*60)
 				DoTeamBalance();
 		}
-	}
+	}*/
 
 	// check for inactive players
 	DoActivityCheck();
@@ -828,10 +849,7 @@ void IGameController::Tick()
 	// win check
 	if((m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_GAME_PAUSED) && !GameServer()->m_World.m_ResetRequested)
 	{
-		if(m_GameFlags&GAMEFLAG_SURVIVAL)
-			DoWincheckRound();
-		else
-			DoWincheckMatch();
+		DoWincheckMatch();
 	}
 }
 
@@ -1158,14 +1176,14 @@ void IGameController::DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg)
 	if(OldTeam != TEAM_SPECTATORS)
 	{
 		--m_aTeamSize[OldTeam];
-		m_UnbalancedTick = TBALANCE_CHECK;
+		//m_UnbalancedTick = TBALANCE_CHECK;
 	}
 	if(Team != TEAM_SPECTATORS)
 	{
 		++m_aTeamSize[Team];
-		m_UnbalancedTick = TBALANCE_CHECK;
+		//m_UnbalancedTick = TBALANCE_CHECK;
 		if(m_GameState == IGS_WARMUP_GAME && HasEnoughPlayers())
-			SetGameState(IGS_WARMUP_GAME, 0);
+			SetGameState(IGS_WARMUP_USER, 10);
 		pPlayer->m_IsReadyToPlay = !IsPlayerReadyMode();
 		if(m_GameFlags&GAMEFLAG_SURVIVAL)
 			pPlayer->m_RespawnDisabled = GetStartRespawnState();
@@ -1185,18 +1203,18 @@ int IGameController::GetStartTeam()
 		return TEAM_SPECTATORS;
 
 	// determine new team
-	int Team = TEAM_RED;
-	if(IsTeamplay())
+	int Team = TEAM_SPECTATORS;
+	/*if(IsTeamplay())
 	{
 		if(!Config()->m_DbgStress)	// this will force the auto balancer to work overtime aswell
 			Team = m_aTeamSize[TEAM_RED] > m_aTeamSize[TEAM_BLUE] ? TEAM_BLUE : TEAM_RED;
-	}
-
+	}*/
+	Team = m_GameState < 3 ? TEAM_BLUE : TEAM_RED;
 	// check if there're enough player slots left
 	if(m_aTeamSize[TEAM_RED]+m_aTeamSize[TEAM_BLUE] < Config()->m_SvPlayerSlots)
 	{
 		++m_aTeamSize[Team];
-		m_UnbalancedTick = TBALANCE_CHECK;
+		//m_UnbalancedTick = TBALANCE_CHECK;
 		if(m_GameState == IGS_WARMUP_GAME && HasEnoughPlayers())
 			SetGameState(IGS_WARMUP_GAME, 0);
 		return Team;

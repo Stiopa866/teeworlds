@@ -344,6 +344,43 @@ void CPlayer::Respawn()
 		m_Spawning = true;
 }
 
+void CPlayer::IZombie()
+{
+	KillCharacter();
+	SetZombie();
+}
+
+void CPlayer::Zombie(int From)
+{
+	CNetMsg_Sv_KillMsg Msg;
+	Msg.m_Victim = m_ClientID;
+	Msg.m_ModeSpecial = 0;
+	Msg.m_Weapon = WEAPON_HAMMER;
+	Msg.m_Killer = From;
+	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	if (GameServer()->m_apPlayers[From])
+	{
+		CCharacter* pChr = GameServer()->m_apPlayers[From]->GetCharacter();
+		if (pChr)
+		{
+			pChr->SetEmote(EMOTE_HAPPY, Server()->Tick() + Server()->TickSpeed());
+		}
+	}
+	SetZombie();
+}
+void CPlayer::SetZombie()
+{
+	m_Team = TEAM_RED;
+	GameServer()->m_pController->Zombie();
+	CNetMsg_Sv_Team Msg;
+	Msg.m_ClientID = m_ClientID;
+	Msg.m_Team = TEAM_RED;
+	Msg.m_Silent = 1;
+	Msg.m_CooldownTick = GameServer()->Server()->Tick();
+	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+}
+
+
 bool CPlayer::SetSpectatorID(int SpecMode, int SpectatorID)
 {
 	if((SpecMode == m_SpecMode && SpecMode != SPEC_PLAYER) ||

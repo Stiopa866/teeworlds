@@ -23,7 +23,7 @@ public:
 	};
 
 	CCharacter(CGameWorld *pWorld);
-
+	
 	virtual void Reset();
 	virtual void Destroy();
 	virtual void Tick();
@@ -51,6 +51,12 @@ public:
 
 	bool Spawn(class CPlayer *pPlayer, vec2 Pos);
 	bool Remove();
+
+	int m_FreezeTick;
+	int m_BurnTick;
+	int m_BurnedFrom;
+	vec2 m_AddVel;
+	CCharacterCore m_Core;
 
 	bool IncreaseHealth(int Amount);
 	bool IncreaseArmor(int Amount);
@@ -119,7 +125,7 @@ private:
 	} m_Ninja;
 
 	// the player core for the physics
-	CCharacterCore m_Core;
+	
 
 	// info for dead reckoning
 	int m_ReckoningTick; // tick that we are performing dead reckoning From

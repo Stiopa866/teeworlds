@@ -57,11 +57,19 @@ class CGameContext : public IGameServer
 	static void ConSwapTeams(IConsole::IResult *pResult, void *pUserData);
 	static void ConShuffleTeams(IConsole::IResult *pResult, void *pUserData);
 	static void ConLockTeams(IConsole::IResult *pResult, void *pUserData);
-	static void ConForceTeamBalance(IConsole::IResult *pResult, void *pUserData);
+	//	static void ConForceTeamBalance(IConsole::IResult *pResult, void *pUserData);
 	static void ConAddVote(IConsole::IResult *pResult, void *pUserData);
 	static void ConRemoveVote(IConsole::IResult *pResult, void *pUserData);
 	static void ConClearVotes(IConsole::IResult *pResult, void *pUserData);
 	static void ConVote(IConsole::IResult *pResult, void *pUserData);
+	static void ConDoorOpenTime(IConsole::IResult* pResult, void* pUserData);
+	static void ConDoorStatus(IConsole::IResult* pResult, void* pUserData);
+	static void ConDoorCloseTime(IConsole::IResult* pResult, void* pUserData);
+	static void ConDoorReopenTime(IConsole::IResult* pResult, void* pUserData);
+	static void ConZDoorCloseTime(IConsole::IResult* pResult, void* pUserData);
+	static void ConZDoorReopenTime(IConsole::IResult* pResult, void* pUserData);
+	static void ConDoorSetState(IConsole::IResult* pResult, void* pUserData);
+	static void ConZDoorSetState(IConsole::IResult* pResult, void* pUserData);
 	static void ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void ConchainSettingUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void ConchainGameinfoUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
@@ -79,6 +87,7 @@ public:
 	class IConsole *Console() { return m_pConsole; }
 	CCollision *Collision() { return &m_Collision; }
 	CTuningParams *Tuning() { return &m_Tuning; }
+	class CGameControllerZESC* zESCController() { return (CGameControllerZESC*)m_pController; }
 
 	CGameContext();
 	~CGameContext();

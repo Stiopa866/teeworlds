@@ -1264,7 +1264,8 @@ int CServer::LoadMap(const char *pMapName)
 
 	if(!m_pMap->Load(aBuf))
 		return 0;
-
+	
+	
 	// stop recording when we change map
 	m_DemoRecorder.Stop();
 
@@ -1294,6 +1295,7 @@ int CServer::LoadMap(const char *pMapName)
 		io_read(File, m_pCurrentMapData, m_CurrentMapSize);
 		io_close(File);
 	}
+	
 	return 1;
 }
 

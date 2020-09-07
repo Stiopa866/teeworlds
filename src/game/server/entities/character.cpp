@@ -315,6 +315,8 @@ void CCharacter::FireWeapon()
 				if ((pTarget == this) || GameServer()->Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
 					continue;
 
+				if (pTarget->m_pPlayer->GetTeam() == TEAM_BLUE && this->m_pPlayer->GetTeam() == TEAM_RED)
+					pTarget->m_pPlayer->Zombie(m_pPlayer->GetCID());
 				// set his velocity to fast upward (for now)
 				if(length(pTarget->m_Pos-ProjStartPos) > 0.0f)
 					GameServer()->CreateHammerHit(pTarget->m_Pos-normalize(pTarget->m_Pos-ProjStartPos)*GetProximityRadius()*0.5f);
@@ -345,7 +347,7 @@ void CCharacter::FireWeapon()
 				ProjStartPos,
 				Direction,
 				(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GunLifetime),
-				g_pData->m_Weapons.m_Gun.m_pBase->m_Damage, false, 0, -1, WEAPON_GUN);
+				g_pData->m_Weapons.m_Gun.m_pBase->m_Damage, false, 22, -1, WEAPON_GUN);
 
 			GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE);
 		} break;
@@ -366,7 +368,7 @@ void CCharacter::FireWeapon()
 					ProjStartPos,
 					vec2(cosf(a), sinf(a))*Speed,
 					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_ShotgunLifetime),
-					g_pData->m_Weapons.m_Shotgun.m_pBase->m_Damage, false, 0, -1, WEAPON_SHOTGUN);
+					g_pData->m_Weapons.m_Shotgun.m_pBase->m_Damage, false, 17, -1, WEAPON_SHOTGUN);
 			}
 
 			GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
@@ -534,6 +536,14 @@ void CCharacter::Tick()
 {
 	m_Core.m_Input = m_Input;
 	m_Core.Tick(true);
+
+	if (m_FreezeTick)
+	{
+		m_FreezeTick--;
+		m_Core.m_Vel = vec2(0.f, 0.f);
+		if (!m_FreezeTick)
+			m_Core.m_Vel += m_AddVel;
+	}
 
 	// handle leaving gamelayer
 	if(GameLayerClipped(m_Pos))
@@ -711,7 +721,66 @@ void CCharacter::Die(int Killer, int Weapon)
 
 bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon)
 {
-	m_Core.m_Vel += Force;
+
+	if (m_pPlayer->GetTeam() == TEAM_BLUE && (Weapon == WEAPON_GRENADE || Weapon == WEAPON_HAMMER))
+		m_Core.m_Vel += Force;
+	//if (Weapon == WEAPON_GRENADE && From == m_pPlayer->GetCID() && m_pPlayer->GetTeam() == TEAM_BLUE && m_Item == HITEM_GRENADE)
+		//m_Core.m_Vel += Force; // Bigger rocketjump for upgraded grenade :3
+	if (m_pPlayer->GetTeam() == TEAM_BLUE)
+		return false;
+
+	vec2 AddVel = vec2(0, 0);
+	if (Weapon == WEAPON_HAMMER)
+		//m_Item ? AddVel = Force * 0.7f : AddVel = Force;
+		AddVel = Force * 0.7f;
+	else if (Weapon == WEAPON_GUN)
+	{
+		//if (GameServer()->m_apPlayers[From] && GameServer()->m_apPlayers[From]->GetCharacter())
+			//m_Item ? AddVel = Force * 0.7f : AddVel = Force;
+		AddVel = Force * 0.7f;
+		//else if (GameServer()->m_apPlayers[From] && GameServer()->m_apPlayers[From]->GetCharacter() && GameServer()->m_apPlayers[From]->GetCharacter()->m_Item == HITEM_GUN)
+			//m_Item ? AddVel = Force : AddVel = Force * 1.35f;
+	}
+	else if (Weapon == WEAPON_SHOTGUN)
+	{
+		//if (GameServer()->m_apPlayers[From] && GameServer()->m_apPlayers[From]->GetCharacter() && GameServer()->m_apPlayers[From]->GetCharacter()->m_Item != HITEM_SHOTGUN)
+			//m_Item ? AddVel = Force * 0.7f : AddVel = Force;
+		AddVel = Force * 0.7f;
+		//else if (GameServer()->m_apPlayers[From] && GameServer()->m_apPlayers[From]->GetCharacter() && GameServer()->m_apPlayers[From]->GetCharacter()->m_Item == HITEM_SHOTGUN)
+			//m_Item ? AddVel = Force : AddVel = Force * 1.3f;
+	}
+	else if (Weapon == WEAPON_GRENADE && Dmg > 1)
+	{
+		//if (GameServer()->m_apPlayers[From] && GameServer()->m_apPlayers[From]->GetCharacter() && GameServer()->m_apPlayers[From]->GetCharacter()->m_Item != HITEM_GRENADE)
+		//{
+		//m_Item ? AddVel = Force : AddVel = Force * 2.0f;
+		AddVel = Force;
+			//m_Item ? m_BurnTick = Server()->TickSpeed() * 1.5f : m_BurnTick = Server()->TickSpeed() * 2.0f;
+		m_BurnTick = Server()->TickSpeed() * 1.5f;
+		//}
+		//else if (GameServer()->m_apPlayers[From] && GameServer()->m_apPlayers[From]->GetCharacter() && GameServer()->m_apPlayers[From]->GetCharacter()->m_Item == HITEM_GRENADE)
+		//{
+			//m_Item ? AddVel = Force * 2.0f : AddVel = Force * 3.0f;
+			//m_Item ? m_BurnTick = Server()->TickSpeed() * 2.0f : m_BurnTick = Server()->TickSpeed() * 3.0f;
+		//}
+		m_BurnedFrom = From;
+	}
+	else if (Weapon == WEAPON_LASER)
+	{
+		//if (GameServer()->m_apPlayers[From] && GameServer()->m_apPlayers[From]->GetCharacter() && GameServer()->m_apPlayers[From]->GetCharacter()->m_Item != HITEM_RIFLE)
+			//m_Item ? m_FreezeTick = Server()->TickSpeed() * 1.0f : m_FreezeTick = Server()->TickSpeed() * 1.5f;
+			m_FreezeTick = Server()->TickSpeed() * 1.0f;
+		//else if (GameServer()->m_apPlayers[From] && GameServer()->m_apPlayers[From]->GetCharacter() && GameServer()->m_apPlayers[From]->GetCharacter()->m_Item == HITEM_RIFLE)
+			//m_Item ? m_FreezeTick = Server()->TickSpeed() * 1.5f : m_FreezeTick = Server()->TickSpeed() * 2.0f;
+		GameServer()->CreatePlayerSpawn(m_Pos);
+	}
+	if (m_BurnTick)
+		AddVel *= 2.5f;
+	if (!m_FreezeTick)
+		m_Core.m_Vel += AddVel;
+	else
+		m_AddVel = m_Core.m_Vel;
+	
 
 	if(From >= 0)
 	{
@@ -728,7 +797,7 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
 	}
 
 	// m_pPlayer only inflicts half damage on self
-	if(From == m_pPlayer->GetCID())
+	/*if(From == m_pPlayer->GetCID())
 		Dmg = max(1, Dmg/2);
 
 	int OldHealth = m_Health, OldArmor = m_Armor;
@@ -759,7 +828,7 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
 
 	// create healthmod indicator
 	GameServer()->CreateDamage(m_Pos, m_pPlayer->GetCID(), Source, OldHealth-m_Health, OldArmor-m_Armor, From == m_pPlayer->GetCID());
-
+	*/
 	// do damage Hit sound
 	if(From >= 0 && From != m_pPlayer->GetCID() && GameServer()->m_apPlayers[From])
 	{

@@ -1599,6 +1599,8 @@ set_src(GAME_SERVER GLOB_RECURSE src/game/server
   alloc.h
   entities/character.cpp
   entities/character.h
+  entities/door.cpp
+  entities/door.h
   entities/flag.cpp
   entities/flag.h
   entities/laser.cpp
@@ -1627,6 +1629,8 @@ set_src(GAME_SERVER GLOB_RECURSE src/game/server
   gamemodes/mod.h
   gamemodes/tdm.cpp
   gamemodes/tdm.h
+  gamemodes/zesc.cpp
+  gamemodes/zesc.h
   gameworld.cpp
   gameworld.h
   player.cpp

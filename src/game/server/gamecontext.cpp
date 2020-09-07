@@ -13,12 +13,14 @@
 
 #include "entities/character.h"
 #include "entities/projectile.h"
+#include "gamemodes/zesc.h"
 #include "gamemodes/ctf.h"
+#include "gamemodes/tdm.h"
 #include "gamemodes/dm.h"
+#include "gamemodes/mod.h"
 #include "gamemodes/lms.h"
 #include "gamemodes/lts.h"
-#include "gamemodes/mod.h"
-#include "gamemodes/tdm.h"
+
 #include "gamecontext.h"
 #include "player.h"
 
@@ -286,7 +288,7 @@ void CGameContext::SendSettings(int ClientID)
 	Msg.m_KickMin = Config()->m_SvVoteKickMin;
 	Msg.m_SpecVote = Config()->m_SvVoteSpectate;
 	Msg.m_TeamLock = m_LockTeams != 0;
-	Msg.m_TeamBalance = Config()->m_SvTeambalanceTime != 0;
+	//Msg.m_TeamBalance = Config()->m_SvTeambalanceTime != 0;
 	Msg.m_PlayerSlots = Config()->m_SvPlayerSlots;
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientID);
 }
@@ -1308,11 +1310,11 @@ void CGameContext::ConLockTeams(IConsole::IResult *pResult, void *pUserData)
 	pSelf->SendSettings(-1);
 }
 
-void CGameContext::ConForceTeamBalance(IConsole::IResult *pResult, void *pUserData)
+/*void CGameContext::ConForceTeamBalance(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
 	pSelf->m_pController->ForceTeamBalance();
-}
+}*/
 
 void CGameContext::ConAddVote(IConsole::IResult *pResult, void *pUserData)
 {
@@ -1478,6 +1480,123 @@ void CGameContext::ConVote(IConsole::IResult *pResult, void *pUserData)
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 }
 
+void CGameContext::ConDoorOpenTime(IConsole::IResult* pResult, void* pUserData)
+{
+	CGameContext* pSelf = (CGameContext*)pUserData;
+
+	int Door = clamp(pResult->GetInteger(0), 1, 32);
+	int Time = clamp(pResult->GetInteger(1), 1, 300);
+	pSelf->zESCController()->m_Door[Door - 1].m_OpenTime = Time;
+
+	char aBuf[128];
+	str_format(aBuf, sizeof(aBuf), "changed door %d opentime to %d seconds", Door, Time);
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
+}
+
+void CGameContext::ConDoorStatus(IConsole::IResult* pResult, void* pUserData)
+{
+	CGameContext* pSelf = (CGameContext*)pUserData;
+
+	char aBuf[128];
+	for (int i = 0; i < 48; i++)
+	{
+		str_format(
+			aBuf,
+			sizeof(aBuf),
+			"Door %d:\n Opentime: %d\n Closetime: %d\n Tick: %d",
+			i,
+			pSelf->zESCController()->m_Door[i].m_OpenTime,
+			pSelf->zESCController()->m_Door[i].m_CloseTime,
+			pSelf->zESCController()->m_Door[i].m_Tick
+		);
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
+	}
+}
+
+void CGameContext::ConDoorCloseTime(IConsole::IResult* pResult, void* pUserData)
+{
+	CGameContext* pSelf = (CGameContext*)pUserData;
+	int Door = clamp(pResult->GetInteger(0), 1, 32);
+	int Time = clamp(pResult->GetInteger(1), 1, 60);
+
+	pSelf->zESCController()->m_Door[Door - 1].m_CloseTime = Time;
+
+	char aBuf[128];
+	str_format(aBuf, sizeof(aBuf), "changed door %d closetime to %d seconds", Door, Time);
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
+}
+
+void CGameContext::ConDoorReopenTime(IConsole::IResult* pResult, void* pUserData)
+{
+	CGameContext* pSelf = (CGameContext*)pUserData;
+	int Door = clamp(pResult->GetInteger(0), 1, 32);
+	int Time = clamp(pResult->GetInteger(1), 1, 60);
+
+	pSelf->zESCController()->m_Door[Door - 1].m_ReopenTime = Time;
+
+	char aBuf[128];
+	str_format(aBuf, sizeof(aBuf), "changed door %d reopentime to %d seconds", Door, Time);
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
+}
+
+void CGameContext::ConZDoorCloseTime(IConsole::IResult* pResult, void* pUserData)
+{
+	CGameContext* pSelf = (CGameContext*)pUserData;
+	int Door = clamp(pResult->GetInteger(0), 1, 16);
+	int Time = clamp(pResult->GetInteger(1), 1, 60);
+
+	pSelf->zESCController()->m_Door[Door + 31].m_CloseTime = Time;
+
+	char aBuf[128];
+	str_format(aBuf, sizeof(aBuf), "changed zdoor %d closetime to %d seconds", Door, Time);
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
+}
+
+void CGameContext::ConZDoorReopenTime(IConsole::IResult* pResult, void* pUserData)
+{
+	CGameContext* pSelf = (CGameContext*)pUserData;
+	int Door = clamp(pResult->GetInteger(0), 1, 16);
+	int Time = clamp(pResult->GetInteger(1), 1, 60);
+
+	pSelf->zESCController()->m_Door[Door + 31].m_ReopenTime = Time;
+
+	char aBuf[128];
+	str_format(aBuf, sizeof(aBuf), "changed zdoor %d reopentime to %d seconds", Door, Time);
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
+}
+
+void CGameContext::ConDoorSetState(IConsole::IResult* pResult, void* pUserData)
+{
+	CGameContext* pSelf = (CGameContext*)pUserData;
+	int Door = clamp(pResult->GetInteger(0), 1, 32);
+	int State = clamp(pResult->GetInteger(1), 0, 3);
+	if (State > 1)
+		State++;
+
+	pSelf->zESCController()->m_Door[Door - 1].m_State = State;
+	pSelf->zESCController()->m_Door[Door - 1].m_Tick = 0;
+
+	char aBuf[128];
+	str_format(aBuf, sizeof(aBuf), "changed doorstate %d to %d", Door, State > 1 ? State - 1 : State);
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
+}
+
+void CGameContext::ConZDoorSetState(IConsole::IResult* pResult, void* pUserData)
+{
+	CGameContext* pSelf = (CGameContext*)pUserData;
+	int Door = clamp(pResult->GetInteger(0), 1, 32);
+	int State = clamp(pResult->GetInteger(1), 0, 2);
+	if (State)
+		State += 2;
+
+	pSelf->zESCController()->m_Door[Door + 31].m_State = State;
+	pSelf->zESCController()->m_Door[Door - 1].m_Tick = 0;
+
+	char aBuf[128];
+	str_format(aBuf, sizeof(aBuf), "changed zdoorstate %d to %d", Door, State ? State - 2 : 0);
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
+}
+
 void CGameContext::ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
 	pfnCallback(pResult, pCallbackUserData);
@@ -1529,7 +1648,13 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("swap_teams", "", CFGFLAG_SERVER, ConSwapTeams, this, "Swap the current teams");
 	Console()->Register("shuffle_teams", "", CFGFLAG_SERVER, ConShuffleTeams, this, "Shuffle the current teams");
 	Console()->Register("lock_teams", "", CFGFLAG_SERVER, ConLockTeams, this, "Lock/unlock teams");
-	Console()->Register("force_teambalance", "", CFGFLAG_SERVER, ConForceTeamBalance, this, "Force team balance");
+	//Console()->Register("force_teambalance", "", CFGFLAG_SERVER, ConForceTeamBalance, this, "Force team balance");
+	Console()->Register("door_status", "", CFGFLAG_SERVER, ConDoorStatus, this, "Dumps Door Status");
+	Console()->Register("door_opentime", "ii", CFGFLAG_SERVER, ConDoorOpenTime, this, "Adjust the door opentime: door_opentime <id> <seconds>");
+	Console()->Register("door_closetime", "ii", CFGFLAG_SERVER, ConDoorCloseTime, this, "Adjust the door closetime: door_closetime <id> <seconds>");
+	Console()->Register("door_reopentime", "ii", CFGFLAG_SERVER, ConDoorReopenTime, this, "Adjust the door reopentime: door_reopentime <id> <seconds>");
+	Console()->Register("zdoor_closetime", "ii", CFGFLAG_SERVER, ConZDoorCloseTime, this, "Adjust the zdoor closetime: zdoor_closetime <id> <seconds>");
+	Console()->Register("zdoor_reopentime", "ii", CFGFLAG_SERVER, ConZDoorReopenTime, this, "Adjust the zdoor reopentime: zdoor_reopentime <id> <seconds>");
 
 	Console()->Register("add_vote", "s[option] r[command]", CFGFLAG_SERVER, ConAddVote, this, "Add a voting option");
 	Console()->Register("remove_vote", "s[option]", CFGFLAG_SERVER, ConRemoveVote, this, "remove a voting option");
@@ -1569,18 +1694,20 @@ void CGameContext::OnInit()
 	m_Collision.Init(&m_Layers);
 
 	// select gametype
-	if(str_comp_nocase(Config()->m_SvGametype, "mod") == 0)
+	if (str_comp_nocase(Config()->m_SvGametype, "mod") == 0)
 		m_pController = new CGameControllerMOD(this);
-	else if(str_comp_nocase(Config()->m_SvGametype, "ctf") == 0)
+	else if (str_comp_nocase(Config()->m_SvGametype, "ctf") == 0)
 		m_pController = new CGameControllerCTF(this);
-	else if(str_comp_nocase(Config()->m_SvGametype, "lms") == 0)
+	else if (str_comp_nocase(Config()->m_SvGametype, "lms") == 0)
 		m_pController = new CGameControllerLMS(this);
-	else if(str_comp_nocase(Config()->m_SvGametype, "lts") == 0)
+	else if (str_comp_nocase(Config()->m_SvGametype, "lts") == 0)
 		m_pController = new CGameControllerLTS(this);
-	else if(str_comp_nocase(Config()->m_SvGametype, "tdm") == 0)
+	else if (str_comp_nocase(Config()->m_SvGametype, "tdm") == 0)
 		m_pController = new CGameControllerTDM(this);
-	else
+	else if (str_comp_nocase(Config()->m_SvGametype, "dm") == 0)
 		m_pController = new CGameControllerDM(this);
+	else
+		m_pController = new CGameControllerZESC(this);
 
 	m_pController->RegisterChatCommands(CommandManager());
 
@@ -1606,7 +1733,7 @@ void CGameContext::OnInit()
 	Console()->Chain("sv_vote_kick", ConchainSettingUpdate, this);
 	Console()->Chain("sv_vote_kick_min", ConchainSettingUpdate, this);
 	Console()->Chain("sv_vote_spectate", ConchainSettingUpdate, this);
-	Console()->Chain("sv_teambalance_time", ConchainSettingUpdate, this);
+	//Console()->Chain("sv_teambalance_time", ConchainSettingUpdate, this);
 	Console()->Chain("sv_player_slots", ConchainSettingUpdate, this);
 	Console()->Chain("sv_max_clients", ConchainSettingUpdate, this);
 

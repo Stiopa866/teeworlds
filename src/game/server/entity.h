@@ -26,14 +26,14 @@ private:
 	CEntity *m_pPrevTypeEntity;
 	CEntity *m_pNextTypeEntity;
 
-	int m_ID;
+	
 	int m_ObjType;
 
 	/*
 		Variable: m_ProximityRadius
 			Contains the physical size of the entity.
 	*/
-	float m_ProximityRadius;
+	
 
 	/* State */
 	bool m_MarkedForDestroy;
@@ -45,14 +45,17 @@ protected:
 		Variable: m_Pos
 			Contains the current posititon of the entity.
 	*/
-	vec2 m_Pos;
+	
 
 	/* Getters */
 	int GetID() const					{ return m_ID; }
+	int m_ID;
 
 public:
 	/* Constructor */
 	CEntity(CGameWorld *pGameWorld, int Objtype, vec2 Pos, int ProximityRadius=0);
+	vec2 m_Pos;
+	float m_ProximityRadius;
 
 	/* Destructor */
 	virtual ~CEntity();

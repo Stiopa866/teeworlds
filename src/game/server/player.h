@@ -30,6 +30,9 @@ public:
 	int GetTeam() const { return m_Team; };
 	int GetCID() const { return m_ClientID; };
 	bool IsDummy() const { return m_Dummy; }
+	void IZombie();
+	void SetZombie();
+	void Zombie(int From);
 
 	void Tick();
 	void PostTick();
