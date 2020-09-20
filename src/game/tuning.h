@@ -26,9 +26,10 @@ MACRO_TUNING_PARAM(VelrampCurvature, velramp_curvature, 1.4f)
 //liquid tuning
 MACRO_TUNING_PARAM(LiquidHorizontalDecel, liq_x_decel, 0.9)
 MACRO_TUNING_PARAM(LiquidVerticalDecel, liq_y_decel, 0.9)
-MACRO_TUNING_PARAM(LiquidPushOut, liq_push_out, 2.0f)
+MACRO_TUNING_PARAM(LiquidPushOut, liq_push_out, 1.0f)
 MACRO_TUNING_PARAM(LiquidAirTicks, liq_air_tick, 500)
 MACRO_TUNING_PARAM(LiquidTicksPerSuffocationDmg, liq_suff_dmg_delay, 50)
+MACRO_TUNING_PARAM(LiquidWeaponInvalidation, liq_inval_weapon, 1)
 // weapon tuning
 MACRO_TUNING_PARAM(GunCurvature, gun_curvature, 1.25f)
 MACRO_TUNING_PARAM(GunSpeed, gun_speed, 2200.0f)

@@ -72,7 +72,7 @@ void CProjectile::Tick()
 	float Ct = (Server()->Tick()-m_StartTick)/(float)Server()->TickSpeed();
 	vec2 PrevPos = GetPos(Pt);
 	vec2 CurPos = GetPos(Ct);
-	if (GameServer()->Collision()->TestBox(vec2(CurPos.x, CurPos.y), vec2(6.0f, 6.0f), 8))
+	if (GameServer()->Tuning()->m_LiquidWeaponInvalidation && GameServer()->Collision()->TestBox(vec2(CurPos.x, CurPos.y), vec2(6.0f, 6.0f), 8))
 	{
 		GameWorld()->DestroyEntity(this);
 		return;

@@ -299,11 +299,11 @@ void CCharacter::FireWeapon()
 		return;
 	}
 
-	if (m_Core.IsInWater())
+	if (m_Core.IsInWater() && GameServer()->Tuning()->m_LiquidWeaponInvalidation)
 	{
 		if (m_ActiveWeapon >= WEAPON_GUN && m_ActiveWeapon < WEAPON_LASER)
 		{
-			m_ReloadTimer = 25 * Server()->TickSpeed() / 1000;
+			m_ReloadTimer = 125 * Server()->TickSpeed() / 1000;
 			if (m_LastNoAmmoSound + Server()->TickSpeed() <= Server()->Tick())
 			{
 				GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO);
@@ -572,7 +572,7 @@ void CCharacter::Tick()
 	m_Core.m_Input = m_Input;
 	m_Core.Tick(true);
 
-	if (m_Core.IsInWater() || m_Core.m_DivingGear )
+	if (m_Core.IsInWater() && !m_Core.m_DivingGear )
 	{
 		if (m_BreathTick == -1)
 		{
@@ -583,7 +583,7 @@ void CCharacter::Tick()
 			m_BreathTick++;
 			if (m_BreathTick >= GameServer()->Tuning()->m_LiquidAirTicks.Get() / 100 && !(m_BreathTick % (GameServer()->Tuning()->m_LiquidTicksPerSuffocationDmg.Get() / 100 )))
 			{
-				TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 1, GetID(), WEAPON_SELF);
+				TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 1, this->GetPlayer()->GetCID(), WEAPON_WORLD);
 			}
 		}
 	}
