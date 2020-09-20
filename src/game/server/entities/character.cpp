@@ -113,6 +113,19 @@ bool CCharacter::IsGrounded()
 	return false;
 }
 
+bool CCharacter::HasDivingGear()
+{
+	if (m_Core.m_DivingGear)
+	{
+		return true;
+	}
+	return false;
+}
+
+void CCharacter::GiveDiving()
+{
+	m_Core.m_DivingGear = true;
+}
 
 void CCharacter::HandleNinja()
 {
@@ -284,6 +297,21 @@ void CCharacter::FireWeapon()
 			m_LastNoAmmoSound = Server()->Tick();
 		}
 		return;
+	}
+
+	if (m_Core.IsInWater())
+	{
+		if (m_ActiveWeapon >= WEAPON_GUN && m_ActiveWeapon < WEAPON_LASER)
+		{
+			m_ReloadTimer = 25 * Server()->TickSpeed() / 1000;
+			if (m_LastNoAmmoSound + Server()->TickSpeed() <= Server()->Tick())
+			{
+				GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO);
+				m_LastNoAmmoSound = Server()->Tick();
+			}
+			return;
+		}
+		
 	}
 
 	vec2 ProjStartPos = m_Pos+Direction*GetProximityRadius()*0.75f;
@@ -530,10 +558,37 @@ void CCharacter::ResetInput()
 	m_LatestPrevInput = m_LatestInput = m_Input;
 }
 
+int CCharacter::NumOfBreathBubbles()
+{
+	if (m_BreathTick == -1)
+	{
+		return -1;
+	}
+	return (int)ceil((((GameServer()->Tuning()->m_LiquidAirTicks.Get() / 100)- m_BreathTick )/ (GameServer()->Tuning()->m_LiquidTicksPerSuffocationDmg.Get() / 100) ));
+}
+
 void CCharacter::Tick()
 {
 	m_Core.m_Input = m_Input;
 	m_Core.Tick(true);
+
+	if (m_Core.IsInWater() || m_Core.m_DivingGear )
+	{
+		if (m_BreathTick == -1)
+		{
+			m_BreathTick =  0;
+		}
+		else
+		{
+			m_BreathTick++;
+			if (m_BreathTick >= GameServer()->Tuning()->m_LiquidAirTicks.Get() / 100 && !(m_BreathTick % (GameServer()->Tuning()->m_LiquidTicksPerSuffocationDmg.Get() / 100 )))
+			{
+				TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 1, GetID(), WEAPON_SELF);
+			}
+		}
+	}
+	else
+		m_BreathTick = -1;
 
 	// handle leaving gamelayer
 	if(GameLayerClipped(m_Pos))
@@ -842,6 +897,7 @@ void CCharacter::Snap(int SnappingClient)
 	pCharacter->m_Health = 0;
 	pCharacter->m_Armor = 0;
 	pCharacter->m_TriggeredEvents = m_TriggeredEvents;
+	pCharacter->m_BreathBubbles = NumOfBreathBubbles();
 
 	pCharacter->m_Weapon = m_ActiveWeapon;
 	pCharacter->m_AttackTick = m_AttackTick;

@@ -110,7 +110,16 @@ void CPickup::Tick()
 					pChr->SetEmote(EMOTE_ANGRY, Server()->Tick() + 1200 * Server()->TickSpeed() / 1000);
 					break;
 				}
-
+			case PICKUP_DIVING:
+				{
+					Picked = true;
+					pChr->GiveDiving();
+				}
+			case PICKUP_HARPOON:
+				{
+					if (pChr->GetPlayer())
+						GameServer()->SendWeaponPickup(pChr->GetPlayer()->GetCID(), WEAPON_HARPOON);
+				}
 			default:
 				break;
 		};

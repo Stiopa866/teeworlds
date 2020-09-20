@@ -33,6 +33,8 @@ public:
 	virtual void PostSnap();
 
 	bool IsGrounded();
+	bool HasDivingGear();
+	void GiveDiving();
 
 	void SetWeapon(int W);
 	void HandleWeaponSwitch();
@@ -45,6 +47,8 @@ public:
 	void OnDirectInput(CNetObj_PlayerInput *pNewInput);
 	void ResetInput();
 	void FireWeapon();
+
+	int NumOfBreathBubbles();
 
 	void Die(int Killer, int Weapon);
 	bool TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon);
@@ -69,6 +73,7 @@ private:
 
 	bool m_Alive;
 
+	int TicksInWater;
 	// weapon info
 	CEntity *m_apHitObjects[10];
 	int m_NumObjectsHit;
@@ -106,6 +111,7 @@ private:
 
 	int m_Health;
 	int m_Armor;
+	int m_BreathTick;
 
 	int m_TriggeredEvents;
 

@@ -358,6 +358,25 @@ void CCharacterCore::ResetDragVelocity()
 	m_HookDragVel = vec2(0,0);
 }
 
+void CCharacterCore::HandleWater(vec2 *NewPos)
+{
+	if (m_DivingGear)
+	{
+		return;
+	}
+	vec2 HandlePosition = *NewPos;
+	if (IsInWater())
+	{
+		m_Vel.y *= m_pWorld->m_Tuning.m_LiquidVerticalDecel;
+		m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushOut;
+		m_Vel.x *= m_pWorld->m_Tuning.m_LiquidHorizontalDecel;
+	}
+}
+
+bool CCharacterCore::IsInWater()
+{
+	return (m_pCollision->TestBox(vec2(m_Pos.x, m_Pos.y), vec2(PHYS_SIZE, PHYS_SIZE + 1.0f) * (2.0f / 3.0f), 8));
+}
 void CCharacterCore::Move()
 {
 	if(!m_pWorld)
@@ -369,6 +388,7 @@ void CCharacterCore::Move()
 
 	vec2 NewPos = m_Pos;
 	m_pCollision->MoveBox(&NewPos, &m_Vel, vec2(PHYS_SIZE, PHYS_SIZE), 0, &m_Death);
+	HandleWater(&NewPos);
 
 	m_Vel.x = m_Vel.x*(1.0f/RampValue);
 
@@ -421,6 +441,7 @@ void CCharacterCore::Write(CNetObj_CharacterCore *pObjCore) const
 	pObjCore->m_Jumped = m_Jumped;
 	pObjCore->m_Direction = m_Direction;
 	pObjCore->m_Angle = m_Angle;
+	pObjCore->m_DivingGear = m_DivingGear;
 }
 
 void CCharacterCore::Read(const CNetObj_CharacterCore *pObjCore)
@@ -439,6 +460,7 @@ void CCharacterCore::Read(const CNetObj_CharacterCore *pObjCore)
 	m_Jumped = pObjCore->m_Jumped;
 	m_Direction = pObjCore->m_Direction;
 	m_Angle = pObjCore->m_Angle;
+	m_DivingGear = pObjCore->m_DivingGear;
 }
 
 void CCharacterCore::Quantize()

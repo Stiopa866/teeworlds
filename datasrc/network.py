@@ -1,6 +1,6 @@
 from datatypes import *
 
-Pickups = Enum("PICKUP", ["HEALTH", "ARMOR", "GRENADE", "SHOTGUN", "LASER", "NINJA", "GUN", "HAMMER"])
+Pickups = Enum("PICKUP", ["HEALTH", "ARMOR", "GRENADE", "SHOTGUN", "LASER", "NINJA", "GUN", "HAMMER", "HARPOON", "DIVING" ])
 Emotes = Enum("EMOTE", ["NORMAL", "PAIN", "HAPPY", "SURPRISE", "ANGRY", "BLINK"])
 Emoticons = Enum("EMOTICON", ["OOP", "EXCLAMATION", "HEARTS", "DROP", "DOTDOT", "MUSIC", "SORRY", "GHOST", "SUSHI", "SPLATTEE", "DEVILTEE", "ZOMG", "ZZZ", "WTF", "EYES", "QUESTION"])
 Votes = Enum("VOTE", ["UNKNOWN", "START_OP", "START_KICK", "START_SPEC", "END_ABORT", "END_PASS", "END_FAIL"]) # todo 0.8: add RUN_OP, RUN_KICK, RUN_SPEC; rem UNKNOWN
@@ -167,6 +167,7 @@ Objects = [
 		NetIntAny("m_HookY"),
 		NetIntAny("m_HookDx"),
 		NetIntAny("m_HookDy"),
+                NetBool("m_DivingGear"),
 	]),
 
 	NetObject("Character:CharacterCore", [
@@ -177,6 +178,7 @@ Objects = [
 		NetEnum("m_Emote", Emotes),
 		NetTick("m_AttackTick"),
 		NetFlag("m_TriggeredEvents", CoreEventFlags),
+                NetIntAny("m_BreathBubbles"),
 	]),
 
 	NetObject("PlayerInfo", [

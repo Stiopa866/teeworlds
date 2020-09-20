@@ -669,7 +669,19 @@ void CHud::RenderHealthAndAmmo(const CNetObj_Character *pCharacter)
 	RenderTools()->SelectSprite(SPRITE_ARMOR_EMPTY);
 	for(; h < 10; h++)
 		Array[i++] = IGraphics::CQuadItem(x+h*12,y+12,12,12);
-	Graphics()->QuadsDrawTL(Array, i);
+		Graphics()->QuadsDrawTL(Array, i);
+	// render breath bubbles
+	if (pCharacter->m_BreathBubbles > -1)
+	{
+		h = 0;
+		RenderTools()->SelectSprite(SPRITE_BUBBLE);
+		for (; h < min(pCharacter->m_BreathBubbles, 10); h++)
+			Array[h] = IGraphics::CQuadItem(x + h * 12, y + 36, 12, 12);
+		Graphics()->QuadsDrawTL(Array, h);
+
+
+	}
+	//Graphics()->QuadsDrawTL(Array, i);
 	Graphics()->QuadsEnd();
 	Graphics()->WrapNormal();
 }

@@ -165,7 +165,7 @@ public:
 	int m_Angle;
 
 	bool m_Death;
-
+	bool m_DivingGear = false;
 	CNetObj_PlayerInput m_Input;
 
 	int m_TriggeredEvents;
@@ -177,10 +177,13 @@ public:
 
 	void AddDragVelocity();
 	void ResetDragVelocity();
+	void HandleWater(vec2* NewPos);
 
 	void Read(const CNetObj_CharacterCore *pObjCore);
 	void Write(CNetObj_CharacterCore *pObjCore) const;
 	void Quantize();
+
+	bool IsInWater();
 };
 
 #endif
