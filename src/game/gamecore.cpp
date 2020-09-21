@@ -106,21 +106,26 @@ void CCharacterCore::Tick(bool UseInput)
 		// handle jump
 		if(m_Input.m_Jump)
 		{
-			if(!(m_Jumped&1))
+			if (!IsInWater()||!m_DivingGear)
 			{
-				if(Grounded)
+				if (!(m_Jumped & 1))
 				{
-					m_TriggeredEvents |= COREEVENTFLAG_GROUND_JUMP;
-					m_Vel.y = -m_pWorld->m_Tuning.m_GroundJumpImpulse;
-					m_Jumped |= 1;
-				}
-				else if(!(m_Jumped&2))
-				{
-					m_TriggeredEvents |= COREEVENTFLAG_AIR_JUMP;
-					m_Vel.y = -m_pWorld->m_Tuning.m_AirJumpImpulse;
-					m_Jumped |= 3;
+					if (Grounded)
+					{
+						m_TriggeredEvents |= COREEVENTFLAG_GROUND_JUMP;
+						m_Vel.y = -m_pWorld->m_Tuning.m_GroundJumpImpulse;
+						m_Jumped |= 1;
+					}
+					else if (!(m_Jumped & 2))
+					{
+						m_TriggeredEvents |= COREEVENTFLAG_AIR_JUMP;
+						m_Vel.y = -m_pWorld->m_Tuning.m_AirJumpImpulse;
+						m_Jumped |= 3;
+					}
 				}
 			}
+			else
+				m_Vel.y = SaturatedAdd(-m_pWorld->m_Tuning.m_LiquidSwimmingTopAccel, 1.0f, m_Vel.y, -m_pWorld->m_Tuning.m_Gravity - m_pWorld->m_Tuning.m_LiquidSwimmingAccel);
 		}
 		else
 			m_Jumped &= ~1;

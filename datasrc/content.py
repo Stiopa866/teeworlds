@@ -568,6 +568,7 @@ container.sprites.Add(Sprite("browser_b", set_browsericon, 0,1,1,1))
 container.sprites.Add(Sprite("timerclock_a", set_timerclock, 0,0,1,1))
 container.sprites.Add(Sprite("timerclock_b", set_timerclock, 0,1,1,1))
 container.sprites.Add(Sprite("bubble", set_game, 14,2,2,2))
+container.sprites.Add(Sprite("diving_gear", set_game, 16,2,2,2))
 
 anim = Animation("base")
 anim.body.frames.Add(AnimKeyframe(0, 0, -4, 0))

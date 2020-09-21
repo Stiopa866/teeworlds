@@ -117,7 +117,9 @@ void CItems::RenderPickup(const CNetObj_Pickup *pPrev, const CNetObj_Pickup *pCu
 		SPRITE_PICKUP_LASER,
 		SPRITE_PICKUP_NINJA,
 		SPRITE_PICKUP_GUN,
-		SPRITE_PICKUP_HAMMER
+		SPRITE_PICKUP_HAMMER,
+		SPRITE_PICKUP_NINJA,
+		SPRITE_DIVING_GEAR
 		};
 	RenderTools()->SelectSprite(c[pCurrent->m_Type]);
 
