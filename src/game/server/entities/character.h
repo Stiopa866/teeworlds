@@ -49,6 +49,7 @@ public:
 	void FireWeapon();
 
 	int NumOfBreathBubbles();
+	int DivingBreathAmount();
 
 	void Die(int Killer, int Weapon);
 	bool TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon);

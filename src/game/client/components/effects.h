@@ -17,6 +17,7 @@ public:
 	void AirJump(vec2 Pos);
 	void DamageIndicator(vec2 Pos, int Amount);
 	void PowerupShine(vec2 Pos, vec2 Size);
+	void WaterBubble(vec2 Pos);
 	void SmokeTrail(vec2 Pos, vec2 Vel);
 	void SkidTrail(vec2 Pos, vec2 Vel);
 	void BulletTrail(vec2 Pos);

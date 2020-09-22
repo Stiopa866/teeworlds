@@ -102,6 +102,27 @@ void CEffects::PowerupShine(vec2 Pos, vec2 size)
 	m_pClient->m_pParticles->Add(CParticles::GROUP_GENERAL, &p);
 }
 
+void CEffects::WaterBubble(vec2 Pos)
+{
+	if (!m_Add50hz)
+		return;
+
+	CParticle p;
+	p.SetDefault();
+	p.m_Spr = SPRITE_PART_BUBBLE;
+	p.m_Pos = Pos + vec2((frandom() - 0.5f)*10, (frandom() - 0.5f)*10);
+	p.m_Vel = vec2(0, 0);
+	p.m_LifeSpan = frandom()*2;
+	p.m_StartSize = 16.0f + frandom()*5;
+	p.m_EndSize = 16.0f - frandom()*10;
+	p.m_Rot = 0;
+	p.m_Rotspeed = 0;
+	p.m_Gravity = -300;
+	p.m_Friction = 0.9f;
+	p.m_FlowAffected = 0.0f;
+	m_pClient->m_pParticles->Add(CParticles::GROUP_GENERAL, &p);
+}
+
 void CEffects::SmokeTrail(vec2 Pos, vec2 Vel)
 {
 	if(!m_Add50hz)

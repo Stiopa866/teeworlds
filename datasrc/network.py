@@ -179,6 +179,7 @@ Objects = [
 		NetTick("m_AttackTick"),
 		NetFlag("m_TriggeredEvents", CoreEventFlags),
                 NetIntAny("m_BreathBubbles"),
+                NetIntAny("m_DivingBreath"),
 	]),
 
 	NetObject("PlayerInfo", [

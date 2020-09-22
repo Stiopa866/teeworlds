@@ -30,6 +30,7 @@ MACRO_TUNING_PARAM(LiquidPushOut, liq_push_out, 1.0f)
 //liquid physics diving
 MACRO_TUNING_PARAM(LiquidSwimmingAccel, liq_swim_accel, 0.5f)
 MACRO_TUNING_PARAM(LiquidSwimmingTopAccel, liq_swim_accel_top, 20.0f)
+MACRO_TUNING_PARAM(LiquidDivingGearBreath, liq_div_gear_air_tick, 3000)
 //liquid physics general
 MACRO_TUNING_PARAM(LiquidRequireDivingGear, liq_req_div_gear, 1)
 MACRO_TUNING_PARAM(LiquidAirTicks, liq_air_tick, 500)

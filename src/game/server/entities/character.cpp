@@ -564,7 +564,33 @@ int CCharacter::NumOfBreathBubbles()
 	{
 		return -1;
 	}
-	return (int)ceil((((GameServer()->Tuning()->m_LiquidAirTicks.Get() / 100)- m_BreathTick )/ (GameServer()->Tuning()->m_LiquidTicksPerSuffocationDmg.Get() / 100) ));
+	if (HasDivingGear() && GameServer()->Tuning()->m_LiquidDivingGearBreath)
+	{
+		return -1;
+	}
+	int NumOfBreathBubbles = (int)ceil(((GameServer()->Tuning()->m_LiquidAirTicks.Get() / 100.0f) - m_BreathTick) /(GameServer()->Tuning()->m_LiquidAirTicks.Get() / 1000.0f));
+	if (NumOfBreathBubbles < 0)
+	{
+		return -1;
+	}
+	return NumOfBreathBubbles;
+}
+int CCharacter::DivingBreathAmount()
+{
+	if (m_BreathTick == -1)
+	{
+		return -1;
+	}
+	if (!GameServer()->Tuning()->m_LiquidDivingGearBreath||!HasDivingGear())
+	{
+		return -1;
+	}
+	int Progress = (((GameServer()->Tuning()->m_LiquidDivingGearBreath.Get() / 100.0f) - m_BreathTick) / (GameServer()->Tuning()->m_LiquidDivingGearBreath.Get() / 100.0f)) * 100;
+	if (Progress < 0)
+	{
+		return -1;
+	}
+	return Progress;
 }
 
 void CCharacter::Tick()
@@ -572,7 +598,7 @@ void CCharacter::Tick()
 	m_Core.m_Input = m_Input;
 	m_Core.Tick(true);
 
-	if (m_Core.IsInWater() && !m_Core.m_DivingGear )
+	if (m_Core.IsInWater() && (GameServer()->Tuning()->m_LiquidDivingGearBreath||(!GameServer()->Tuning()->m_LiquidDivingGearBreath&&!HasDivingGear())))
 	{
 		if (m_BreathTick == -1)
 		{
@@ -581,9 +607,25 @@ void CCharacter::Tick()
 		else
 		{
 			m_BreathTick++;
-			if (m_BreathTick >= GameServer()->Tuning()->m_LiquidAirTicks.Get() / 100 && !(m_BreathTick % (GameServer()->Tuning()->m_LiquidTicksPerSuffocationDmg.Get() / 100 )))
+			int TickLimit;
+			if (HasDivingGear())
 			{
-				TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 1, this->GetPlayer()->GetCID(), WEAPON_WORLD);
+				TickLimit = GameServer()->Tuning()->m_LiquidDivingGearBreath.Get()/100;
+			}
+			else
+			{
+				TickLimit = GameServer()->Tuning()->m_LiquidAirTicks.Get()/100;
+			}
+			if (m_BreathTick > TickLimit)
+			{
+				if (!GameServer()->Tuning()->m_LiquidTicksPerSuffocationDmg.Get())
+				{
+					TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 1, GetPlayer()->GetCID(), WEAPON_WORLD); //works as if the tick delay was 1
+				}
+				else if(!(m_BreathTick % (GameServer()->Tuning()->m_LiquidTicksPerSuffocationDmg.Get() / 100)))
+				{
+					TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 1, GetPlayer()->GetCID(), WEAPON_WORLD);
+				}
 			}
 		}
 	}
@@ -898,6 +940,7 @@ void CCharacter::Snap(int SnappingClient)
 	pCharacter->m_Armor = 0;
 	pCharacter->m_TriggeredEvents = m_TriggeredEvents;
 	pCharacter->m_BreathBubbles = NumOfBreathBubbles();
+	pCharacter->m_DivingBreath = DivingBreathAmount();
 
 	pCharacter->m_Weapon = m_ActiveWeapon;
 	pCharacter->m_AttackTick = m_AttackTick;

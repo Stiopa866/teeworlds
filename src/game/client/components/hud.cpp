@@ -605,6 +605,75 @@ void CHud::RenderNinjaBar(float x, float y, float Progress)
 	Graphics()->QuadsDrawTL(&QuadEndEmpty, 1);
 }
 
+void CHud::RenderDivingGearBar(float x, float y, float Progress)
+{
+	Progress = clamp(Progress, 0.0f, 1.0f);
+	const float EndWidth = 6.0f;
+	const float BarHeight = 12.0f;
+	const float WholeBarWidth = 120.f;
+	const float MiddleBarWidth = WholeBarWidth - (EndWidth * 2.0f);
+
+	IGraphics::CQuadItem QuadStartFull(x, y, EndWidth, BarHeight);
+	RenderTools()->SelectSprite(&g_pData->m_aSprites[SPRITE_DIVING_BAR_FULL_LEFT]);
+	Graphics()->QuadsDrawTL(&QuadStartFull, 1);
+	x += EndWidth;
+
+	const float FullBarWidth = MiddleBarWidth * Progress;
+	const float EmptyBarWidth = MiddleBarWidth - FullBarWidth;
+
+	// full bar
+	IGraphics::CQuadItem QuadFull(x, y, FullBarWidth, BarHeight);
+
+	CDataSprite SpriteBarFull = g_pData->m_aSprites[SPRITE_DIVING_BAR_FULL];
+	// prevent pixel puree, select only a small slice
+	if (Progress < 0.1f)
+	{
+		int spx = SpriteBarFull.m_X;
+		int spy = SpriteBarFull.m_Y;
+		float w = SpriteBarFull.m_W * 0.1f; // magic here
+		int h = SpriteBarFull.m_H;
+		int cx = SpriteBarFull.m_pSet->m_Gridx;
+		int cy = SpriteBarFull.m_pSet->m_Gridy;
+		float x1 = spx / (float)cx;
+		float x2 = (spx + w - 1 / 32.0f) / (float)cx;
+		float y1 = spy / (float)cy;
+		float y2 = (spy + h - 1 / 32.0f) / (float)cy;
+
+		Graphics()->QuadsSetSubset(x1, y1, x2, y2);
+	}
+	else
+		RenderTools()->SelectSprite(&SpriteBarFull);
+
+	Graphics()->QuadsDrawTL(&QuadFull, 1);
+
+	// empty bar
+	// select the middle portion of the sprite so we don't get edge bleeding
+	const CDataSprite SpriteBarEmpty = g_pData->m_aSprites[SPRITE_DIVING_BAR_EMPTY];
+	{
+		float spx = SpriteBarEmpty.m_X + 0.1f;
+		float spy = SpriteBarEmpty.m_Y;
+		float w = SpriteBarEmpty.m_W * 0.5f;
+		int h = SpriteBarEmpty.m_H;
+		int cx = SpriteBarEmpty.m_pSet->m_Gridx;
+		int cy = SpriteBarEmpty.m_pSet->m_Gridy;
+		float x1 = spx / (float)cx;
+		float x2 = (spx + w - 1 / 32.0f) / (float)cx;
+		float y1 = spy / (float)cy;
+		float y2 = (spy + h - 1 / 32.0f) / (float)cy;
+
+		Graphics()->QuadsSetSubset(x1, y1, x2, y2);
+	}
+
+	IGraphics::CQuadItem QuadEmpty(x + FullBarWidth, y, EmptyBarWidth, BarHeight);
+	Graphics()->QuadsDrawTL(&QuadEmpty, 1);
+
+	x += MiddleBarWidth;
+
+	IGraphics::CQuadItem QuadEndEmpty(x, y, EndWidth, BarHeight);
+	RenderTools()->SelectSprite(&g_pData->m_aSprites[SPRITE_DIVING_BAR_EMPTY_RIGHT]);
+	Graphics()->QuadsDrawTL(&QuadEndEmpty, 1);
+}
+
 void CHud::RenderHealthAndAmmo(const CNetObj_Character *pCharacter)
 {
 	if(!pCharacter)
@@ -680,6 +749,10 @@ void CHud::RenderHealthAndAmmo(const CNetObj_Character *pCharacter)
 		Graphics()->QuadsDrawTL(Array, h);
 
 
+	}
+	if (pCharacter->m_DivingBreath > -1)
+	{
+		RenderDivingGearBar(x, y + 36, (float)pCharacter->m_DivingBreath / 100);
 	}
 	//Graphics()->QuadsDrawTL(Array, i);
 	Graphics()->QuadsEnd();

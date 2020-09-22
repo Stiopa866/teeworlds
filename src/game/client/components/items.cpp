@@ -282,6 +282,14 @@ void CItems::RenderLaser(const struct CNetObj_Laser *pCurrent)
 	Graphics()->BlendNormal();
 }
 
+void CItems::RenderPlayer(const CNetObj_Character* pCurrent)
+{
+	if (!(random_int() % 20))
+	{
+		if(pCurrent->m_BreathBubbles!=-1||pCurrent->m_DivingBreath!=-1)
+			m_pClient->m_pEffects->WaterBubble(vec2(pCurrent->m_X,pCurrent->m_Y));
+	}
+}
 void CItems::OnRender()
 {
 	if(Client()->State() < IClient::STATE_ONLINE)
@@ -307,6 +315,12 @@ void CItems::OnRender()
 		{
 			RenderLaser((const CNetObj_Laser *)pData);
 		}
+		else if (Item.m_Type == NETOBJTYPE_CHARACTER)
+		{
+			
+			RenderPlayer((const CNetObj_Character*)pData);
+		}
+
 	}
 
 	// render flag
