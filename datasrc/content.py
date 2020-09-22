@@ -145,6 +145,13 @@ class Weapon_Ninja(Struct):
 		self.duration = Int(15000)
 		self.movetime = Int(200)
 		self.velocity = Int(50)
+class Weapon_Harpoon(Struct):
+	def __init__(self):
+		Struct.__init__(self, "CDataWeaponspecHarpoon")
+		self.base = Pointer(WeaponSpec, WeaponSpec())
+		self.curvature = Float(7.0)
+		self.speed = Float(3000)
+		self.lifetime = Float(10.0)
 
 class Weapons(Struct):
 	def __init__(self):
@@ -155,6 +162,7 @@ class Weapons(Struct):
 		self.grenade = Weapon_Grenade()
 		self.laser = Weapon_Laser()
 		self.ninja = Weapon_Ninja()
+		self.harpoon = Weapon_Harpoon()
 		self.id = Array(WeaponSpec())
 
 class Explosion(Struct):
@@ -391,6 +399,10 @@ container.sprites.Add(Sprite("weapon_shotgun_muzzle3", set_game, 20,6,3,2))
 container.sprites.Add(Sprite("weapon_grenade_body", set_game, 2,8,7,2))
 container.sprites.Add(Sprite("weapon_grenade_cursor", set_game, 0,8,2,2))
 container.sprites.Add(Sprite("weapon_grenade_proj", set_game, 10,8,2,2))
+
+container.sprites.Add(Sprite("weapon_harpoon_body", set_game, 2,8,7,2))
+container.sprites.Add(Sprite("weapon_harpoon_cursor", set_game, 0,8,2,2))
+container.sprites.Add(Sprite("weapon_harpoon_proj", set_game, 10,8,2,2))
 
 container.sprites.Add(Sprite("weapon_hammer_body", set_game, 2,1,4,3))
 container.sprites.Add(Sprite("weapon_hammer_cursor", set_game, 0,0,2,2))
@@ -690,4 +702,15 @@ weapon.offsety.Set(0)
 weapon.muzzleoffsetx.Set(40)
 weapon.muzzleoffsety.Set(-4)
 container.weapons.ninja.base.Set(weapon)
+container.weapons.id.Add(weapon)
+
+weapon = WeaponSpec(container, "harpoon")
+weapon.firedelay.Set(800)
+weapon.damage.Set(4)
+weapon.visual_size.Set(96)
+weapon.offsetx.Set(0)
+weapon.offsety.Set(0)
+weapon.muzzleoffsetx.Set(40)
+weapon.muzzleoffsety.Set(-4)
+container.weapons.harpoon.base.Set(weapon)
 container.weapons.id.Add(weapon)

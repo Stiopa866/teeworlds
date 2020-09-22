@@ -114,11 +114,14 @@ void CPickup::Tick()
 				{
 					Picked = true;
 					pChr->GiveDiving();
+					break;
 				}
 			case PICKUP_HARPOON:
 				{
+					GameServer()->CreateSound(m_Pos, SOUND_PICKUP_SHOTGUN);
 					if (pChr->GetPlayer())
 						GameServer()->SendWeaponPickup(pChr->GetPlayer()->GetCID(), WEAPON_HARPOON);
+					break;
 				}
 			default:
 				break;
