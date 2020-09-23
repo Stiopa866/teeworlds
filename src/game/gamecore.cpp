@@ -78,6 +78,42 @@ void CCharacterCore::Reset()
 	m_Death = false;
 }
 
+void CCharacterCore::HandleSwimming(vec2 TargetDirection)
+{
+	vec2 ProposedVel, MaxSpeed;
+	MaxSpeed.x = TargetDirection.x * m_pWorld->m_Tuning.m_LiquidDivingCursorMaxSpeed;
+	MaxSpeed.y = TargetDirection.y * m_pWorld->m_Tuning.m_LiquidDivingCursorMaxSpeed;
+	ProposedVel.x = m_Vel.x + TargetDirection.x;
+	ProposedVel.y = m_Vel.y + TargetDirection.y;
+	if (TargetDirection.x > 0)
+	{
+		if (!(m_Vel.x > MaxSpeed.x))
+		{
+			m_Vel.x = clamp(ProposedVel.x, -100.0f, MaxSpeed.x);
+		}
+	}
+	else if (TargetDirection.x < 0)
+	{
+		if (!(m_Vel.x < MaxSpeed.x))
+		{
+			m_Vel.x = clamp(ProposedVel.x, MaxSpeed.x, 100.0f);
+		}
+	}
+	if (TargetDirection.y > 0)
+	{
+		if (!(m_Vel.y > MaxSpeed.y))
+		{
+			m_Vel.y = clamp(ProposedVel.y, -100.0f, MaxSpeed.y);
+		}
+	}
+	else if (TargetDirection.y < 0)
+	{
+		if (!(m_Vel.y < MaxSpeed.y))
+		{
+			m_Vel.y = clamp(ProposedVel.y, MaxSpeed.y, 100.0f);
+		}
+	}
+}
 void CCharacterCore::Tick(bool UseInput)
 {
 	m_TriggeredEvents = 0;
@@ -91,7 +127,8 @@ void CCharacterCore::Tick(bool UseInput)
 
 	vec2 TargetDirection = normalize(vec2(m_Input.m_TargetX, m_Input.m_TargetY));
 
-	m_Vel.y += m_pWorld->m_Tuning.m_Gravity;
+	if(!(IsInWater()&&m_DivingGear&& m_pWorld->m_Tuning.m_LiquidDivingCursor&& UseInput))
+		m_Vel.y += m_pWorld->m_Tuning.m_Gravity;
 
 	float MaxSpeed = Grounded ? m_pWorld->m_Tuning.m_GroundControlSpeed : m_pWorld->m_Tuning.m_AirControlSpeed;
 	float Accel = Grounded ? m_pWorld->m_Tuning.m_GroundControlAccel : m_pWorld->m_Tuning.m_AirControlAccel;
@@ -125,7 +162,15 @@ void CCharacterCore::Tick(bool UseInput)
 				}
 			}
 			else
-				m_Vel.y = SaturatedAdd(-m_pWorld->m_Tuning.m_LiquidSwimmingTopAccel, 1.0f, m_Vel.y, -m_pWorld->m_Tuning.m_Gravity - m_pWorld->m_Tuning.m_LiquidSwimmingAccel);
+			{
+				if (m_pWorld->m_Tuning.m_LiquidDivingCursor)
+				{
+					HandleSwimming(TargetDirection);
+					
+				}
+				else
+					m_Vel.y = SaturatedAdd(-m_pWorld->m_Tuning.m_LiquidSwimmingTopAccel, 1.0f, m_Vel.y, -m_pWorld->m_Tuning.m_Gravity - m_pWorld->m_Tuning.m_LiquidSwimmingAccel);
+			}
 		}
 		else
 			m_Jumped &= ~1;
@@ -152,12 +197,15 @@ void CCharacterCore::Tick(bool UseInput)
 	}
 
 	// add the speed modification according to players wanted direction
-	if(m_Direction < 0)
-		m_Vel.x = SaturatedAdd(-MaxSpeed, MaxSpeed, m_Vel.x, -Accel);
-	if(m_Direction > 0)
-		m_Vel.x = SaturatedAdd(-MaxSpeed, MaxSpeed, m_Vel.x, Accel);
-	if(m_Direction == 0)
-		m_Vel.x *= Friction;
+	if (!(IsInWater() && m_pWorld->m_Tuning.m_LiquidDivingCursor && m_DivingGear && m_Input.m_Jump && UseInput))
+	{
+		if (m_Direction < 0)
+			m_Vel.x = SaturatedAdd(-MaxSpeed, MaxSpeed, m_Vel.x, -Accel);
+		if (m_Direction > 0)
+			m_Vel.x = SaturatedAdd(-MaxSpeed, MaxSpeed, m_Vel.x, Accel);
+		if (m_Direction == 0)
+			m_Vel.x *= Friction;
+	}
 
 	// handle jumping
 	// 1 bit = to keep track if a jump has been made on this input
@@ -343,7 +391,7 @@ void CCharacterCore::Tick(bool UseInput)
 			}
 		}
 	}
-
+	HandleWater(UseInput);
 	// clamp the velocity to something sane
 	if(length(m_Vel) > 6000)
 		m_Vel = normalize(m_Vel) * 6000;
@@ -363,19 +411,22 @@ void CCharacterCore::ResetDragVelocity()
 	m_HookDragVel = vec2(0,0);
 }
 
-void CCharacterCore::HandleWater(vec2 *NewPos)
+void CCharacterCore::HandleWater(bool UseInput)
 {
+	if (!IsInWater())
+		return;
 	if (m_DivingGear)
 	{
+		if (m_pWorld->m_Tuning.m_LiquidDivingCursor && (!m_Input.m_Jump || !UseInput))
+		{
+			m_Vel.y *= m_pWorld->m_Tuning.m_LiquidVerticalDecel;
+			m_Vel.x *= m_pWorld->m_Tuning.m_LiquidHorizontalDecel;
+		}
 		return;
 	}
-	vec2 HandlePosition = *NewPos;
-	if (IsInWater())
-	{
-		m_Vel.y *= m_pWorld->m_Tuning.m_LiquidVerticalDecel;
-		m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushOut;
-		m_Vel.x *= m_pWorld->m_Tuning.m_LiquidHorizontalDecel;
-	}
+	m_Vel.y *= m_pWorld->m_Tuning.m_LiquidVerticalDecel;
+	m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushOut;
+	m_Vel.x *= m_pWorld->m_Tuning.m_LiquidHorizontalDecel;
 }
 
 bool CCharacterCore::IsInWater()
@@ -393,7 +444,7 @@ void CCharacterCore::Move()
 
 	vec2 NewPos = m_Pos;
 	m_pCollision->MoveBox(&NewPos, &m_Vel, vec2(PHYS_SIZE, PHYS_SIZE), 0, &m_Death);
-	HandleWater(&NewPos);
+	
 
 	m_Vel.x = m_Vel.x*(1.0f/RampValue);
 

@@ -177,7 +177,8 @@ public:
 
 	void AddDragVelocity();
 	void ResetDragVelocity();
-	void HandleWater(vec2* NewPos);
+	void HandleWater(bool UseInput);
+	void HandleSwimming(vec2 TargetDirection);
 
 	void Read(const CNetObj_CharacterCore *pObjCore);
 	void Write(CNetObj_CharacterCore *pObjCore) const;
