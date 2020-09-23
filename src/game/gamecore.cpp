@@ -415,6 +415,7 @@ void CCharacterCore::HandleWater(bool UseInput)
 {
 	if (!IsInWater())
 		return;
+	m_Jumped = 1;
 	if (m_DivingGear)
 	{
 		if (m_pWorld->m_Tuning.m_LiquidDivingCursor && (!m_Input.m_Jump || !UseInput))

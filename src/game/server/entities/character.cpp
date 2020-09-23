@@ -560,7 +560,7 @@ void CCharacter::ResetInput()
 
 int CCharacter::NumOfBreathBubbles()
 {
-	if (m_BreathTick == -1)
+	if (m_BreathTick <= 5) //magic floating tee number that won't make it flick
 	{
 		return -1;
 	}
