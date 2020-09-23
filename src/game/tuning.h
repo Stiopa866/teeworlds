@@ -24,9 +24,9 @@ MACRO_TUNING_PARAM(VelrampRange, velramp_range, 2000)
 MACRO_TUNING_PARAM(VelrampCurvature, velramp_curvature, 1.4f)
 
 //liquid physics nondiving
-MACRO_TUNING_PARAM(LiquidHorizontalDecel, liq_x_decel, 0.9)
-MACRO_TUNING_PARAM(LiquidVerticalDecel, liq_y_decel, 0.9)
-MACRO_TUNING_PARAM(LiquidPushOut, liq_push_out, 1.0f)
+MACRO_TUNING_PARAM(LiquidHorizontalDecel, liq_x_decel, 0.95)
+MACRO_TUNING_PARAM(LiquidVerticalDecel, liq_y_decel, 0.95)
+MACRO_TUNING_PARAM(LiquidPushOut, liq_push_out, 0.7f)
 //liquid physics diving
 MACRO_TUNING_PARAM(LiquidSwimmingAccel, liq_swim_accel, 0.5f)
 MACRO_TUNING_PARAM(LiquidSwimmingTopAccel, liq_swim_accel_top, 20.0f)
@@ -36,7 +36,7 @@ MACRO_TUNING_PARAM(LiquidDivingCursorMaxSpeed, liq_div_gear_curs_swim_max_speed,
 //liquid physics general
 MACRO_TUNING_PARAM(LiquidRequireDivingGear, liq_req_div_gear, 1)
 MACRO_TUNING_PARAM(LiquidAirTicks, liq_air_tick, 500)
-MACRO_TUNING_PARAM(LiquidTicksPerSuffocationDmg, liq_suff_dmg_delay, 50)
+MACRO_TUNING_PARAM(LiquidTicksPerSuffocationDmg, liq_suff_dmg_delay, 15)
 MACRO_TUNING_PARAM(LiquidWeaponInvalidation, liq_inval_weapon, 1)
 // weapon tuning
 MACRO_TUNING_PARAM(GunCurvature, gun_curvature, 1.25f)
