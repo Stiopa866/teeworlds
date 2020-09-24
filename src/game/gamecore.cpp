@@ -127,7 +127,7 @@ void CCharacterCore::Tick(bool UseInput)
 
 	vec2 TargetDirection = normalize(vec2(m_Input.m_TargetX, m_Input.m_TargetY));
 
-	if(!(IsInWater()&&m_DivingGear&& m_pWorld->m_Tuning.m_LiquidDivingCursor&& UseInput))
+	if(!(IsInWater()&&m_DivingGear))
 		m_Vel.y += m_pWorld->m_Tuning.m_Gravity;
 
 	float MaxSpeed = Grounded ? m_pWorld->m_Tuning.m_GroundControlSpeed : m_pWorld->m_Tuning.m_AirControlSpeed;
