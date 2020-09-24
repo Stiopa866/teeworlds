@@ -52,6 +52,30 @@ void CCollision::Init(class CLayers *pLayers)
 			m_pTiles[i].m_Index = 0;
 		}
 	}
+	if (m_pLayers->HasWaterLayer)
+	{
+		m_pLayers = pLayers;
+		m_Width = m_pLayers->GameLayerWater()->m_Width;
+		m_Height = m_pLayers->GameLayerWater()->m_Height;
+		m_pTiles = static_cast<CTile*>(m_pLayers->Map()->GetData(m_pLayers->GameLayerWater()->m_Data));
+
+		for (int i = 0; i < m_Width * m_Height; i++)
+		{
+			int Index = m_pTiles[i].m_Index;
+
+			if (Index > 128)
+				continue;
+
+			switch (Index)
+			{
+			case TILE_SOLID:
+				m_pTiles[i].m_Index |= COLFLAG_WATER;
+				break;
+			default:
+				m_pTiles[i].m_Index = 0;
+			}
+		}
+	}
 }
 
 int CCollision::GetTile(int x, int y) const

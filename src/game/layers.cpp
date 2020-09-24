@@ -34,30 +34,45 @@ void CLayers::Init(class IKernel *pKernel, IMap *pMap)
 					m_pGameLayer = pTilemap;
 					m_pGameGroup = pGroup;
 
-					// make sure the game group has standard settings
-					m_pGameGroup->m_OffsetX = 0;
-					m_pGameGroup->m_OffsetY = 0;
-					m_pGameGroup->m_ParallaxX = 100;
-					m_pGameGroup->m_ParallaxY = 100;
-
-					if(m_pGameGroup->m_Version >= 2)
-					{
-						m_pGameGroup->m_UseClipping = 0;
-						m_pGameGroup->m_ClipX = 0;
-						m_pGameGroup->m_ClipY = 0;
-						m_pGameGroup->m_ClipW = 0;
-						m_pGameGroup->m_ClipH = 0;
-					}
+					SyncStandardSettings(m_pGameGroup);
 
 					break;
 				}
+				else if (pTilemap->m_Flags & TILESLAYERFLAG_WATER)
+				{
+					m_pGameLayerWater = pTilemap;
+					m_pGameGroupWater = pGroup;
+
+					HasWaterLayer = true;
+					// make sure the game group has standard settings
+					SyncStandardSettings(m_pGameGroupWater);
+					
+					break;
+				}
 			}
+
 		}
 	}
 
 	InitTilemapSkip();
 }
 
+void CLayers::SyncStandardSettings(CMapItemGroup* m_pGameGroup)
+{
+	m_pGameGroup->m_OffsetX = 0;
+	m_pGameGroup->m_OffsetY = 0;
+	m_pGameGroup->m_ParallaxX = 100;
+	m_pGameGroup->m_ParallaxY = 100;
+
+	if (m_pGameGroup->m_Version >= 2)
+	{
+		m_pGameGroup->m_UseClipping = 0;
+		m_pGameGroup->m_ClipX = 0;
+		m_pGameGroup->m_ClipY = 0;
+		m_pGameGroup->m_ClipW = 0;
+		m_pGameGroup->m_ClipH = 0;
+	}
+}
 void CLayers::InitTilemapSkip()
 {
 	for(int g = 0; g < NumGroups(); g++)
