@@ -1801,11 +1801,10 @@ void CEditor::DoMapEditor(CUIRect View, CUIRect ToolBar)
 		}
 
 		// render the game above everything else
-		if(m_Map.m_pGameGroup->m_Visible && m_Map.m_pGameLayer->m_Visible && m_Map.m_pWaterLayer->m_Visible)
+		if(m_Map.m_pGameGroup->m_Visible && m_Map.m_pGameLayer->m_Visible)
 		{
 			m_Map.m_pGameGroup->MapScreen();
 			m_Map.m_pGameLayer->Render();
-			m_Map.m_pWaterLayer->Render();
 		}
 
 		CLayerTiles *pT = static_cast<CLayerTiles *>(GetSelectedLayerType(0, LAYERTYPE_TILES));
@@ -4444,9 +4443,9 @@ void CEditorMap::MakeGameLayer(CLayer *pLayer)
 
 void CEditorMap::MakeWaterLayer(CLayer* pLayer)
 {
-	m_pWaterLayer = (CLayerWater*)pLayer;
+	m_pWaterLayer = (CLayerGame*)pLayer;
 	m_pWaterLayer->m_pEditor = m_pEditor;
-	m_pWaterLayer->m_Texture = m_pEditor->m_WaterTexture;
+	m_pWaterLayer->m_Texture = m_pEditor->m_EntitiesTexture;
 }
 void CEditorMap::MakeGameGroup(CLayerGroup *pGroup)
 {
@@ -4467,7 +4466,6 @@ void CEditorMap::Clean()
 
 	m_pGameLayer = 0x0;
 	m_pGameGroup = 0x0;
-	m_pWaterLayer = 0x0;
 
 	m_Modified = false;
 }
@@ -4500,8 +4498,6 @@ void CEditorMap::CreateDefault()
 	MakeGameGroup(NewGroup());
 	MakeGameLayer(new CLayerGame(50, 50));
 	m_pGameGroup->AddLayer(m_pGameLayer);
-	MakeWaterLayer(new CLayerWater(50, 50));
-	m_pGameGroup->AddLayer(m_pWaterLayer);
 }
 
 void CEditor::Init()
@@ -4521,7 +4517,6 @@ void CEditor::Init()
 	m_BackgroundTexture = Graphics()->LoadTexture("editor/background.png", IStorage::TYPE_ALL, CImageInfo::FORMAT_AUTO, 0);
 	m_CursorTexture = Graphics()->LoadTexture("editor/cursor.png", IStorage::TYPE_ALL, CImageInfo::FORMAT_AUTO, 0);
 	m_EntitiesTexture = Graphics()->LoadTexture("editor/entities.png", IStorage::TYPE_ALL, CImageInfo::FORMAT_AUTO, IGraphics::TEXLOAD_MULTI_DIMENSION);
-	m_WaterTexture = Graphics()->LoadTexture("editor/water.png", IStorage::TYPE_ALL, CImageInfo::FORMAT_AUTO, IGraphics::TEXLOAD_MULTI_DIMENSION);
 
 	m_TilesetPicker.m_pEditor = this;
 	m_TilesetPicker.MakePalette();
