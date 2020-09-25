@@ -130,7 +130,8 @@ void CCharacterCore::Tick(bool UseInput)
 	if(!(IsInWater()&&m_DivingGear))
 		m_Vel.y += m_pWorld->m_Tuning.m_Gravity;
 	else
-		m_Vel.y += 0.05 * m_pWorld->m_Tuning.m_Gravity;
+		m_Vel.y += 0.1f * m_pWorld->m_Tuning.m_Gravity;
+		
 	float MaxSpeed = Grounded ? m_pWorld->m_Tuning.m_GroundControlSpeed : m_pWorld->m_Tuning.m_AirControlSpeed;
 	float Accel = Grounded ? m_pWorld->m_Tuning.m_GroundControlAccel : m_pWorld->m_Tuning.m_AirControlAccel;
 	float Friction = Grounded ? m_pWorld->m_Tuning.m_GroundFriction : m_pWorld->m_Tuning.m_AirFriction;
