@@ -4441,12 +4441,6 @@ void CEditorMap::MakeGameLayer(CLayer *pLayer)
 	m_pGameLayer->m_Texture = m_pEditor->m_EntitiesTexture;
 }
 
-void CEditorMap::MakeWaterLayer(CLayer* pLayer)
-{
-	m_pWaterLayer = (CLayerGame*)pLayer;
-	m_pWaterLayer->m_pEditor = m_pEditor;
-	m_pWaterLayer->m_Texture = m_pEditor->m_EntitiesTexture;
-}
 void CEditorMap::MakeGameGroup(CLayerGroup *pGroup)
 {
 	m_pGameGroup = pGroup;
