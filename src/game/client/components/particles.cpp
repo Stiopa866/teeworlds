@@ -106,27 +106,58 @@ void CParticles::Update(float TimePassed)
 
 			m_aParticles[i].m_Life += TimePassed;
 			m_aParticles[i].m_Rot += TimePassed * m_aParticles[i].m_Rotspeed;
-
 			// check particle death
 			if(m_aParticles[i].m_Life > m_aParticles[i].m_LifeSpan)
 			{
-				// remove it from the group list
-				if(m_aParticles[i].m_PrevPart != -1)
-					m_aParticles[m_aParticles[i].m_PrevPart].m_NextPart = m_aParticles[i].m_NextPart;
+				if (m_aParticles[i].m_BubbleStage)
+				{
+					m_aParticles[i].m_BubbleStage--;
+					switch (m_aParticles[i].m_BubbleStage)
+					{
+					case 3:
+						m_aParticles[i].m_Spr = SPRITE_PART_BUBBLE1;
+						m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.2f;
+						break;
+					case 2:
+						m_aParticles[i].m_Spr = SPRITE_PART_BUBBLE2;
+						m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.2f;
+						break;
+					case 1:
+						m_aParticles[i].m_Spr = SPRITE_PART_BUBBLE3;
+						m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.2f;
+						break;
+					case 0:
+						m_aParticles[i].m_Spr = SPRITE_PART_BUBBLE4;
+						m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.2f;
+						break;
+					default:
+						break;
+					}
+				}
 				else
-					m_aFirstPart[g] = m_aParticles[i].m_NextPart;
+				{
+					// remove it from the group list
+					if (m_aParticles[i].m_PrevPart != -1)
+						m_aParticles[m_aParticles[i].m_PrevPart].m_NextPart = m_aParticles[i].m_NextPart;
+					else
+						m_aFirstPart[g] = m_aParticles[i].m_NextPart;
 
-				if(m_aParticles[i].m_NextPart != -1)
-					m_aParticles[m_aParticles[i].m_NextPart].m_PrevPart = m_aParticles[i].m_PrevPart;
+					if (m_aParticles[i].m_NextPart != -1)
+						m_aParticles[m_aParticles[i].m_NextPart].m_PrevPart = m_aParticles[i].m_PrevPart;
 
-				// insert to the free list
-				if(m_FirstFree != -1)
-					m_aParticles[m_FirstFree].m_PrevPart = i;
-				m_aParticles[i].m_PrevPart = -1;
-				m_aParticles[i].m_NextPart = m_FirstFree;
-				m_FirstFree = i;
+					// insert to the free list
+					if (m_FirstFree != -1)
+						m_aParticles[m_FirstFree].m_PrevPart = i;
+					m_aParticles[i].m_PrevPart = -1;
+					m_aParticles[i].m_NextPart = m_FirstFree;
+					m_FirstFree = i;
+				}
 			}
-
+			else if(m_aParticles[i].m_BubbleStage == 4 && !Collision()->TestBox(m_aParticles[i].m_Pos, vec2(1.0f, 1.0f) * (2.0f / 3.0f), 8) && m_aParticles[i].m_Water)
+			{
+				m_aParticles[i].m_Water = false;
+				m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.2f;
+			}
 			i = Next;
 		}
 	}

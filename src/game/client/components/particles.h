@@ -20,6 +20,8 @@ struct CParticle
 		m_Friction = 0;
 		m_FlowAffected = 1.0f;
 		m_Color = vec4(1,1,1,1);
+		m_Water = false;
+		m_BubbleStage = 0;
 	}
 
 	vec2 m_Pos;
@@ -41,7 +43,9 @@ struct CParticle
 	float m_Friction;
 
 	vec4 m_Color;
-
+	
+	bool m_Water;
+	int m_BubbleStage;
 	// set by the particle system
 	float m_Life;
 	int m_PrevPart;

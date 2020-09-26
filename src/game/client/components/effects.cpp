@@ -109,7 +109,7 @@ void CEffects::WaterBubble(vec2 Pos)
 
 	CParticle p;
 	p.SetDefault();
-	p.m_Spr = SPRITE_PART_BUBBLE;
+	p.m_Spr = SPRITE_PART_BUBBLE0;
 	p.m_Pos = Pos + vec2((frandom() - 0.5f)*10, (frandom() - 0.5f)*10);
 	p.m_Vel = vec2(0, 0);
 	p.m_LifeSpan = frandom()*2;
@@ -120,6 +120,8 @@ void CEffects::WaterBubble(vec2 Pos)
 	p.m_Gravity = -300;
 	p.m_Friction = 0.9f;
 	p.m_FlowAffected = 0.0f;
+	p.m_Water = true;
+	p.m_BubbleStage = 4;
 	m_pClient->m_pParticles->Add(CParticles::GROUP_GENERAL, &p);
 }
 
