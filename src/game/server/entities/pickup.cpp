@@ -112,8 +112,11 @@ void CPickup::Tick()
 				}
 			case PICKUP_DIVING:
 				{
-					Picked = true;
-					pChr->GiveDiving();
+					if (!pChr->HasDivingGear())
+					{
+						Picked = true;
+						pChr->GiveDiving();
+					}
 					break;
 				}
 			case PICKUP_HARPOON:
