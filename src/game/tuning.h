@@ -35,6 +35,7 @@ MACRO_TUNING_PARAM(LiquidDivingGearMaxHorizontalVelocity, liq_div_gear_max_x_vel
 MACRO_TUNING_PARAM(LiquidDivingGearBreath, liq_div_gear_air_tick, 3000)
 MACRO_TUNING_PARAM(LiquidDivingCursor, liq_div_gear_curs_swim, 0)
 MACRO_TUNING_PARAM(LiquidDivingCursorMaxSpeed, liq_div_gear_curs_swim_max_speed, 15.0f)
+MACRO_TUNING_PARAM(LiquidDivingMaxSpeed, liq_div_max_speed_reach, 7.5f)
 //liquid physics general
 MACRO_TUNING_PARAM(LiquidRequireDivingGear, liq_req_div_gear, 1)
 MACRO_TUNING_PARAM(LiquidAirTicks, liq_air_tick, 500)

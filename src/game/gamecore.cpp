@@ -133,6 +133,10 @@ void CCharacterCore::Tick(bool UseInput)
 		//m_Vel.y += 0.1f * m_pWorld->m_Tuning.m_Gravity;
 		
 	float MaxSpeed = Grounded ? m_pWorld->m_Tuning.m_GroundControlSpeed : m_pWorld->m_Tuning.m_AirControlSpeed;
+	if (IsInWater())
+	{
+		MaxSpeed = m_pWorld->m_Tuning.m_LiquidDivingMaxSpeed;
+	}
 	float Accel = Grounded ? m_pWorld->m_Tuning.m_GroundControlAccel : m_pWorld->m_Tuning.m_AirControlAccel;
 	float Friction = Grounded ? m_pWorld->m_Tuning.m_GroundFriction : m_pWorld->m_Tuning.m_AirFriction;
 
