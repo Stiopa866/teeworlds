@@ -22,16 +22,18 @@ MACRO_TUNING_PARAM(Gravity, gravity, 0.5f)
 MACRO_TUNING_PARAM(VelrampStart, velramp_start, 550)
 MACRO_TUNING_PARAM(VelrampRange, velramp_range, 2000)
 MACRO_TUNING_PARAM(VelrampCurvature, velramp_curvature, 1.4f)
-
 //liquid physics nondiving
 MACRO_TUNING_PARAM(LiquidHorizontalDecel, liq_x_decel, 0.95)
 MACRO_TUNING_PARAM(LiquidVerticalDecel, liq_y_decel, 0.95)
-MACRO_TUNING_PARAM(LiquidPushOut, liq_push_out, 0.7f)
+MACRO_TUNING_PARAM(LiquidPushOut, liq_push_out, 0.3f)
+MACRO_TUNING_PARAM(LiquidPushDown, liq_push_down, -0.3f)
+MACRO_TUNING_PARAM(LiquidPushDownInstead, liq_push_down_instead, 0)
 //liquid physics diving
-MACRO_TUNING_PARAM(LiquidSwimmingAccel, liq_swim_accel, 0.1f)
-MACRO_TUNING_PARAM(LiquidSwimmingTopAccel, liq_swim_accel_top, 5.0f)
+//MACRO_TUNING_PARAM(LiquidSwimmingAccel, liq_swim_accel, 0.1f)
+//MACRO_TUNING_PARAM(LiquidSwimmingTopAccel, liq_swim_accel_top, 5.0f)
+MACRO_TUNING_PARAM(LiquidDivingGearMaxHorizontalVelocity, liq_div_gear_max_x_vel, 10.0f)
 MACRO_TUNING_PARAM(LiquidDivingGearBreath, liq_div_gear_air_tick, 3000)
-MACRO_TUNING_PARAM(LiquidDivingCursor, liq_div_gear_curs_swim, 1)
+MACRO_TUNING_PARAM(LiquidDivingCursor, liq_div_gear_curs_swim, 0)
 MACRO_TUNING_PARAM(LiquidDivingCursorMaxSpeed, liq_div_gear_curs_swim_max_speed, 15.0f)
 //liquid physics general
 MACRO_TUNING_PARAM(LiquidRequireDivingGear, liq_req_div_gear, 1)

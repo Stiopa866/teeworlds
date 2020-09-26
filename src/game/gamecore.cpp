@@ -127,10 +127,10 @@ void CCharacterCore::Tick(bool UseInput)
 
 	vec2 TargetDirection = normalize(vec2(m_Input.m_TargetX, m_Input.m_TargetY));
 
-	if(!(IsInWater()&&m_DivingGear))
+	if(!(IsInWater()))
 		m_Vel.y += m_pWorld->m_Tuning.m_Gravity;
-	else
-		m_Vel.y += 0.1f * m_pWorld->m_Tuning.m_Gravity;
+	//else
+		//m_Vel.y += 0.1f * m_pWorld->m_Tuning.m_Gravity;
 		
 	float MaxSpeed = Grounded ? m_pWorld->m_Tuning.m_GroundControlSpeed : m_pWorld->m_Tuning.m_AirControlSpeed;
 	float Accel = Grounded ? m_pWorld->m_Tuning.m_GroundControlAccel : m_pWorld->m_Tuning.m_AirControlAccel;
@@ -145,7 +145,7 @@ void CCharacterCore::Tick(bool UseInput)
 		// handle jump
 		if(m_Input.m_Jump)
 		{
-			if (!IsInWater()||!m_DivingGear)
+			if (!IsInWater())
 			{
 				if (!(m_Jumped & 1))
 				{
@@ -165,13 +165,13 @@ void CCharacterCore::Tick(bool UseInput)
 			}
 			else
 			{
-				if (m_pWorld->m_Tuning.m_LiquidDivingCursor)
+				if (m_DivingGear)
 				{
-					HandleSwimming(TargetDirection);
-					
+					if (m_pWorld->m_Tuning.m_LiquidDivingCursor)
+						HandleSwimming(TargetDirection);
+					//else
+						//sm_Vel.y = SaturatedAdd(-m_pWorld->m_Tuning.m_LiquidSwimmingTopAccel, 1.0f, m_Vel.y, -m_pWorld->m_Tuning.m_Gravity - m_pWorld->m_Tuning.m_LiquidSwimmingAccel);
 				}
-				else
-					m_Vel.y = SaturatedAdd(-m_pWorld->m_Tuning.m_LiquidSwimmingTopAccel, 1.0f, m_Vel.y, -m_pWorld->m_Tuning.m_Gravity - m_pWorld->m_Tuning.m_LiquidSwimmingAccel);
 			}
 		}
 		else
@@ -420,15 +420,40 @@ void CCharacterCore::HandleWater(bool UseInput)
 	m_Jumped = 1;
 	if (m_DivingGear)
 	{
-		if (m_pWorld->m_Tuning.m_LiquidDivingCursor && (!m_Input.m_Jump || !UseInput))
+		if (m_pWorld->m_Tuning.m_LiquidDivingCursor)
 		{
-			m_Vel.y *= m_pWorld->m_Tuning.m_LiquidVerticalDecel;
+			if(!m_Input.m_Jump || !UseInput)
+			{
+				m_Vel.y *= m_pWorld->m_Tuning.m_LiquidVerticalDecel;
+				m_Vel.x *= m_pWorld->m_Tuning.m_LiquidHorizontalDecel;
+			}
+			return;
+		}
+		m_Vel.y *= m_pWorld->m_Tuning.m_LiquidVerticalDecel;
+		if (m_pWorld->m_Tuning.m_LiquidPushDownInstead)
+		{
+			m_Vel.y -= UseInput && m_Input.m_Jump ? -m_pWorld->m_Tuning.m_LiquidPushDown : m_pWorld->m_Tuning.m_LiquidPushDown;
+		}
+		else
+		{
+			m_Vel.y -= UseInput && m_Input.m_Jump ? -m_pWorld->m_Tuning.m_LiquidPushOut : m_pWorld->m_Tuning.m_LiquidPushOut;
+		}
+		if (absolute(m_Vel.x) > m_pWorld->m_Tuning.m_LiquidDivingGearMaxHorizontalVelocity)
+		{
 			m_Vel.x *= m_pWorld->m_Tuning.m_LiquidHorizontalDecel;
 		}
 		return;
 	}
 	m_Vel.y *= m_pWorld->m_Tuning.m_LiquidVerticalDecel;
-	m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushOut;
+	if (m_pWorld->m_Tuning.m_LiquidPushDownInstead)
+	{
+		m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushDown;
+	}
+	else
+	{
+		m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushOut;
+	}
+	
 	m_Vel.x *= m_pWorld->m_Tuning.m_LiquidHorizontalDecel;
 }
 

@@ -223,7 +223,7 @@ Objects = [
 
 	NetObject("De_TuneParams", [
 		# todo: should be done differently
-		NetArray(NetIntAny("m_aTuneParams"), 32),
+		NetArray(NetIntAny("m_aTuneParams"), 64),
 	]),
 
 	## Events
