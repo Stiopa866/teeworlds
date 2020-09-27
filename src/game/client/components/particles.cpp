@@ -116,19 +116,19 @@ void CParticles::Update(float TimePassed)
 					{
 					case 3:
 						m_aParticles[i].m_Spr = SPRITE_PART_BUBBLE1;
-						m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.2f;
+						m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.1f;
 						break;
 					case 2:
 						m_aParticles[i].m_Spr = SPRITE_PART_BUBBLE2;
-						m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.2f;
+						m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.1f;
 						break;
 					case 1:
 						m_aParticles[i].m_Spr = SPRITE_PART_BUBBLE3;
-						m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.2f;
+						m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.1f;
 						break;
 					case 0:
 						m_aParticles[i].m_Spr = SPRITE_PART_BUBBLE4;
-						m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.2f;
+						m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.1f;
 						break;
 					default:
 						break;
@@ -156,7 +156,7 @@ void CParticles::Update(float TimePassed)
 			else if(m_aParticles[i].m_BubbleStage == 4 && !Collision()->TestBox(m_aParticles[i].m_Pos, vec2(1.0f, 1.0f) * (2.0f / 3.0f), 8) && m_aParticles[i].m_Water)
 			{
 				m_aParticles[i].m_Water = false;
-				m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.2f;
+				m_aParticles[i].m_LifeSpan = m_aParticles[i].m_Life + 0.1f;
 			}
 			i = Next;
 		}
