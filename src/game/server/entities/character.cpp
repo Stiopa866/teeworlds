@@ -569,7 +569,7 @@ int CCharacter::NumOfBreathBubbles()
 		return -1;
 	}
 	int NumOfBreathBubbles = (int)ceil(((GameServer()->Tuning()->m_LiquidAirTicks.Get() / 100.0f) - m_BreathTick) /(GameServer()->Tuning()->m_LiquidAirTicks.Get() / 1000.0f));
-	if (NumOfBreathBubbles < 0)
+	if (NumOfBreathBubbles < 0 || (NumOfBreathBubbles==10 && m_Core.IsFloating()))
 	{
 		return -1;
 	}
@@ -586,7 +586,7 @@ int CCharacter::DivingBreathAmount()
 		return -1;
 	}
 	int Progress = (((GameServer()->Tuning()->m_LiquidDivingGearBreath.Get() / 100.0f) - m_BreathTick) / (GameServer()->Tuning()->m_LiquidDivingGearBreath.Get() / 100.0f)) * 100;
-	if (Progress < 0)
+	if (Progress < 0||(Progress>95&&m_Core.IsFloating()))
 	{
 		return -1;
 	}

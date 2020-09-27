@@ -465,6 +465,10 @@ bool CCharacterCore::IsInWater()
 {
 	return (m_pCollision->TestBox(vec2(m_Pos.x, m_Pos.y), vec2(PHYS_SIZE, PHYS_SIZE + 1.0f) * (2.0f / 3.0f), 8));
 }
+bool CCharacterCore::IsFloating()
+{ 
+	return (!m_pCollision->TestBox(vec2(m_Pos.x, m_Pos.y - 16.0f), vec2(PHYS_SIZE, PHYS_SIZE + 1.0f) * (2.0f / 3.0f), 8));
+}
 void CCharacterCore::Move()
 {
 	if(!m_pWorld)

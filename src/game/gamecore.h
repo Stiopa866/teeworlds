@@ -185,6 +185,7 @@ public:
 	void Quantize();
 
 	bool IsInWater();
+	bool IsFloating();
 };
 
 #endif
