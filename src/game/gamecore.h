@@ -92,6 +92,16 @@ inline vec2 CalcPos(vec2 Pos, vec2 Velocity, float Curvature, float Speed, float
 	return n;
 }
 
+inline vec2 CalcWaterPos(vec2 Pos, vec2 Velocity, float Curvature, float Speed, float Time)
+{
+	vec2 n;
+	Time *= Speed;
+	Time *= 0.5f;
+	n.x = Pos.x + Velocity.x * Time;
+	n.y = Pos.y + Velocity.y * Time + Curvature / 10000 * (Time * Time);
+	return n;
+}
+
 
 template<typename T>
 inline T SaturatedAdd(T Min, T Max, T Current, T Modifier)

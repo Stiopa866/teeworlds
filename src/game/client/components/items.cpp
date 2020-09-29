@@ -21,7 +21,12 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 	// get positions
 	float Curvature = 0;
 	float Speed = 0;
-	if(pCurrent->m_Type == WEAPON_GRENADE)
+	if (pCurrent->m_Type == WEAPON_HARPOON)
+	{
+		Curvature = m_pClient->m_Tuning.m_HarpoonCurvature;
+		Speed = m_pClient->m_Tuning.m_HarpoonSpeed;
+	}
+	else if(pCurrent->m_Type == WEAPON_GRENADE)
 	{
 		Curvature = m_pClient->m_Tuning.m_GrenadeCurvature;
 		Speed = m_pClient->m_Tuning.m_GrenadeSpeed;
@@ -36,6 +41,7 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 		Curvature = m_pClient->m_Tuning.m_GunCurvature;
 		Speed = m_pClient->m_Tuning.m_GunSpeed;
 	}
+	
 
 	static float s_LastGameTickTime = Client()->GameTickTime();
 	if(!m_pClient->IsWorldPaused())
@@ -51,9 +57,18 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 
 	vec2 StartPos(pCurrent->m_X, pCurrent->m_Y);
 	vec2 StartVel(pCurrent->m_VelX/100.0f, pCurrent->m_VelY/100.0f);
-	vec2 Pos = CalcPos(StartPos, StartVel, Curvature, Speed, Ct);
-	vec2 PrevPos = CalcPos(StartPos, StartVel, Curvature, Speed, Ct-0.001f);
-
+	vec2 Pos;
+	vec2 PrevPos;
+	if(pCurrent->m_Water)
+	{
+		Pos = CalcWaterPos(StartPos, StartVel, Curvature, Speed, Ct);
+		PrevPos = CalcWaterPos(StartPos, StartVel, Curvature, Speed, Ct - 0.001f);
+	}
+	else
+	{
+		Pos = CalcPos(StartPos, StartVel, Curvature, Speed, Ct);
+		PrevPos = CalcPos(StartPos, StartVel, Curvature, Speed, Ct - 0.001f);
+	}
 
 	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
 	Graphics()->QuadsBegin();

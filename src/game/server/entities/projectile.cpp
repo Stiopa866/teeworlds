@@ -22,6 +22,7 @@ CProjectile::CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, 
 	m_Weapon = Weapon;
 	m_StartTick = Server()->Tick();
 	m_Explosive = Explosive;
+	m_Water = false;
 
 	GameWorld()->InsertEntity(this);
 }
@@ -67,8 +68,26 @@ vec2 CProjectile::GetPos(float Time)
 			break;
 		
 	}
-
-	return CalcPos(m_Pos, m_Direction, Curvature, Speed, Time);
+	vec2 ReturnPos;
+	if(m_Water)
+		ReturnPos = CalcWaterPos(m_Pos, m_Direction, Curvature, Speed, Time);
+	else
+		ReturnPos = CalcPos(m_Pos, m_Direction, Curvature, Speed, Time);
+	if (!m_Water&&GameServer()->Collision()->TestBox(vec2(ReturnPos.x, ReturnPos.y), vec2(6.0f, 6.0f), 8))
+	{
+		m_Pos.x = ReturnPos.x;
+		m_Pos.y = ReturnPos.y;
+		m_StartTick = Server()->Tick();
+		m_Water = true;
+	}
+	else if (m_Water && !GameServer()->Collision()->TestBox(vec2(ReturnPos.x, ReturnPos.y), vec2(6.0f, 6.0f), 8))
+	{
+		m_Pos.x = ReturnPos.x;
+		m_Pos.y = ReturnPos.y;
+		m_StartTick = Server()->Tick();
+		m_Water = false;
+	}
+	return ReturnPos;
 }
 
 
@@ -117,6 +136,7 @@ void CProjectile::FillInfo(CNetObj_Projectile *pProj)
 	pProj->m_VelY = round_to_int(m_Direction.y*100.0f);
 	pProj->m_StartTick = m_StartTick;
 	pProj->m_Type = m_Type;
+	pProj->m_Water = m_Water;
 }
 
 void CProjectile::Snap(int SnappingClient)
