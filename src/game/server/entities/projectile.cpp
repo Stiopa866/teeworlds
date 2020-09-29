@@ -69,6 +69,7 @@ vec2 CProjectile::GetPos(float Time)
 		
 	}
 	vec2 ReturnPos;
+	vec2 TestDirection;
 	if(m_Water)
 		ReturnPos = CalcWaterPos(m_Pos, m_Direction, Curvature, Speed, Time);
 	else
@@ -77,6 +78,7 @@ vec2 CProjectile::GetPos(float Time)
 	{
 		m_Pos.x = ReturnPos.x;
 		m_Pos.y = ReturnPos.y;
+		m_Direction = normalize(CalcPos(m_Pos, m_Direction, Curvature, Speed, Time)- CalcPos(m_Pos, m_Direction, Curvature, Speed, Time-0.001f));
 		m_StartTick = Server()->Tick();
 		m_Water = true;
 	}
@@ -84,6 +86,7 @@ vec2 CProjectile::GetPos(float Time)
 	{
 		m_Pos.x = ReturnPos.x;
 		m_Pos.y = ReturnPos.y;
+		m_Direction = normalize(CalcWaterPos(m_Pos, m_Direction, Curvature, Speed, Time) - CalcWaterPos(m_Pos, m_Direction, Curvature, Speed, Time - 0.001f));
 		m_StartTick = Server()->Tick();
 		m_Water = false;
 	}
