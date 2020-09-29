@@ -121,9 +121,13 @@ void CPickup::Tick()
 				}
 			case PICKUP_HARPOON:
 				{
-					GameServer()->CreateSound(m_Pos, SOUND_PICKUP_SHOTGUN);
-					if (pChr->GetPlayer())
-						GameServer()->SendWeaponPickup(pChr->GetPlayer()->GetCID(), WEAPON_HARPOON);
+					if (pChr->GiveWeapon(WEAPON_HARPOON, g_pData->m_Weapons.m_aId[WEAPON_HARPOON].m_Maxammo))
+					{
+						Picked = true;
+						GameServer()->CreateSound(m_Pos, SOUND_PICKUP_SHOTGUN);
+						if (pChr->GetPlayer())
+							GameServer()->SendWeaponPickup(pChr->GetPlayer()->GetCID(), WEAPON_HARPOON);
+					}
 					break;
 				}
 			default:

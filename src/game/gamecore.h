@@ -186,6 +186,7 @@ public:
 
 	bool IsInWater();
 	bool IsFloating();
+	int DepthInWater();
 };
 
 #endif

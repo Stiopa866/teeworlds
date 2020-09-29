@@ -429,7 +429,17 @@ void CCharacter::FireWeapon()
 
 			GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE);
 		} break;
+		case WEAPON_HARPOON:
+		{
+			new CProjectile(GameWorld(), WEAPON_HARPOON,
+				m_pPlayer->GetCID(),
+				ProjStartPos,
+				Direction,
+				(int)(Server()->TickSpeed() * GameServer()->Tuning()->m_GrenadeLifetime),
+				g_pData->m_Weapons.m_Harpoon.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
 
+			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE);
+		} break;
 	}
 
 	m_AttackTick = Server()->Tick();

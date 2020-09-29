@@ -448,7 +448,8 @@ void CCharacterCore::HandleWater(bool UseInput)
 		}
 		return;
 	}
-	m_Vel.y *= m_pWorld->m_Tuning.m_LiquidVerticalDecel;
+	int Pressure = DepthInWater();
+	m_Vel.y *= pow(m_pWorld->m_Tuning.m_LiquidVerticalDecel, sqrt(Pressure));
 	if (m_pWorld->m_Tuning.m_LiquidPushDownInstead)
 	{
 		m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushDown;
@@ -458,17 +459,37 @@ void CCharacterCore::HandleWater(bool UseInput)
 		m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushOut;
 	}
 	
-	m_Vel.x *= m_pWorld->m_Tuning.m_LiquidHorizontalDecel;
+	m_Vel.x *= pow(m_pWorld->m_Tuning.m_LiquidHorizontalDecel, sqrt(Pressure));
 }
 
 bool CCharacterCore::IsInWater()
 {
 	return (m_pCollision->TestBox(vec2(m_Pos.x, m_Pos.y), vec2(PHYS_SIZE, PHYS_SIZE + 1.0f) * (2.0f / 3.0f), 8));
 }
+
 bool CCharacterCore::IsFloating()
 { 
 	return (!m_pCollision->TestBox(vec2(m_Pos.x, m_Pos.y - 16.0f), vec2(PHYS_SIZE, PHYS_SIZE + 1.0f) * (2.0f / 3.0f), 8));
 }
+
+int CCharacterCore::DepthInWater()
+{
+	if (!m_pWorld->m_Tuning.m_LiquidPressure)
+	{
+		return 1;
+	}
+	int Depth = 0;
+	while (Depth <= 10)
+	{
+		if (m_pCollision->TestBox(vec2(m_Pos.x, m_Pos.y - 32.0f * Depth), vec2(PHYS_SIZE, PHYS_SIZE + 1.0f) * (2.0f / 3.0f), 8))
+		{
+			Depth++;
+		}
+		else break;
+	}
+	return Depth* m_pWorld->m_Tuning.m_LiquidPressure;
+}
+
 void CCharacterCore::Move()
 {
 	if(!m_pWorld)
