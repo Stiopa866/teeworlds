@@ -42,6 +42,7 @@ MACRO_TUNING_PARAM(LiquidDivingMaxSpeed, liq_div_max_speed_reach, 7.5f)
 MACRO_TUNING_PARAM(LiquidAirTicks, liq_air_tick, 500)
 MACRO_TUNING_PARAM(LiquidTicksPerSuffocationDmg, liq_suff_dmg_delay, 15)
 MACRO_TUNING_PARAM(LiquidWeaponInvalidation, liq_inval_weapon, 1)
+MACRO_TUNING_PARAM(LiquidOnlyHeartDmg, liq_heart_dmg, 0)
 // weapon tuning
 MACRO_TUNING_PARAM(GunCurvature, gun_curvature, 1.25f)
 MACRO_TUNING_PARAM(GunSpeed, gun_speed, 2200.0f)
