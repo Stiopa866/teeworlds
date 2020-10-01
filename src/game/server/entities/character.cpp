@@ -9,6 +9,7 @@
 
 #include "character.h"
 #include "laser.h"
+#include "harpoon.h"
 #include "projectile.h"
 
 //input count
@@ -431,6 +432,7 @@ void CCharacter::FireWeapon()
 		} break;
 		case WEAPON_HARPOON:
 		{
+			new CHarpoon(GameWorld(), ProjStartPos, Direction, m_pPlayer->GetCID());
 			new CProjectile(GameWorld(), WEAPON_HARPOON,
 				m_pPlayer->GetCID(),
 				ProjStartPos,

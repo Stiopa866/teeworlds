@@ -287,3 +287,82 @@ void CCollision::MoveWaterBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float
 	*pInoutPos = Pos;
 	*pInoutVel = Vel;
 }
+
+void CCollision::MoveHarpoonBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float Elasticity, bool* Grounded) const
+{
+	// do the move
+	vec2 Pos = *pInoutPos;
+	vec2 Vel = *pInoutVel;
+
+	float Distance = length(Vel);
+	int Max = (int)Distance;
+
+	if (Distance > 0.00001f)
+	{
+		//vec2 old_pos = pos;
+		float Fraction = 1.0f / (float)(Max + 1);
+		for (int i = 0; i <= Max; i++)
+		{
+			//float amount = i/(float)max;
+			//if(max == 0)
+				//amount = 0;
+
+			vec2 NewPos = Pos + Vel * Fraction; // TODO: this row is not nice
+
+
+			if (TestBox(vec2(NewPos.x, NewPos.y), Size))
+			{
+				int Hits = 0;
+
+				if (TestBox(vec2(Pos.x, NewPos.y), Size))
+				{
+					if (TestBox(vec2(Pos.x, NewPos.y), Size, COLFLAG_NOHOOK))
+					{
+						Vel.y *= -Elasticity;
+					}
+					else
+					{
+						Vel.y = 0;
+						Vel.x = 0;
+						*Grounded = true;
+					}
+					
+					NewPos.y = Pos.y;
+					Hits++;
+				}
+
+				if (TestBox(vec2(NewPos.x, Pos.y), Size))
+				{
+					if (TestBox(vec2(NewPos.x, Pos.y), Size, COLFLAG_NOHOOK))
+					{
+						Vel.x *= -Elasticity;
+					}
+					else
+					{
+						Vel.x = 0;
+						Vel.y = 0;
+						*Grounded = true;
+					}
+					
+					NewPos.x = Pos.x;
+					Hits++;
+				}
+
+				// neither of the tests got a collision.
+				// this is a real _corner case_!
+				if (Hits == 0)
+				{
+					NewPos.y = Pos.y;
+					//Vel.y *= -Elasticity;
+					NewPos.x = Pos.x;
+					//Vel.x *= -Elasticity;
+				}
+			}
+
+			Pos = NewPos;
+		}
+	}
+
+	*pInoutPos = Pos;
+	*pInoutVel = Vel;
+}

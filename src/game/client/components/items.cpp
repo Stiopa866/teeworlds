@@ -133,7 +133,7 @@ void CItems::RenderPickup(const CNetObj_Pickup *pPrev, const CNetObj_Pickup *pCu
 		SPRITE_PICKUP_NINJA,
 		SPRITE_PICKUP_GUN,
 		SPRITE_PICKUP_HAMMER,
-		SPRITE_PICKUP_NINJA,
+		SPRITE_PICKUP_HARPOON,
 		SPRITE_DIVING_GEAR
 		};
 	RenderTools()->SelectSprite(c[pCurrent->m_Type]);
@@ -335,7 +335,10 @@ void CItems::OnRender()
 			
 			RenderPlayer((const CNetObj_Character*)pData);
 		}
-
+		else if (Item.m_Type == NETOBJTYPE_HARPOON)
+		{
+			RenderHarpoon((const CNetObj_Harpoon*)pData);
+		}
 	}
 
 	// render flag
@@ -357,3 +360,25 @@ void CItems::OnRender()
 	}
 }
 
+void CItems::RenderHarpoon(const CNetObj_Harpoon* pCurrent)
+{
+	static float s_LastGameTickTime = Client()->GameTickTime();
+	if (!m_pClient->IsWorldPaused())
+		s_LastGameTickTime = Client()->GameTickTime();
+
+	vec2 Pos(pCurrent->m_X, pCurrent->m_Y);
+	vec2 Vel(pCurrent->m_Dir_X / 100.0f, pCurrent->m_Dir_Y / 100.0f);
+	//vec2 Pos;
+	//vec2 PrevPos;
+
+	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
+	Graphics()->QuadsBegin();
+
+	RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[6].m_pSpriteProj);
+	//vec2 pos = mix(vec2(prev->x, prev->y), vec2(current->x, current->y), Client()->IntraGameTick());
+
+	IGraphics::CQuadItem QuadItem(Pos.x, Pos.y, 32, 32);
+	Graphics()->QuadsDraw(&QuadItem, 1);
+	Graphics()->QuadsSetRotation(0);
+	Graphics()->QuadsEnd();
+}
