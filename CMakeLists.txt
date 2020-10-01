@@ -897,6 +897,7 @@ set(EXPECTED_DATA
   emoticons.png
   fonts/DejaVuSans.ttf
   game.png
+  harpoon.png
   languages/belarusian.json
   languages/bosnian.json
   languages/brazilian_portuguese.json

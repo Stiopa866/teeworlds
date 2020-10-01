@@ -33,7 +33,7 @@ void CHarpoon::Tick()
 		//Move
 		vec2 NewPos = m_Pos;
 		vec2 OldPos = m_Pos;
-		GameServer()->Collision()->MoveHarpoonBox(&NewPos, &m_Vel, vec2(28.0f, 28.0f), 1, &m_Grounded);
+		GameServer()->Collision()->MoveHarpoonBox(&NewPos, &m_Vel, vec2(28.0f, 28.0f), 0.5, &m_Grounded);
 
 		m_Pos = NewPos;
 	}
