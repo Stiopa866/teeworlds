@@ -78,6 +78,7 @@ private:
 	// weapon info
 	CEntity *m_apHitObjects[10];
 	int m_NumObjectsHit;
+	CHarpoon* m_pHarpoon;
 
 	struct WeaponStat
 	{
