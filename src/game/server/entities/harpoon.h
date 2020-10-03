@@ -24,6 +24,7 @@ private:
 	//int m_Bounces;
 	//int m_EvalTick;
 	bool m_Grounded;
+	CCharacter* Owner;
 	int m_SpawnTick;
 	vec2 m_Vel;
 	int m_Owner;
