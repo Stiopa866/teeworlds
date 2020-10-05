@@ -8,6 +8,7 @@
 #include <engine/map.h>
 #include <engine/kernel.h>
 
+#include <game/server/entities/harpoon.h>
 #include <game/mapitems.h>
 #include <game/layers.h>
 #include <game/collision.h>
@@ -288,7 +289,7 @@ void CCollision::MoveWaterBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float
 	*pInoutVel = Vel;
 }
 
-void CCollision::MoveHarpoonBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float Elasticity, bool* Grounded) const
+void CCollision::MoveHarpoonBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float Elasticity, int* Grounded) const
 {
 	// do the move
 	vec2 Pos = *pInoutPos;
@@ -324,7 +325,7 @@ void CCollision::MoveHarpoonBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, flo
 					{
 						Vel.y = 0;
 						Vel.x = 0;
-						*Grounded = true;
+						*Grounded = HARPOON_IN_GROUND;
 					}
 					
 					NewPos.y = Pos.y;
@@ -341,7 +342,7 @@ void CCollision::MoveHarpoonBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, flo
 					{
 						Vel.x = 0;
 						Vel.y = 0;
-						*Grounded = true;
+						*Grounded = HARPOON_IN_GROUND;
 					}
 					
 					NewPos.x = Pos.x;
@@ -356,6 +357,9 @@ void CCollision::MoveHarpoonBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, flo
 					//Vel.y *= -Elasticity;
 					NewPos.x = Pos.x;
 					//Vel.x *= -Elasticity;
+					Vel.x = 0;
+					Vel.y = 0;
+					*Grounded = HARPOON_IN_GROUND;
 				}
 			}
 
