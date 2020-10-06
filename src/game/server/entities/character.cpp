@@ -706,11 +706,11 @@ void CCharacter::Tick()
 			{
 				if (!GameServer()->Tuning()->m_LiquidTicksPerSuffocationDmg.Get())
 				{
-					TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 1, GetPlayer()->GetCID(), WEAPON_WORLD); //works as if the tick delay was 1
+					TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 2, GetPlayer()->GetCID(), WEAPON_WORLD, GameServer()->Tuning()->m_LiquidOnlyHeartDmg && DMGTYPE_HEART); //works as if the tick delay was 1, but 1 tick delay deals 1 dmg this one deals 2
 				}
 				else if(!(m_BreathTick % (GameServer()->Tuning()->m_LiquidTicksPerSuffocationDmg.Get() / 100)))
 				{
-					TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 1, GetPlayer()->GetCID(), WEAPON_WORLD);
+					TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 1, GetPlayer()->GetCID(), WEAPON_WORLD, GameServer()->Tuning()->m_LiquidOnlyHeartDmg && DMGTYPE_HEART);
 				}
 			}
 		}
@@ -907,7 +907,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
 }
 
-bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon)
+bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon, int Flag)
 {
 	m_Core.m_Vel += Force;
 
@@ -932,9 +932,9 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
 	int OldHealth = m_Health, OldArmor = m_Armor;
 	if(Dmg)
 	{
-		if(m_Armor)
+		if(m_Armor&&Flag!=DMGTYPE_HEART)
 		{
-			if(Dmg > 1)
+			if(Dmg > 1&&Flag!=DMGTYPE_ARMOR)
 			{
 				m_Health--;
 				Dmg--;

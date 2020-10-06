@@ -449,7 +449,7 @@ void CCharacterCore::HandleWater(bool UseInput)
 		return;
 	}
 	int Pressure = DepthInWater();
-	m_Vel.y *= pow(m_pWorld->m_Tuning.m_LiquidVerticalDecel, sqrt(Pressure));
+	m_Vel.y *= (m_pWorld->m_Tuning.m_LiquidVerticalDecel*Pressure);
 	if (m_pWorld->m_Tuning.m_LiquidPushDownInstead)
 	{
 		m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushDown;
@@ -459,7 +459,7 @@ void CCharacterCore::HandleWater(bool UseInput)
 		m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushOut;
 	}
 	
-	m_Vel.x *= pow(m_pWorld->m_Tuning.m_LiquidHorizontalDecel, sqrt(Pressure));
+	m_Vel.x *= (m_pWorld->m_Tuning.m_LiquidVerticalDecel * Pressure);
 }
 
 bool CCharacterCore::IsInWater()

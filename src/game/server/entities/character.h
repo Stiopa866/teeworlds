@@ -21,6 +21,12 @@ public:
 	{
 		MIN_KILLMESSAGE_CLIENTVERSION=0x0704,   // todo 0.8: remove me
 	};
+	enum
+	{
+		DMGTYPE_PURE,
+		DMGTYPE_HEART,
+		DMGTYPE_ARMOR,
+	};
 
 	CCharacter(CGameWorld *pWorld);
 
@@ -57,7 +63,7 @@ public:
 	int DivingBreathAmount();
 
 	void Die(int Killer, int Weapon);
-	bool TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon);
+	bool TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon, int Flag = DMGTYPE_PURE);
 
 	bool Spawn(class CPlayer *pPlayer, vec2 Pos);
 	bool Remove();
