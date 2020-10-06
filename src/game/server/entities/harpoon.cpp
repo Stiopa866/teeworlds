@@ -11,7 +11,7 @@ CHarpoon::CHarpoon(CGameWorld* pGameWorld, vec2 Pos, vec2 Direction, int Owner, 
 	m_pOwnerChar = This;
 	m_Owner = Owner;
 	m_DeathTick = -1;
-	m_Vel = Direction*35;
+	m_Vel = Direction*GameServer()->Tuning()->m_HarpoonInitialSpeed;
 	m_Grounded = HARPOON_FLYING;
 	m_SpawnTick = GameServer()->Server()->Tick();
 	GameWorld()->InsertEntity(this);
@@ -40,17 +40,17 @@ void CHarpoon::Tick()
 		m_Vel.y += GameServer()->Tuning()->m_HarpoonCurvature;
 		if (m_Vel.x > 0)
 		{
-			m_Vel.x -= 0.2f;
+			m_Vel.x -= GameServer()->Tuning()->m_HarpoonSpeedLoss;
 		}
 		else if (m_Vel.x < 0)
 		{
-			m_Vel.x += 0.2f;
+			m_Vel.x += GameServer()->Tuning()->m_HarpoonSpeedLoss;
 		}
 
 		//Move
 		vec2 NewPos = m_Pos;
 		vec2 OldPos = m_Pos;
-		GameServer()->Collision()->MoveHarpoonBox(&NewPos, &m_Vel, vec2(28.0f, 28.0f), 0.5, &m_Grounded);
+		GameServer()->Collision()->MoveHarpoonBox(&NewPos, &m_Vel, vec2(28.0f, 28.0f), GameServer()->Tuning()->m_HarpoonElasticity, &m_Grounded);
 		CCharacter* TargetChr = GameWorld()->IntersectCharacter(m_Pos, NewPos, 6.0f, NewPos, m_pOwnerChar);
 		if (TargetChr)
 		{
@@ -67,19 +67,19 @@ void CHarpoon::Tick()
 		vec2 OwnerPos = m_pOwnerChar->GetPos();
 		if (m_Pos.x > OwnerPos.x)
 		{
-			m_Pos.x = SaturatedAdd(OwnerPos.x, m_Pos.x, m_Pos.x, -20.0f);
+			m_Pos.x = SaturatedAdd(OwnerPos.x, m_Pos.x, m_Pos.x, -GameServer()->Tuning()->m_HarpoonReturnSpeed);
 		}
 		else if (m_Pos.x < OwnerPos.x)
 		{
-			m_Pos.x = SaturatedAdd(m_Pos.x, OwnerPos.x, m_Pos.x, 20.0f);
+			m_Pos.x = SaturatedAdd(m_Pos.x, OwnerPos.x, m_Pos.x, GameServer()->Tuning()->m_HarpoonReturnSpeed * 1.0f);
 		}
 		if (m_Pos.y > OwnerPos.y)
 		{
-			m_Pos.y = SaturatedAdd(OwnerPos.y, m_Pos.y, m_Pos.y, -20.0f);
+			m_Pos.y = SaturatedAdd(OwnerPos.y, m_Pos.y, m_Pos.y, -GameServer()->Tuning()->m_HarpoonReturnSpeed);
 		}
 		else if (m_Pos.y < OwnerPos.y)
 		{
-			m_Pos.y = SaturatedAdd(m_Pos.y, OwnerPos.y, m_Pos.y, 20.0f);
+			m_Pos.y = SaturatedAdd(m_Pos.y, OwnerPos.y, m_Pos.y, GameServer()->Tuning()->m_HarpoonReturnSpeed * 1.0f);
 		}
 		if (m_Pos.y == OwnerPos.y && m_Pos.x == OwnerPos.x)
 		{
@@ -94,15 +94,48 @@ void CHarpoon::Tick()
 
 void CHarpoon::Drag()
 {
-	if (m_Grounded == HARPOON_IN_CHARACTER)
+	if (GameServer()->Tuning()->m_HarpoonScaledWithDistance)
 	{
-		vec2 Distance = m_pOwnerChar->GetPos() - m_pVictim->GetPos();
-		m_pVictim->HarpoonDrag(Distance / 200);
+		if (m_Grounded == HARPOON_IN_CHARACTER)
+		{
+			vec2 Distance = m_pOwnerChar->GetPos() - m_pVictim->GetPos();
+			Distance /= 200;
+			if (GameServer()->Tuning()->m_HarpoonClampPull)
+			{
+				Distance.x = clamp(Distance.x, -GameServer()->Tuning()->m_HarpoonClampPull, GameServer()->Tuning()->m_HarpoonClampPull * 1.0f);
+				Distance.y = clamp(Distance.y, -GameServer()->Tuning()->m_HarpoonClampPull, GameServer()->Tuning()->m_HarpoonClampPull * 1.0f);
+			}
+			m_pVictim->HarpoonDrag(Distance);
+		}
+		else if (m_Grounded == HARPOON_IN_GROUND)
+		{
+			vec2 Distance = m_Pos - m_pOwnerChar->GetPos();
+			Distance /= 200;
+			if (GameServer()->Tuning()->m_HarpoonClampPull)
+			{
+				Distance.x = clamp(Distance.x, -GameServer()->Tuning()->m_HarpoonClampPull, GameServer()->Tuning()->m_HarpoonClampPull * 1.0f);
+				Distance.y = clamp(Distance.y, -GameServer()->Tuning()->m_HarpoonClampPull, GameServer()->Tuning()->m_HarpoonClampPull * 1.0f);
+			}
+			m_pOwnerChar->HarpoonDrag(Distance);
+		}
 	}
-	else if (m_Grounded == HARPOON_IN_GROUND)
+	else
 	{
-		vec2 Distance = m_Pos - m_pOwnerChar->GetPos();
-		m_pOwnerChar->HarpoonDrag(Distance / 200);
+		if (m_Grounded == HARPOON_IN_CHARACTER)
+		{
+			vec2 Distance;
+			Distance.x = GameServer()->Tuning()->m_HarpoonPullValue * sign(m_pOwnerChar->GetPos().x - m_pVictim->GetPos().x);
+			Distance.y = GameServer()->Tuning()->m_HarpoonPullValue * sign(m_pOwnerChar->GetPos().y - m_pVictim->GetPos().y);
+
+			m_pVictim->HarpoonDrag(Distance);
+		}
+		else if (m_Grounded == HARPOON_IN_GROUND)
+		{
+			vec2 Distance;
+			Distance.x = GameServer()->Tuning()->m_HarpoonPullValue * sign(m_Pos.x - m_pOwnerChar->GetPos().x);
+			Distance.y = GameServer()->Tuning()->m_HarpoonPullValue * sign(m_Pos.y - m_pOwnerChar->GetPos().y);
+			m_pOwnerChar->HarpoonDrag(Distance);
+		}
 	}
 }
 
@@ -118,6 +151,10 @@ void CHarpoon::RemoveHarpoon()
 void CHarpoon::DeallocateOwner()
 {
 	m_pOwnerChar = 0x0;
+	if (m_Grounded == HARPOON_RETRACTING)
+	{
+		m_Grounded == HARPOON_FLYING;
+	}
 }
 void CHarpoon::DeallocateVictim()
 {

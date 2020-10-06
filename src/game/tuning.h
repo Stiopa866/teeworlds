@@ -56,11 +56,15 @@ MACRO_TUNING_PARAM(GrenadeCurvature, grenade_curvature, 7.0f)
 MACRO_TUNING_PARAM(GrenadeSpeed, grenade_speed, 1000.0f)
 MACRO_TUNING_PARAM(GrenadeLifetime, grenade_lifetime, 2.0f)
 
-MACRO_TUNING_PARAM(HarpoonCurvature, grenade_curvature, 0.1f)
-MACRO_TUNING_PARAM(HarpoonSpeed, grenade_speed, 1500.0f)
+MACRO_TUNING_PARAM(HarpoonCurvature, harpoon_curvature, 0.1f)
+MACRO_TUNING_PARAM(HarpoonSpeedLoss, harpoon_speed_loss, 2.0f)
 MACRO_TUNING_PARAM(HarpoonLifetimewithoutchar, harpoon_lifetime_wo_char, 0.5f) //30 sec 
-
-
+MACRO_TUNING_PARAM(HarpoonScaledWithDistance, harpoon_scale_with_distance, 1.0f)
+MACRO_TUNING_PARAM(HarpoonPullValue, harpoon_pull_value, 2.0f)
+MACRO_TUNING_PARAM(HarpoonClampPull, harpoon_clamp_pull, 0.0f)
+MACRO_TUNING_PARAM(HarpoonInitialSpeed, harpoon_initial_speed_multiplier, 35.0f)
+MACRO_TUNING_PARAM(HarpoonReturnSpeed, harpoon_return_speed_multiplier, 20.0f)
+MACRO_TUNING_PARAM(HarpoonElasticity, harpoon_elasticity, 0.5f)
 
 MACRO_TUNING_PARAM(LaserReach, laser_reach, 800.0f)
 MACRO_TUNING_PARAM(LaserBounceDelay, laser_bounce_delay, 150)
