@@ -45,13 +45,8 @@ vec2 CProjectile::GetPos(float Time)
 	float Curvature = 0;
 	float Speed = 0;
 
-	switch(m_Type)
+	switch (m_Type)
 	{
-		case WEAPON_HARPOON:
-			Curvature = GameServer()->Tuning()->m_HarpoonCurvature;
-			Speed = GameServer()->Tuning()->m_HarpoonSpeed;
-			break;
-
 		case WEAPON_GRENADE:
 			Curvature = GameServer()->Tuning()->m_GrenadeCurvature;
 			Speed = GameServer()->Tuning()->m_GrenadeSpeed;

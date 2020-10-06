@@ -96,6 +96,11 @@ void CCharacter::SetWeapon(int W)
 		return;
 
 	m_LastWeapon = m_ActiveWeapon;
+	if (m_pHarpoon)
+	{
+		m_pHarpoon->DeallocateOwner();
+		DeallocateHarpoon();
+	}
 	m_QueuedWeapon = -1;
 	m_ActiveWeapon = W;
 	GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SWITCH);

@@ -21,12 +21,7 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 	// get positions
 	float Curvature = 0;
 	float Speed = 0;
-	if (pCurrent->m_Type == WEAPON_HARPOON)
-	{
-		Curvature = m_pClient->m_Tuning.m_HarpoonCurvature;
-		Speed = m_pClient->m_Tuning.m_HarpoonSpeed;
-	}
-	else if(pCurrent->m_Type == WEAPON_GRENADE)
+	if(pCurrent->m_Type == WEAPON_GRENADE)
 	{
 		Curvature = m_pClient->m_Tuning.m_GrenadeCurvature;
 		Speed = m_pClient->m_Tuning.m_GrenadeSpeed;
