@@ -179,6 +179,7 @@ void CPlayers::RenderPlayer(
 
 	RenderInfo.m_GotAirJump = Player.m_Jumped&2?0:1;
 
+	bool Swimming = Collision()->CheckPoint(Player.m_X, Player.m_Y, 8) && Player.m_VelY<0; //is in water and has floating tendency
 	bool Stationary = Player.m_VelX <= 1 && Player.m_VelX >= -1;
 	bool InAir = !Collision()->CheckPoint(Player.m_X, Player.m_Y+16);
 	bool WantOtherDir = (Player.m_Direction == -1 && Vel.x > 0) || (Player.m_Direction == 1 && Vel.x < 0);
@@ -190,10 +191,17 @@ void CPlayers::RenderPlayer(
 			? fmod(Position.x, WalkTimeMagic)
 			: WalkTimeMagic - fmod(-Position.x, WalkTimeMagic))
 		/ WalkTimeMagic;
+	float FloatTime =
+		((Position.y >= 0)
+			? fmod(Position.y, WalkTimeMagic)
+			: WalkTimeMagic - fmod(-Position.y, WalkTimeMagic))
+		/ WalkTimeMagic;
 	CAnimState State;
 	State.Set(&g_pData->m_aAnimations[ANIM_BASE], 0);
 
-	if(InAir)
+	if (Swimming)
+		State.Add(&g_pData->m_aAnimations[ANIM_SWIM], FloatTime, 1.0f);
+	else if(InAir)
 		State.Add(&g_pData->m_aAnimations[ANIM_INAIR], 0, 1.0f); // TODO: some sort of time here
 	else if(Stationary)
 		State.Add(&g_pData->m_aAnimations[ANIM_IDLE], 0, 1.0f); // TODO: some sort of time here
