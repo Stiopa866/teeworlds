@@ -29,6 +29,8 @@ MACRO_TUNING_PARAM(LiquidPressure, liq_pressure, 0)
 MACRO_TUNING_PARAM(LiquidPushOut, liq_push_out, 0.3f)
 MACRO_TUNING_PARAM(LiquidPushDown, liq_push_down, -0.3f)
 MACRO_TUNING_PARAM(LiquidPushDownInstead, liq_push_down_instead, 0)
+MACRO_TUNING_PARAM(LiquidFractionofSwimming, liq_fraction_of_push, 0.2f)
+MACRO_TUNING_PARAM(LiquidUseDownKey, liq_down_key, 0)
 //liquid physics diving
 //MACRO_TUNING_PARAM(LiquidSwimmingAccel, liq_swim_accel, 0.1f)
 //MACRO_TUNING_PARAM(LiquidSwimmingTopAccel, liq_swim_accel_top, 5.0f)

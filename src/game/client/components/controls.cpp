@@ -159,9 +159,9 @@ int CControls::SnapInput(int *pData)
 
 		m_InputData.m_DirectionVertical = 0;
 		if (!m_InputDirectionUp && m_InputDirectionDown)
-			m_InputData.m_Direction = 1;
-		if (!m_InputDirectionUp && m_InputDirectionDown)
-			m_InputData.m_Direction = -1;
+			m_InputData.m_DirectionVertical = 1;
+		if (m_InputDirectionUp && !m_InputDirectionDown)
+			m_InputData.m_DirectionVertical = -1;
 
 		// stress testing
 		if(Config()->m_DbgStress)
@@ -170,6 +170,7 @@ int CControls::SnapInput(int *pData)
 			mem_zero(&m_InputData, sizeof(m_InputData));
 
 			m_InputData.m_Direction = ((int)t/2)%3-1;
+			m_InputData.m_DirectionVertical = ((int)t / 2) % 3 - 1;
 			m_InputData.m_Jump = ((int)t)&1;
 			m_InputData.m_Fire = ((int)(t*10));
 			m_InputData.m_Hook = ((int)(t*2))&1;
@@ -180,6 +181,7 @@ int CControls::SnapInput(int *pData)
 
 		// check if we need to send input
 		if(m_InputData.m_Direction != m_LastData.m_Direction) Send = true;
+		else if(m_InputData.m_DirectionVertical != m_LastData.m_DirectionVertical) Send = true;
 		else if(m_InputData.m_Jump != m_LastData.m_Jump) Send = true;
 		else if(m_InputData.m_Fire != m_LastData.m_Fire) Send = true;
 		else if(m_InputData.m_Hook != m_LastData.m_Hook) Send = true;
