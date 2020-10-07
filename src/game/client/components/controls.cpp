@@ -21,6 +21,7 @@ CControls::CControls()
 void CControls::OnReset()
 {
 	m_LastData.m_Direction = 0;
+	m_LastData.m_DirectionVertical = 0;
 	m_LastData.m_Hook = 0;
 	// simulate releasing the fire button
 	if((m_LastData.m_Fire&1) != 0)
@@ -83,6 +84,8 @@ void CControls::OnConsoleInit()
 	// game commands
 	Console()->Register("+left", "", CFGFLAG_CLIENT, ConKeyInputState, &m_InputDirectionLeft, "Move left");
 	Console()->Register("+right", "", CFGFLAG_CLIENT, ConKeyInputState, &m_InputDirectionRight, "Move right");
+	Console()->Register("+up", "", CFGFLAG_CLIENT, ConKeyInputState, &m_InputDirectionUp, "Move up");
+	Console()->Register("+down", "", CFGFLAG_CLIENT, ConKeyInputState, &m_InputDirectionDown, "Move down");
 	Console()->Register("+jump", "", CFGFLAG_CLIENT, ConKeyInputState, &m_InputData.m_Jump, "Jump");
 	Console()->Register("+hook", "", CFGFLAG_CLIENT, ConKeyInputState, &m_InputData.m_Hook, "Hook");
 	Console()->Register("+fire", "", CFGFLAG_CLIENT, ConKeyInputCounter, &m_InputData.m_Fire, "Fire");
@@ -153,6 +156,12 @@ int CControls::SnapInput(int *pData)
 			m_InputData.m_Direction = -1;
 		if(!m_InputDirectionLeft && m_InputDirectionRight)
 			m_InputData.m_Direction = 1;
+
+		m_InputData.m_DirectionVertical = 0;
+		if (!m_InputDirectionUp && m_InputDirectionDown)
+			m_InputData.m_Direction = 1;
+		if (!m_InputDirectionUp && m_InputDirectionDown)
+			m_InputData.m_Direction = -1;
 
 		// stress testing
 		if(Config()->m_DbgStress)

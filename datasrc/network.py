@@ -83,6 +83,7 @@ Objects = [
 
 	NetObject("PlayerInput", [
 		NetIntRange("m_Direction", -1, 1),
+                NetIntRange("m_DirectionVertical", -1, 1),
 		NetIntAny("m_TargetX"),
 		NetIntAny("m_TargetY"),
 
