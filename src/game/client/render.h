@@ -36,6 +36,7 @@ public:
 	IGraphics::CTextureHandle m_aTextures[NUM_SKINPARTS];
 	IGraphics::CTextureHandle m_HatTexture;
 	IGraphics::CTextureHandle m_BotTexture;
+	IGraphics::CTextureHandle m_DivingGearTexture;
 	int m_HatSpriteIndex;
 	vec4 m_BotColor;
 	vec4 m_aColors[NUM_SKINPARTS];

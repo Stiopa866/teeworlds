@@ -183,7 +183,14 @@ void CPlayers::RenderPlayer(
 	bool Stationary = Player.m_VelX <= 1 && Player.m_VelX >= -1;
 	bool InAir = !Collision()->CheckPoint(Player.m_X, Player.m_Y+16);
 	bool WantOtherDir = (Player.m_Direction == -1 && Vel.x > 0) || (Player.m_Direction == 1 && Vel.x < 0);
+	//bool DivingGear = Player.m_DivingGear;
 
+	if (Player.m_DivingGear)
+	{
+		RenderInfo.m_DivingGearTexture = m_pClient->m_pSkins->m_DivingGearTexture;
+	}
+	else
+		RenderInfo.m_DivingGearTexture.Invalidate();
 	// evaluate animation
 	const float WalkTimeMagic = 100.0f;
 	float WalkTime =
