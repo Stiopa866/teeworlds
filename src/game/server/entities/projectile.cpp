@@ -71,7 +71,7 @@ vec2 CProjectile::GetPos(float Time)
 	vec2 ReturnPos;
 	vec2 TestDirection;
 	if(m_Water)
-		ReturnPos = CalcWaterPos(m_Pos, m_Direction, Curvature, Speed, Time);
+		ReturnPos = CalcPos(m_Pos, m_Direction, Curvature, Speed*GameServer()->Tuning()->m_LiquidProjectileResistance, Time);
 	else
 		ReturnPos = CalcPos(m_Pos, m_Direction, Curvature, Speed, Time);
 	if (!m_Water&&GameServer()->Collision()->TestBox(vec2(ReturnPos.x, ReturnPos.y), vec2(6.0f, 6.0f), 8))
@@ -82,11 +82,11 @@ vec2 CProjectile::GetPos(float Time)
 		m_StartTick = Server()->Tick();
 		m_Water = true;
 	}
-	else if (m_Water && !GameServer()->Collision()->TestBox(vec2(ReturnPos.x, ReturnPos.y), vec2(6.0f, 6.0f), 8))
+	else if (m_Water && GameServer()->Tuning()->m_LiquidSlowProjectilesAfterWater&& !GameServer()->Collision()->TestBox(vec2(ReturnPos.x, ReturnPos.y), vec2(6.0f, 6.0f), 8))
 	{
 		m_Pos.x = ReturnPos.x;
 		m_Pos.y = ReturnPos.y;
-		m_Direction = normalize(CalcWaterPos(m_Pos, m_Direction, Curvature, Speed, Time) - CalcWaterPos(m_Pos, m_Direction, Curvature, Speed, Time - 0.001f));
+		m_Direction = normalize(CalcPos(m_Pos, m_Direction, Curvature, Speed * GameServer()->Tuning()->m_LiquidProjectileResistance, Time) - CalcPos(m_Pos, m_Direction, Curvature, Speed * GameServer()->Tuning()->m_LiquidProjectileResistance, Time - 0.001f));
 		m_StartTick = Server()->Tick();
 		m_Water = false;
 	}

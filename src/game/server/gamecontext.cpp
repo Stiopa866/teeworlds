@@ -1570,7 +1570,7 @@ void CGameContext::OnInit()
 	// select gametype
 	if(str_comp_nocase(Config()->m_SvGametype, "mod") == 0)
 		m_pController = new CGameControllerMOD(this);
-	else if(str_comp_nocase(Config()->m_SvGametype, "ctf") == 0)
+	else if(str_comp_nocase(Config()->m_SvGametype, "ctfw") == 0)
 		m_pController = new CGameControllerCTF(this);
 	else if(str_comp_nocase(Config()->m_SvGametype, "lms") == 0)
 		m_pController = new CGameControllerLMS(this);

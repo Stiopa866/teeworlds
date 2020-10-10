@@ -61,8 +61,8 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 	vec2 PrevPos;
 	if(pCurrent->m_Water)
 	{
-		Pos = CalcWaterPos(StartPos, StartVel, Curvature, Speed, Ct);
-		PrevPos = CalcWaterPos(StartPos, StartVel, Curvature, Speed, Ct - 0.001f);
+		Pos = CalcPos(StartPos, StartVel, Curvature, Speed*m_pClient->m_Tuning.m_LiquidProjectileResistance, Ct);
+		PrevPos = CalcPos(StartPos, StartVel, Curvature, Speed* m_pClient->m_Tuning.m_LiquidProjectileResistance, Ct - 0.001f);
 	}
 	else
 	{
