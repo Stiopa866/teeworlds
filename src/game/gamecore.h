@@ -178,7 +178,6 @@ public:
 	void AddDragVelocity();
 	void ResetDragVelocity();
 	void HandleWater(bool UseInput);
-	void HandleDownWater(bool UseInput);
 	void HandleSwimming(vec2 TargetDirection);
 
 	void Read(const CNetObj_CharacterCore *pObjCore);

@@ -1486,6 +1486,12 @@ void CMenus::RenderSettingsControls(CUIRect MainView)
 	static bool s_MiscActive = true;
 	Split = DoIndependentDropdownMenu(&s_MiscDropdown, &MainView, Localize("Misc"), HeaderHeight, &CMenus::RenderSettingsControlsMisc, &s_MiscActive);
 
+	MainView.HSplitTop(Split + 10.0f, &LastExpandRect, &MainView);
+	s_ScrollRegion.AddRect(LastExpandRect);
+	static int s_WaterDropdown = 0;
+	static bool s_WaterActive = true;
+	Split = DoIndependentDropdownMenu(&s_WaterDropdown, &MainView, Localize("Water"), HeaderHeight, &CMenus::RenderSettingsControlsWater, &s_WaterActive);
+
 	MainView.HSplitTop(Split+10.0f, &LastExpandRect, &MainView);
 	s_ScrollRegion.AddRect(LastExpandRect);
 
