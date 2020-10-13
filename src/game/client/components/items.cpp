@@ -108,7 +108,12 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 
 void CItems::RenderPickup(const CNetObj_Pickup *pPrev, const CNetObj_Pickup *pCurrent)
 {
-	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
+	if (pCurrent->m_Type == PICKUP_DIVING)
+	{
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_DIVING_GEAR].m_Id);
+	}
+	else
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
 	Graphics()->QuadsBegin();
 	vec2 Pos = mix(vec2(pPrev->m_X, pPrev->m_Y), vec2(pCurrent->m_X, pCurrent->m_Y), Client()->IntraGameTick());
 	float Angle = 0.0f;
@@ -123,8 +128,9 @@ void CItems::RenderPickup(const CNetObj_Pickup *pPrev, const CNetObj_Pickup *pCu
 		SPRITE_PICKUP_GUN,
 		SPRITE_PICKUP_HAMMER,
 		SPRITE_PICKUP_NINJA,
-		SPRITE_DIVING_GEAR
+		SPRITE_DIVING_GEAR,
 		};
+
 	RenderTools()->SelectSprite(c[pCurrent->m_Type]);
 
 	switch(pCurrent->m_Type)
@@ -148,6 +154,9 @@ void CItems::RenderPickup(const CNetObj_Pickup *pPrev, const CNetObj_Pickup *pCu
 		break;
 	case PICKUP_HAMMER:
 		Size = g_pData->m_Weapons.m_aId[WEAPON_HAMMER].m_VisualSize;
+		break;
+	case PICKUP_DIVING:
+		Size = 88.0f;
 		break;
 	}
 	

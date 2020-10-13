@@ -259,7 +259,7 @@ image_levelicons = Image("levelicons", "ui/icons/level.png", 1)
 image_sidebaricons = Image("sidebaricons", "ui/icons/sidebar.png", 1)
 image_chatwhisper = Image("chatwhisper", "ui/icons/chat_whisper.png", 1)
 image_timerclock = Image("timerclock", "ui/icons/timer_clock.png", 1)
-
+image_diving_gear = Image("diving_gear", "skins/diving_gear.png", 1)
 
 container.images.Add(image_null)
 container.images.Add(image_game)
@@ -289,7 +289,7 @@ container.images.Add(image_sidebaricons)
 container.images.Add(image_chatwhisper)
 container.images.Add(Image("raceflag", "race_flag.png"))
 container.images.Add(image_timerclock)
-
+container.images.Add(image_diving_gear)
 
 container.pickups.Add(Pickup("health"))
 container.pickups.Add(Pickup("armor"))
@@ -330,7 +330,7 @@ set_networkicons = SpriteSet("networkicons", image_networkicons, 1, 2)
 set_levelicons = SpriteSet("levelicons", image_levelicons, 4, 4)
 set_sidebaricons = SpriteSet("sidebaricons", image_sidebaricons, 4, 2)
 set_timerclock = SpriteSet("timerclock", image_timerclock, 1, 2)
-
+set_diving_gear = SpriteSet("diving_gear", image_diving_gear, 8, 8)
 
 container.spritesets.Add(set_particles)
 container.spritesets.Add(set_game)
@@ -360,7 +360,7 @@ container.spritesets.Add(set_levelicons)
 container.spritesets.Add(set_sidebaricons)
 container.spritesets.Add(set_timerclock)
 container.spritesets.Add(set_browsericon)
-
+container.spritesets.Add(set_diving_gear)
 
 container.sprites.Add(Sprite("part_slice", set_particles, 0,0,1,1))
 container.sprites.Add(Sprite("part_ball", set_particles, 1,0,1,1))
@@ -595,7 +595,6 @@ container.sprites.Add(Sprite("timerclock_a", set_timerclock, 0,0,1,1))
 container.sprites.Add(Sprite("timerclock_b", set_timerclock, 0,1,1,1))
 
 container.sprites.Add(Sprite("bubble", set_game, 23,6,2,2))
-container.sprites.Add(Sprite("diving_gear", set_game, 16,2,2,2))
 container.sprites.Add(Sprite("diving_bar_full_left", set_game, 21,8,1,2))
 container.sprites.Add(Sprite("diving_bar_full", set_game, 22,8,1,2))
 container.sprites.Add(Sprite("diving_bar_empty", set_game, 23,8,1,2))
@@ -605,7 +604,7 @@ container.sprites.Add(Sprite("part_bubble1", set_particles, 6,0,1,1))
 container.sprites.Add(Sprite("part_bubble2", set_particles, 7,0,1,1))
 container.sprites.Add(Sprite("part_bubble3", set_particles, 6,1,1,1))
 container.sprites.Add(Sprite("part_bubble4", set_particles, 7,1,1,1))
-
+container.sprites.Add(Sprite("diving_gear", set_diving_gear, 1,1,6,6))
 
 anim = Animation("base")
 anim.body.frames.Add(AnimKeyframe(0, 0, -4, 0))
