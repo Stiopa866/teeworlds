@@ -81,8 +81,8 @@ void CCharacterCore::Reset()
 void CCharacterCore::HandleSwimming(vec2 TargetDirection)
 {
 	vec2 ProposedVel, MaxSpeed;
-	MaxSpeed.x = TargetDirection.x * m_pWorld->m_Tuning.m_LiquidDivingCursorMaxSpeed;
-	MaxSpeed.y = TargetDirection.y * m_pWorld->m_Tuning.m_LiquidDivingCursorMaxSpeed;
+	MaxSpeed.x = m_DivingGear ? TargetDirection.x * m_pWorld->m_Tuning.m_LiquidDivingCursorMaxSpeed : TargetDirection.x * m_pWorld->m_Tuning.m_LiquidCursorMaxSpeed;
+	MaxSpeed.y = m_DivingGear ? TargetDirection.y * m_pWorld->m_Tuning.m_LiquidDivingCursorMaxSpeed : TargetDirection.y * m_pWorld->m_Tuning.m_LiquidCursorMaxSpeed;
 	ProposedVel.x = m_Vel.x + TargetDirection.x;
 	ProposedVel.y = m_Vel.y + TargetDirection.y;
 	if (TargetDirection.x > 0)
@@ -170,13 +170,16 @@ void CCharacterCore::Tick(bool UseInput)
 			}
 			else
 			{
-				if (m_DivingGear)
-				{
-					if (m_pWorld->m_Tuning.m_LiquidDivingCursor)
+				if (m_pWorld->m_Tuning.m_LiquidDivingCursor)
+					if(!(m_pWorld->m_Tuning.m_LiquidCursorRequireDiving && !m_DivingGear))
 						HandleSwimming(TargetDirection);
+				//if (m_DivingGear)
+				//{
+					// (m_pWorld->m_Tuning.m_LiquidDivingCursor)
+						//(TargetDirection);
 					//else
 						//sm_Vel.y = SaturatedAdd(-m_pWorld->m_Tuning.m_LiquidSwimmingTopAccel, 1.0f, m_Vel.y, -m_pWorld->m_Tuning.m_Gravity - m_pWorld->m_Tuning.m_LiquidSwimmingAccel);
-				}
+				//}
 			}
 		}
 		else
@@ -468,6 +471,15 @@ void CCharacterCore::HandleWater(bool UseInput)
 		}
 		if (absolute(m_Vel.x) > m_pWorld->m_Tuning.m_LiquidDivingGearMaxHorizontalVelocity)
 		{
+			m_Vel.x *= m_pWorld->m_Tuning.m_LiquidHorizontalDecel;
+		}
+		return;
+	}
+	if (m_pWorld->m_Tuning.m_LiquidDivingCursor&&!m_pWorld->m_Tuning.m_LiquidCursorRequireDiving)
+	{
+		if (!m_Input.m_Jump)
+		{
+			m_Vel.y *= m_pWorld->m_Tuning.m_LiquidVerticalDecel;
 			m_Vel.x *= m_pWorld->m_Tuning.m_LiquidHorizontalDecel;
 		}
 		return;
