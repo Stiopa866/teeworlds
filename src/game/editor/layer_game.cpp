@@ -21,3 +21,21 @@ int CLayerGame::RenderProperties(CUIRect *pToolbox)
 	m_Image = -1;
 	return r;
 }
+
+CLayerWater::CLayerWater(int w, int h)
+	: CLayerTiles(w, h)
+{
+	str_copy(m_aName, "Water", sizeof(m_aName));
+	m_Water = 1;
+}
+
+CLayerWater::~CLayerWater()
+{
+}
+
+int CLayerWater::RenderProperties(CUIRect* pToolbox)
+{
+	int r = CLayerTiles::RenderProperties(pToolbox);
+	m_Image = -1;
+	return r;
+}

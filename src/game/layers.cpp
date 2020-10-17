@@ -10,6 +10,7 @@ CLayers::CLayers()
 	m_LayersStart = 0;
 	m_pGameGroup = 0;
 	m_pGameLayer = 0;
+	m_pWaterLayer = 0;
 	m_pMap = 0;
 }
 
@@ -18,9 +19,11 @@ void CLayers::Init(class IKernel *pKernel, IMap *pMap)
 	m_pMap = pMap ? pMap : pKernel->RequestInterface<IMap>();
 	m_pMap->GetType(MAPITEMTYPE_GROUP, &m_GroupsStart, &m_GroupsNum);
 	m_pMap->GetType(MAPITEMTYPE_LAYER, &m_LayersStart, &m_LayersNum);
-
+	
+	
 	InitGameLayer();
 	InitTilemapSkip();
+	InitWaterLayer();
 }
 
 void CLayers::InitGameLayer()
@@ -53,6 +56,28 @@ void CLayers::InitGameLayer()
 						m_pGameGroup->m_ClipW = 0;
 						m_pGameGroup->m_ClipH = 0;
 					}
+
+					break;
+				}
+			}
+		}
+	}
+}
+//STI1
+void CLayers::InitWaterLayer()
+{
+	for (int g = 0; g < NumGroups(); g++)
+	{
+		CMapItemGroup* pGroup = GetGroup(g);
+		for (int l = 0; l < pGroup->m_NumLayers; l++)
+		{
+			CMapItemLayer* pLayer = GetLayer(pGroup->m_StartLayer + l);
+			if (pLayer->m_Type == LAYERTYPE_WATER)
+			{
+				CMapItemLayerTilemap* pTilemap = reinterpret_cast<CMapItemLayerTilemap*>(pLayer);
+				if (pTilemap->m_Flags & TILESLAYERFLAG_WATER)
+				{
+					m_pWaterLayer = pTilemap;
 
 					break;
 				}
