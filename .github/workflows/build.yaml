@@ -24,7 +24,10 @@ jobs:
         - os: windows-latest
           cmake-args: -G "Visual Studio 16 2019" -A x64
           package-file: teeworlds-*-win64.zip
-
+          env:
+            CFLAGS: /WX
+            CXXFLAGS: /WX
+            LDFLAGS: /WX
     steps:
     - uses: actions/checkout@v2
       with:
