@@ -247,17 +247,41 @@ void CPlayers::RenderPlayer(
 
 	// draw gun
 	{
-		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
+		if (Player.m_Weapon == WEAPON_HARPOON)
+		{
+			Graphics()->TextureSet(g_pData->m_aImages[IMAGE_HARPOON].m_Id);
+		}
+		else
+		{
+			Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
+		}
+		
 		Graphics()->QuadsBegin();
 		Graphics()->QuadsSetRotation(State.GetAttach()->m_Angle*pi*2+Angle);
-
-		// normal weapons
-		int iw = clamp(Player.m_Weapon, 0, NUM_WEAPONS-1);
-		RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[iw].m_pSpriteBody, Direction.x < 0 ? SPRITE_FLAG_FLIP_Y : 0);
-
 		vec2 Dir = Direction;
 		float Recoil = 0.0f;
 		vec2 p;
+		int iw = clamp(Player.m_Weapon, 0, NUM_WEAPONS - 1);
+		if (Player.m_Weapon == WEAPON_HARPOON)
+		{
+			p = Position + Dir * g_pData->m_Weapons.m_aId[iw].m_Offsetx - Dir*Recoil*10.0f;
+			p.y += g_pData->m_Weapons.m_aId[iw].m_Offsety;
+			RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[iw].m_pSpriteProj, Direction.x < 0 ? SPRITE_FLAG_FLIP_Y : 0);
+			float OffsetY = -g_pData->m_Weapons.m_aId[iw].m_Muzzleoffsety;
+			if (Direction.x < 0)
+				OffsetY = -OffsetY;
+
+			vec2 DirY(-Dir.y, Dir.x);
+			vec2 MuzzlePos = p + Dir * (g_pData->m_Weapons.m_aId[iw].m_Muzzleoffsetx + 20.0f) + DirY * OffsetY;
+
+			RenderTools()->DrawSprite(MuzzlePos.x, MuzzlePos.y, g_pData->m_Weapons.m_aId[iw].m_VisualSize*0.67f);
+		}
+		// normal weapons
+		
+		RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[iw].m_pSpriteBody, Direction.x < 0 ? SPRITE_FLAG_FLIP_Y : 0);
+
+		
+		
 		if (Player.m_Weapon == WEAPON_HAMMER)
 		{
 			// Static position for hammer
@@ -333,6 +357,7 @@ void CPlayers::RenderPlayer(
 			p.y += g_pData->m_Weapons.m_aId[iw].m_Offsety;
 			RenderTools()->DrawSprite(p.x, p.y, g_pData->m_Weapons.m_aId[iw].m_VisualSize);
 		}
+		
 
 		if (Player.m_Weapon == WEAPON_GUN || Player.m_Weapon == WEAPON_SHOTGUN)
 		{
