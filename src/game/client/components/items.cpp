@@ -21,6 +21,7 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 	// get positions
 	float Curvature = 0;
 	float Speed = 0;
+	float WaterResistance = m_pClient->m_Tuning.m_LiquidProjectileResistance;
 	if (pCurrent->m_Type == WEAPON_HARPOON)
 	{
 		Curvature = m_pClient->m_Tuning.m_HarpoonCurvature;
@@ -35,6 +36,7 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 	{
 		Curvature = m_pClient->m_Tuning.m_ShotgunCurvature;
 		Speed = m_pClient->m_Tuning.m_ShotgunSpeed;
+		WaterResistance = m_pClient->m_Tuning.m_ShotgunWaterResistance;
 	}
 	else if(pCurrent->m_Type == WEAPON_GUN)
 	{
@@ -61,8 +63,8 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 	vec2 PrevPos;
 	if(pCurrent->m_Water)
 	{
-		Pos = CalcPos(StartPos, StartVel, Curvature, Speed*m_pClient->m_Tuning.m_LiquidProjectileResistance, Ct);
-		PrevPos = CalcPos(StartPos, StartVel, Curvature, Speed* m_pClient->m_Tuning.m_LiquidProjectileResistance, Ct - 0.001f);
+		Pos = CalcPos(StartPos, StartVel, Curvature, Speed* WaterResistance, Ct);
+		PrevPos = CalcPos(StartPos, StartVel, Curvature, Speed* WaterResistance, Ct - 0.001f);
 	}
 	else
 	{
@@ -70,13 +72,18 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 		PrevPos = CalcPos(StartPos, StartVel, Curvature, Speed, Ct - 0.001f);
 	}
 
-	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
+	if (pCurrent->m_Type == WEAPON_HARPOON)
+	{
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_HARPOON].m_Id);
+	}
+	else
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
 	Graphics()->QuadsBegin();
 
-	RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[clamp(pCurrent->m_Type, 0, NUM_WEAPONS-1)].m_pSpriteProj);
+	RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[clamp(pCurrent->m_Type, 0, NUM_WEAPONS-1)].m_pSpriteProj, pCurrent->m_Type==WEAPON_HARPOON ? SPRITE_FLAG_FLIP_Y : 0);
 	vec2 Vel = Pos-PrevPos;
 	//vec2 pos = mix(vec2(prev->x, prev->y), vec2(current->x, current->y), Client()->IntraGameTick());
-
+	
 
 	// add particle for this projectile
 	if(pCurrent->m_Type == WEAPON_GRENADE)
@@ -99,11 +106,20 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 			Graphics()->QuadsSetRotation(0);
 
 	}
-
-	IGraphics::CQuadItem QuadItem(Pos.x, Pos.y, 32, 32);
-	Graphics()->QuadsDraw(&QuadItem, 1);
-	Graphics()->QuadsSetRotation(0);
-	Graphics()->QuadsEnd();
+	if (pCurrent->m_Type == WEAPON_HARPOON)
+	{
+		IGraphics::CQuadItem QuadItem(Pos.x, Pos.y, 48, 36);
+		Graphics()->QuadsDraw(&QuadItem, 1);
+		Graphics()->QuadsSetRotation(0);
+		Graphics()->QuadsEnd();
+	}
+	else
+	{
+		IGraphics::CQuadItem QuadItem(Pos.x, Pos.y, 32, 32);
+		Graphics()->QuadsDraw(&QuadItem, 1);
+		Graphics()->QuadsSetRotation(0);
+		Graphics()->QuadsEnd();
+	}
 }
 
 void CItems::RenderPickup(const CNetObj_Pickup *pPrev, const CNetObj_Pickup *pCurrent)

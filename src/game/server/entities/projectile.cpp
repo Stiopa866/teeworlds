@@ -44,7 +44,7 @@ vec2 CProjectile::GetPos(float Time)
 {
 	float Curvature = 0;
 	float Speed = 0;
-
+	float WaterResistance = GameServer()->Tuning()->m_LiquidProjectileResistance;
 	switch(m_Type)
 	{
 		case WEAPON_HARPOON:
@@ -60,6 +60,7 @@ vec2 CProjectile::GetPos(float Time)
 		case WEAPON_SHOTGUN:
 			Curvature = GameServer()->Tuning()->m_ShotgunCurvature;
 			Speed = GameServer()->Tuning()->m_ShotgunSpeed;
+			WaterResistance = GameServer()->Tuning()->m_ShotgunWaterResistance;
 			break;
 
 		case WEAPON_GUN:
@@ -70,8 +71,19 @@ vec2 CProjectile::GetPos(float Time)
 	}
 	vec2 ReturnPos;
 	vec2 TestDirection;
-	if(m_Water)
-		ReturnPos = CalcPos(m_Pos, m_Direction, Curvature, Speed*GameServer()->Tuning()->m_LiquidProjectileResistance, Time);
+	
+	if (m_Water)
+	{
+		//if (m_Type != WEAPON_SHOTGUN)
+		//{
+			ReturnPos = CalcPos(m_Pos, m_Direction, Curvature, Speed * WaterResistance, Time);
+		//}
+		//else
+		//{
+		//	ReturnPos = CalcPos(m_Pos, m_Direction, Curvature, Speed * (GameServer()->Tuning()->m_LiquidProjectileResistance * 0.5f + 1 - GameServer()->Tuning()->m_LiquidProjectileResistance), Time);
+		//}
+	}
+		
 	else
 		ReturnPos = CalcPos(m_Pos, m_Direction, Curvature, Speed, Time);
 	if (!m_Water&&GameServer()->Collision()->TestBox(vec2(ReturnPos.x, ReturnPos.y), vec2(6.0f, 6.0f), 8))
@@ -96,11 +108,14 @@ vec2 CProjectile::GetPos(float Time)
 
 void CProjectile::Tick()
 {
+	bool IsInWater = false;
+
 	float Pt = (Server()->Tick()-m_StartTick-1)/(float)Server()->TickSpeed();
 	float Ct = (Server()->Tick()-m_StartTick)/(float)Server()->TickSpeed();
 	vec2 PrevPos = GetPos(Pt);
 	vec2 CurPos = GetPos(Ct);
-	if (GameServer()->Tuning()->m_LiquidWeaponInvalidation && GameServer()->Collision()->TestBox(vec2(CurPos.x, CurPos.y), vec2(6.0f, 6.0f), 8))
+	IsInWater = GameServer()->Collision()->TestBox(vec2(PrevPos.x, PrevPos.y), vec2(6.0f, 6.0f), 8);
+	if (GameServer()->Tuning()->m_LiquidWeaponInvalidation && IsInWater)
 	{
 		GameWorld()->DestroyEntity(this);
 		return;
@@ -116,8 +131,13 @@ void CProjectile::Tick()
 		if(m_LifeSpan >= 0 || m_Weapon == WEAPON_GRENADE)
 			GameServer()->CreateSound(CurPos, m_SoundImpact);
 
-		if(m_Explosive)
-			GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, m_Damage);
+		if (m_Explosive)
+		{
+			if (IsInWater)
+				GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, m_Damage * GameServer()->Tuning()->m_LiquidExplosionDamageMultiplier, GameServer()->Tuning()->m_LiquidExplosionRadiusMultiplier);
+			else
+				GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, m_Damage);
+		}
 
 		else if(TargetChr)
 			TargetChr->TakeDamage(m_Direction * max(0.001f, m_Force), m_Direction*-1, m_Damage, m_Owner, m_Weapon);

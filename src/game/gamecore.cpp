@@ -207,7 +207,7 @@ void CCharacterCore::Tick(bool UseInput)
 	}
 
 	// add the speed modification according to players wanted direction
-	if (!(IsInWater() && m_pWorld->m_Tuning.m_LiquidDivingCursor && m_DivingGear && m_Input.m_Jump && UseInput))
+	if (!(IsInWater() && m_pWorld->m_Tuning.m_LiquidDivingCursor))
 	{
 		if (m_Direction < 0)
 			m_Vel.x = SaturatedAdd(-MaxSpeed, MaxSpeed, m_Vel.x, -Accel);
@@ -241,7 +241,8 @@ void CCharacterCore::Tick(bool UseInput)
 	}
 	else if(m_HookState == HOOK_FLYING)
 	{
-		vec2 NewPos = m_HookPos+m_HookDir*m_pWorld->m_Tuning.m_HookFireSpeed;
+		vec2 NewPos;
+		NewPos = m_pCollision->TestBox(m_HookPos, vec2(1.0f, 1.0f), 8) ? m_HookPos + m_HookDir * m_pWorld->m_Tuning.m_HookFireSpeed * 0.5f : m_HookPos + m_HookDir * m_pWorld->m_Tuning.m_HookFireSpeed;
 		if(distance(m_Pos, NewPos) > m_pWorld->m_Tuning.m_HookLength)
 		{
 			m_HookState = HOOK_RETRACT_START;
@@ -254,7 +255,7 @@ void CCharacterCore::Tick(bool UseInput)
 		int Hit = m_pCollision->IntersectLine(m_HookPos, NewPos, &NewPos, 0);
 		if(Hit)
 		{
-			if(Hit&CCollision::COLFLAG_NOHOOK)
+			if (Hit & CCollision::COLFLAG_NOHOOK)
 				GoingToRetract = true;
 			else
 				GoingToHitGround = true;
@@ -459,14 +460,7 @@ void CCharacterCore::HandleWater(bool UseInput)
 			}
 			else
 			{
-				if (m_pWorld->m_Tuning.m_LiquidPushDownInstead)
-				{
-					m_Vel.y -= m_Input.m_Jump || m_Input.m_DirectionVertical == 1 ? -m_pWorld->m_Tuning.m_LiquidPushDown : m_pWorld->m_Tuning.m_LiquidPushDown;
-				}
-				else
-				{
-					m_Vel.y -= m_Input.m_Jump || m_Input.m_DirectionVertical == 1 ? -m_pWorld->m_Tuning.m_LiquidPushOut : m_pWorld->m_Tuning.m_LiquidPushOut;
-				}
+				m_Vel.y -= m_Input.m_Jump || m_Input.m_DirectionVertical == 1 ? -m_pWorld->m_Tuning.m_LiquidPushOut : m_pWorld->m_Tuning.m_LiquidPushOut;
 			}
 		}
 		if (absolute(m_Vel.x) > m_pWorld->m_Tuning.m_LiquidDivingGearMaxHorizontalVelocity)
@@ -505,14 +499,7 @@ void CCharacterCore::HandleWater(bool UseInput)
 		}
 		else
 		{
-			if (m_pWorld->m_Tuning.m_LiquidPushDownInstead)
-			{
-				m_Vel.y -= m_Input.m_Jump || m_Input.m_DirectionVertical == 1 ? -m_pWorld->m_Tuning.m_LiquidPushDown * m_pWorld->m_Tuning.m_LiquidFractionofSwimming : m_pWorld->m_Tuning.m_LiquidPushDown;
-			}
-			else
-			{
-				m_Vel.y -= m_Input.m_Jump || m_Input.m_DirectionVertical == 1 ? -m_pWorld->m_Tuning.m_LiquidPushOut * m_pWorld->m_Tuning.m_LiquidFractionofSwimming : m_pWorld->m_Tuning.m_LiquidPushOut;
-			}
+			m_Vel.y -= m_Input.m_Jump || m_Input.m_DirectionVertical == 1 ? -m_pWorld->m_Tuning.m_LiquidPushOut * m_pWorld->m_Tuning.m_LiquidFractionofSwimming : m_pWorld->m_Tuning.m_LiquidPushOut;
 		}
 	}
 	

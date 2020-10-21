@@ -526,7 +526,12 @@ void CHud::RenderCursor()
 
 	vec2 Pos = *m_pClient->m_pCamera->GetCenter();
 	RenderTools()->MapScreenToGroup(Pos.x, Pos.y, Layers()->GameGroup(), m_pClient->m_pCamera->GetZoom());
-	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
+	if (m_pClient->m_Snap.m_pLocalCharacter->m_Weapon == WEAPON_HARPOON)
+	{
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_HARPOON].m_Id);
+	}
+	else
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
 	Graphics()->QuadsBegin();
 
 	// render cursor
