@@ -49,14 +49,12 @@ void CLaser::DoBounce()
 	float EnergyMultiplier = 1;
 	if (GameServer()->Collision()->TestBox(m_Pos, vec2(0.0f, 0.0f), 8))
 	{
-		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "debug", "BBB");
 		CheckFor = 0;
-		EnergyMultiplier = 1.5f;
+		EnergyMultiplier = GameServer()->Tuning()->m_LaserWaterReachMultiplier;
 		Elasticity = -0.75f;
 	}
 	else
 	{
-		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "debug", "CCC");
 		CheckFor = 8;
 		EnergyMultiplier = 1;
 		Elasticity = -1.33f;
@@ -65,7 +63,6 @@ void CLaser::DoBounce()
 	int Result = GameServer()->Collision()->IntersectLineWithWater(m_Pos, To, 0x0, &To, CheckFor);
 	if(Result == 2)
 	{
-		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "debug", "AAA");
 		if (!HitCharacter(m_Pos, To))
 		{
 			// intersected

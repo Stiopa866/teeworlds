@@ -31,6 +31,7 @@ MACRO_TUNING_PARAM(LiquidCursorMaxSpeed, liq_curs_swim_max_speed, 5.0f)
 MACRO_TUNING_PARAM(LiquidCursorRequireDiving, liq_curs_swim_req_gear, 0)
 MACRO_TUNING_PARAM(LiquidExplosionRadiusMultiplier, liq_explo_radius_mltpr, 1.0f)
 MACRO_TUNING_PARAM(LiquidExplosionDamageMultiplier, liq_explo_dmg_mltp, 0.67f)
+
 //liquid physics diving
 //MACRO_TUNING_PARAM(LiquidSwimmingAccel, liq_swim_accel, 0.1f)
 //MACRO_TUNING_PARAM(LiquidSwimmingTopAccel, liq_swim_accel_top, 5.0f)
@@ -71,6 +72,7 @@ MACRO_TUNING_PARAM(LaserReach, laser_reach, 800.0f)
 MACRO_TUNING_PARAM(LaserBounceDelay, laser_bounce_delay, 150)
 MACRO_TUNING_PARAM(LaserBounceNum, laser_bounce_num, 1)
 MACRO_TUNING_PARAM(LaserBounceCost, laser_bounce_cost, 0)
+MACRO_TUNING_PARAM(LaserWaterReachMultiplier, laser_liq_reach, 1.5f)
 
 MACRO_TUNING_PARAM(PlayerCollision, player_collision, 1)
 MACRO_TUNING_PARAM(PlayerHooking, player_hooking, 1)
