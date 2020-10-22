@@ -43,11 +43,54 @@ void CLaser::DoBounce()
 		GameWorld()->DestroyEntity(this);
 		return;
 	}
-
-	vec2 To = m_Pos + m_Dir * m_Energy;
-
-	if(GameServer()->Collision()->IntersectLine(m_Pos, To, 0x0, &To))
+	int CheckFor;
+	float Elasticity;
+	bool JustDiffracted;
+	float EnergyMultiplier = 1;
+	if (GameServer()->Collision()->TestBox(m_Pos, vec2(0.0f, 0.0f), 8))
 	{
+		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "debug", "BBB");
+		CheckFor = 0;
+		EnergyMultiplier = 1.5f;
+		Elasticity = -0.75f;
+	}
+	else
+	{
+		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "debug", "CCC");
+		CheckFor = 8;
+		EnergyMultiplier = 1;
+		Elasticity = -1.33f;
+	}
+	vec2 To = m_Pos + m_Dir * (m_Energy / EnergyMultiplier);
+	int Result = GameServer()->Collision()->IntersectLineWithWater(m_Pos, To, 0x0, &To, CheckFor);
+	if(Result == 2)
+	{
+		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "debug", "AAA");
+		if (!HitCharacter(m_Pos, To))
+		{
+			// intersected
+			m_From = m_Pos;
+			m_Pos = To;
+
+			vec2 TempPos = m_Pos;
+			vec2 TempDir = m_Dir * 4.0f;
+
+			GameServer()->Collision()->Diffract(&TempPos, &TempDir, Elasticity, 0, CheckFor);
+			m_Pos = TempPos;
+			m_Dir = normalize(TempDir);
+
+			m_Energy -= distance(m_From, m_Pos) * EnergyMultiplier + GameServer()->Tuning()->m_LaserBounceCost;
+			m_Bounces++;
+
+			if (m_Bounces > GameServer()->Tuning()->m_LaserBounceNum)
+				m_Energy = -1;
+
+			GameServer()->CreateSound(m_Pos, SOUND_LASER_BOUNCE);
+		}
+	}
+	else if(Result == 1)
+	{
+		
 		if(!HitCharacter(m_Pos, To))
 		{
 			// intersected
@@ -61,7 +104,7 @@ void CLaser::DoBounce()
 			m_Pos = TempPos;
 			m_Dir = normalize(TempDir);
 
-			m_Energy -= distance(m_From, m_Pos) + GameServer()->Tuning()->m_LaserBounceCost;
+			m_Energy -= distance(m_From, m_Pos) * EnergyMultiplier + GameServer()->Tuning()->m_LaserBounceCost;
 			m_Bounces++;
 
 			if(m_Bounces > GameServer()->Tuning()->m_LaserBounceNum)
