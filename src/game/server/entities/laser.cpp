@@ -51,13 +51,13 @@ void CLaser::DoBounce()
 	{
 		CheckFor = 0;
 		EnergyMultiplier = GameServer()->Tuning()->m_LaserWaterReachMultiplier;
-		Elasticity = -0.75f;
+		Elasticity = -(1 / GameServer()->Tuning()->m_LaserWaterDiffraction);
 	}
 	else
 	{
 		CheckFor = 8;
 		EnergyMultiplier = 1;
-		Elasticity = -1.33f;
+		Elasticity = -GameServer()->Tuning()->m_LaserWaterDiffraction;
 	}
 	vec2 To = m_Pos + m_Dir * (m_Energy / EnergyMultiplier);
 	int Result = GameServer()->Collision()->IntersectLineWithWater(m_Pos, To, 0x0, &To, CheckFor);

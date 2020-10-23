@@ -220,8 +220,17 @@ void CPlayers::RenderPlayer(
 		s_LastGameTickTime = Client()->GameTickTime();
 	if (Player.m_Weapon == WEAPON_HAMMER)
 	{
-		float ct = (Client()->PrevGameTick()-Player.m_AttackTick)/(float)SERVER_TICK_SPEED + s_LastGameTickTime;
-		State.Add(&g_pData->m_aAnimations[ANIM_HAMMER_SWING], clamp(ct*5.0f,0.0f,1.0f), 1.0f);
+		if (Collision()->TestBox(vec2(Player.m_X, Player.m_Y), vec2(28.0f, 28.0f), 8)&&m_pClient->m_Tuning.m_WaterHammerTest!=1.0f)
+		{
+			float ct = (Client()->PrevGameTick() - Player.m_AttackTick) / (float)SERVER_TICK_SPEED * 1 / m_pClient->m_Tuning.m_WaterHammerTest;
+			//+ s_LastGameTickTime
+			State.Add(&g_pData->m_aAnimations[ANIM_HAMMER_SWING], clamp(ct * 5.0f, 0.0f, 1.0f), 1.0f);
+		}
+		else
+		{
+			float ct = (Client()->PrevGameTick() - Player.m_AttackTick) / (float)SERVER_TICK_SPEED + s_LastGameTickTime;
+			State.Add(&g_pData->m_aAnimations[ANIM_HAMMER_SWING], clamp(ct * 5.0f, 0.0f, 1.0f), 1.0f);
+		}
 	}
 	if (Player.m_Weapon == WEAPON_NINJA)
 	{

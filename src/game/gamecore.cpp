@@ -242,7 +242,7 @@ void CCharacterCore::Tick(bool UseInput)
 	else if(m_HookState == HOOK_FLYING)
 	{
 		vec2 NewPos;
-		NewPos = m_pCollision->TestBox(m_HookPos, vec2(1.0f, 1.0f), 8) ? m_HookPos + m_HookDir * m_pWorld->m_Tuning.m_HookFireSpeed * 0.5f : m_HookPos + m_HookDir * m_pWorld->m_Tuning.m_HookFireSpeed;
+		NewPos = m_pCollision->TestBox(m_HookPos, vec2(1.0f, 1.0f), 8) ? m_HookPos + m_HookDir * m_pWorld->m_Tuning.m_HookFireSpeed * m_pWorld->m_Tuning.m_HookLiquidSlowdown : m_HookPos + m_HookDir * m_pWorld->m_Tuning.m_HookFireSpeed;
 		if(distance(m_Pos, NewPos) > m_pWorld->m_Tuning.m_HookLength)
 		{
 			m_HookState = HOOK_RETRACT_START;

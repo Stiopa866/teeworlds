@@ -307,7 +307,7 @@ void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elas
 	*pInoutPos = Pos;
 	*pInoutVel = Vel;
 }
-void CCollision::MoveWaterBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float Elasticity, bool* pDeath) const
+void CCollision::MoveWaterBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float Elasticity, bool* pDeath, float Severity) const
 {
 	// do the move
 	vec2 Pos = *pInoutPos;
@@ -340,8 +340,8 @@ void CCollision::MoveWaterBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float
 			//You are in water
 			if (TestBox(vec2(NewPos.x, NewPos.y), Size * (2.0f / 3.0f), COLFLAG_WATER))
 			{
-				Vel.x *= 0.95;
-				Vel.y *= 0.95;
+				Vel.x *= Severity;
+				Vel.y *= Severity;
 			}
 			if (TestBox(vec2(NewPos.x, NewPos.y), Size))
 			{
