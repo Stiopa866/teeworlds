@@ -237,7 +237,9 @@ Objects = [
 	]),
 
 
-	NetEvent("Explosion:Common", []),
+	NetEvent("Explosion:Common", [
+            NetIntAny("m_Radius"),
+        ]),
 	NetEvent("Spawn:Common", []),
 	NetEvent("HammerHit:Common", []),
 

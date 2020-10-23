@@ -23,7 +23,7 @@ public:
 	void BulletTrail(vec2 Pos);
 	void PlayerSpawn(vec2 Pos);
 	void PlayerDeath(vec2 Pos, int ClientID);
-	void Explosion(vec2 Pos);
+	void Explosion(vec2 Pos, float Radius=1);
 	void HammerHit(vec2 Pos);
 
 	virtual void OnRender();

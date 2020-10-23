@@ -130,6 +130,7 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamag
 	{
 		pEvent->m_X = (int)Pos.x;
 		pEvent->m_Y = (int)Pos.y;
+		pEvent->m_Radius = (int)RadiusMultiplier * 100;
 	}
 
 	// deal damage
