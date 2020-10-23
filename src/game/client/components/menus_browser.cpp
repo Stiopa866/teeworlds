@@ -1013,7 +1013,7 @@ void CMenus::RenderServerbrowserServerList(CUIRect View)
 	}
 
 	// list background
-	RenderTools()->DrawUIRect(&View, vec4(0.0f, 0.0f, 0.0f, 0.25f), CUI::CORNER_ALL, 5.0f);
+	RenderTools()->DrawUIRect(&View, vec4(0.0f, 0.0f, 0.0f, 0.25f), CUI::CORNER_L, 5.0f);
 	{
 		int Column = COL_BROWSER_PING;
 		switch(Config()->m_BrSort)
@@ -1647,7 +1647,7 @@ void CMenus::RenderServerbrowserFriendTab(CUIRect View)
 	BottomArea.HSplitTop(SpacingH, 0, &BottomArea);
 	Button.VSplitLeft(50.0f, &Label, &Button);
 	UI()->DoLabel(&Label, Localize("Name"), FontSize, CUI::ALIGN_LEFT);
-	static char s_aName[MAX_NAME_LENGTH*UTF8_BYTE_LENGTH] = { 0 };
+	static char s_aName[MAX_NAME_ARRAY_SIZE] = { 0 };
 	static float s_OffsetName = 0.0f;
 	DoEditBox(&s_aName, &Button, s_aName, sizeof(s_aName), Button.h*ms_FontmodHeight*0.8f, &s_OffsetName);
 
@@ -1655,7 +1655,7 @@ void CMenus::RenderServerbrowserFriendTab(CUIRect View)
 	BottomArea.HSplitTop(SpacingH, 0, &BottomArea);
 	Button.VSplitLeft(50.0f, &Label, &Button);
 	UI()->DoLabel(&Label, Localize("Clan"), FontSize, CUI::ALIGN_LEFT);
-	static char s_aClan[MAX_CLAN_LENGTH*UTF8_BYTE_LENGTH] = { 0 };
+	static char s_aClan[MAX_CLAN_ARRAY_SIZE] = { 0 };
 	static float s_OffsetClan = 0.0f;
 	DoEditBox(&s_aClan, &Button, s_aClan, sizeof(s_aClan), Button.h*ms_FontmodHeight*0.8f, &s_OffsetClan);
 
