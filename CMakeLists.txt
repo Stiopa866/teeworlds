@@ -1012,6 +1012,7 @@ set(EXPECTED_DATA
   skins/body/standard.png
   skins/body/x_ninja.png
   skins/bot.png
+  skins/diving_gear.png
   skins/brownbear.json
   skins/bumbler.json
   skins/cammo.json

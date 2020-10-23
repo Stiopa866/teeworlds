@@ -13,6 +13,7 @@ class CCollision
 	class CLayers *m_pLayers;
 
 	bool IsTile(int x, int y, int Flag=COLFLAG_SOLID) const;
+	bool IsAirTile(int x, int y, int Flag = COLFLAG_SOLID) const;
 	int GetTile(int x, int y) const;
 
 public:
@@ -27,16 +28,21 @@ public:
 	CCollision();
 	void Init(class CLayers *pLayers);
 	bool CheckPoint(float x, float y, int Flag=COLFLAG_SOLID) const { return IsTile(round_to_int(x), round_to_int(y), Flag); }
+	bool CheckWaterPoint(float x, float y, int Flag = COLFLAG_SOLID) const { return IsAirTile(round_to_int(x), round_to_int(y), Flag); }
 	bool CheckPoint(vec2 Pos, int Flag=COLFLAG_SOLID) const { return CheckPoint(Pos.x, Pos.y, Flag); }
+	bool CheckWaterPoint(vec2 Pos, int Flag = COLFLAG_SOLID) const { return CheckWaterPoint(Pos.x, Pos.y, Flag); }
 	int GetCollisionAt(float x, float y) const { return GetTile(round_to_int(x), round_to_int(y)); }
+	int GetWaterCollisionAt(float x, float y, int Flag) const { return IsAirTile(round_to_int(x), round_to_int(y), Flag); }
 	int GetWidth() const { return m_Width; };
 	int GetHeight() const { return m_Height; };
 	int IntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *pOutBeforeCollision) const;
+	int IntersectLineWithWater(vec2 Pos0, vec2 Pos1, vec2* pOutCollision, vec2* pOutBeforeCollision, int Flag) const;
 	void MovePoint(vec2 *pInoutPos, vec2 *pInoutVel, float Elasticity, int *pBounces) const;
+	void Diffract(vec2* pInoutPos, vec2* pInoutVel, float Elasticity, int* pBounces, int Flag) const;
 	void MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elasticity, bool *pDeath=0) const;
-	void MoveWaterBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float Elasticity, bool* pDeath = 0) const;
-	void MoveHarpoonBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float Elasticity, int* Grounded) const;
+	void MoveWaterBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float Elasticity, bool* pDeath = 0, float Severity = 0.95) const;
 	bool TestBox(vec2 Pos, vec2 Size, int Flag=COLFLAG_SOLID) const;
+	bool TestWaterBox(vec2 Pos, vec2 Size, int Flag = COLFLAG_SOLID) const;
 };
 
 #endif

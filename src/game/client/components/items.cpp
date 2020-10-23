@@ -21,7 +21,13 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 	// get positions
 	float Curvature = 0;
 	float Speed = 0;
-	if(pCurrent->m_Type == WEAPON_GRENADE)
+	float WaterResistance = m_pClient->m_Tuning.m_LiquidProjectileResistance;
+	if (pCurrent->m_Type == WEAPON_HARPOON)
+	{
+		Curvature = m_pClient->m_Tuning.m_HarpoonCurvature;
+		Speed = m_pClient->m_Tuning.m_HarpoonSpeed;
+	}
+	else if(pCurrent->m_Type == WEAPON_GRENADE)
 	{
 		Curvature = m_pClient->m_Tuning.m_GrenadeCurvature;
 		Speed = m_pClient->m_Tuning.m_GrenadeSpeed;
@@ -30,6 +36,7 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 	{
 		Curvature = m_pClient->m_Tuning.m_ShotgunCurvature;
 		Speed = m_pClient->m_Tuning.m_ShotgunSpeed;
+		WaterResistance = m_pClient->m_Tuning.m_ShotgunWaterResistance;
 	}
 	else if(pCurrent->m_Type == WEAPON_GUN)
 	{
@@ -39,7 +46,7 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 	
 
 	static float s_LastGameTickTime = Client()->GameTickTime();
-	if(!m_pClient->IsWorldPaused())
+	if(!m_pClient->IsWorldPaused() && !m_pClient->IsDemoPlaybackPaused())
 		s_LastGameTickTime = Client()->GameTickTime();
 	
 	float Ct;
@@ -56,8 +63,8 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 	vec2 PrevPos;
 	if(pCurrent->m_Water)
 	{
-		Pos = CalcWaterPos(StartPos, StartVel, Curvature, Speed, Ct);
-		PrevPos = CalcWaterPos(StartPos, StartVel, Curvature, Speed, Ct - 0.001f);
+		Pos = CalcPos(StartPos, StartVel, Curvature, Speed* WaterResistance, Ct);
+		PrevPos = CalcPos(StartPos, StartVel, Curvature, Speed* WaterResistance, Ct - 0.001f);
 	}
 	else
 	{
@@ -65,35 +72,29 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 		PrevPos = CalcPos(StartPos, StartVel, Curvature, Speed, Ct - 0.001f);
 	}
 
-	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
+	if (pCurrent->m_Type == WEAPON_HARPOON)
+	{
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_HARPOON].m_Id);
+	}
+	else
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
 	Graphics()->QuadsBegin();
 
-	RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[clamp(pCurrent->m_Type, 0, NUM_WEAPONS-1)].m_pSpriteProj);
+	RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[clamp(pCurrent->m_Type, 0, NUM_WEAPONS-1)].m_pSpriteProj, pCurrent->m_Type==WEAPON_HARPOON ? SPRITE_FLAG_FLIP_Y : 0);
 	vec2 Vel = Pos-PrevPos;
 	//vec2 pos = mix(vec2(prev->x, prev->y), vec2(current->x, current->y), Client()->IntraGameTick());
-
+	
 
 	// add particle for this projectile
 	if(pCurrent->m_Type == WEAPON_GRENADE)
 	{
 		m_pClient->m_pEffects->SmokeTrail(Pos, Vel*-1);
+		const float Now = Client()->LocalTime();
 		static float s_Time = 0.0f;
-		static float s_LastLocalTime = Client()->LocalTime();
-
-		if(Client()->State() == IClient::STATE_DEMOPLAYBACK)
-		{
-			const IDemoPlayer::CInfo *pInfo = DemoPlayer()->BaseInfo();
-			if(!pInfo->m_Paused)
-				s_Time += (Client()->LocalTime()-s_LastLocalTime)*pInfo->m_Speed;
-		}
-		else
-		{
-			if(!m_pClient->IsWorldPaused())
-				s_Time += Client()->LocalTime()-s_LastLocalTime;
-		}
-
+		static float s_LastLocalTime = Now;
+		s_Time += (Now - s_LastLocalTime) * m_pClient->GetAnimationPlaybackSpeed();
 		Graphics()->QuadsSetRotation(s_Time*pi*2*2 + ItemID);
-		s_LastLocalTime = Client()->LocalTime();
+		s_LastLocalTime = Now;
 	}
 	else
 	{
@@ -105,16 +106,30 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 			Graphics()->QuadsSetRotation(0);
 
 	}
-
-	IGraphics::CQuadItem QuadItem(Pos.x, Pos.y, 32, 32);
-	Graphics()->QuadsDraw(&QuadItem, 1);
-	Graphics()->QuadsSetRotation(0);
-	Graphics()->QuadsEnd();
+	if (pCurrent->m_Type == WEAPON_HARPOON)
+	{
+		IGraphics::CQuadItem QuadItem(Pos.x, Pos.y, 48, 36);
+		Graphics()->QuadsDraw(&QuadItem, 1);
+		Graphics()->QuadsSetRotation(0);
+		Graphics()->QuadsEnd();
+	}
+	else
+	{
+		IGraphics::CQuadItem QuadItem(Pos.x, Pos.y, 32, 32);
+		Graphics()->QuadsDraw(&QuadItem, 1);
+		Graphics()->QuadsSetRotation(0);
+		Graphics()->QuadsEnd();
+	}
 }
 
 void CItems::RenderPickup(const CNetObj_Pickup *pPrev, const CNetObj_Pickup *pCurrent)
 {
-	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
+	if (pCurrent->m_Type == PICKUP_DIVING)
+	{
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_DIVING_GEAR].m_Id);
+	}
+	else
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
 	Graphics()->QuadsBegin();
 	vec2 Pos = mix(vec2(pPrev->m_X, pPrev->m_Y), vec2(pCurrent->m_X, pCurrent->m_Y), Client()->IntraGameTick());
 	float Angle = 0.0f;
@@ -131,6 +146,7 @@ void CItems::RenderPickup(const CNetObj_Pickup *pPrev, const CNetObj_Pickup *pCu
 		SPRITE_PICKUP_HARPOON,
 		SPRITE_DIVING_GEAR
 		};
+
 	RenderTools()->SelectSprite(c[pCurrent->m_Type]);
 
 	switch(pCurrent->m_Type)
@@ -155,28 +171,22 @@ void CItems::RenderPickup(const CNetObj_Pickup *pPrev, const CNetObj_Pickup *pCu
 	case PICKUP_HAMMER:
 		Size = g_pData->m_Weapons.m_aId[WEAPON_HAMMER].m_VisualSize;
 		break;
+	case PICKUP_DIVING:
+		Size = 88.0f;
+		break;
 	}
 	
 
 	Graphics()->QuadsSetRotation(Angle);
 
+	const float Now = Client()->LocalTime();
 	static float s_Time = 0.0f;
-	static float s_LastLocalTime = Client()->LocalTime();
-	float Offset = Pos.y/32.0f + Pos.x/32.0f;
-	if(Client()->State() == IClient::STATE_DEMOPLAYBACK)
-	{
-		const IDemoPlayer::CInfo *pInfo = DemoPlayer()->BaseInfo();
-		if(!pInfo->m_Paused)
-			s_Time += (Client()->LocalTime()-s_LastLocalTime)*pInfo->m_Speed;
-	}
-	else
-	{
-		if(!m_pClient->IsWorldPaused())
-			s_Time += Client()->LocalTime()-s_LastLocalTime;
- 	}
+	static float s_LastLocalTime = Now;
+	s_Time += (Now - s_LastLocalTime) * m_pClient->GetAnimationPlaybackSpeed();
+	const float Offset = Pos.y/32.0f + Pos.x/32.0f;
 	Pos.x += cosf(s_Time*2.0f+Offset)*2.5f;
 	Pos.y += sinf(s_Time*2.0f+Offset)*2.5f;
-	s_LastLocalTime = Client()->LocalTime();
+	s_LastLocalTime = Now;
 	RenderTools()->DrawSprite(Pos.x, Pos.y, Size);
 	Graphics()->QuadsEnd();
 }

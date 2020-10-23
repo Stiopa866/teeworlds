@@ -370,8 +370,15 @@ void CCharacter::FireWeapon()
 			}
 
 			// if we Hit anything, we have to wait for the reload
-			if(Hits)
-				m_ReloadTimer = Server()->TickSpeed()/3;
+			if (Hits)
+			{
+				if (m_Core.IsInWater())
+				{
+					m_ReloadTimer = Server()->TickSpeed();
+				}
+				else
+					m_ReloadTimer = Server()->TickSpeed() / 3;
+			}
 
 		} break;
 
@@ -469,8 +476,18 @@ void CCharacter::FireWeapon()
 	if(m_aWeapons[m_ActiveWeapon].m_Ammo > 0) // -1 == unlimited
 		m_aWeapons[m_ActiveWeapon].m_Ammo--;
 
-	if(!m_ReloadTimer)
-		m_ReloadTimer = g_pData->m_Weapons.m_aId[m_ActiveWeapon].m_Firedelay * Server()->TickSpeed() / 1000;
+	if (!m_ReloadTimer)
+	{
+		if (m_Core.IsInWater())
+		{
+			m_ReloadTimer = g_pData->m_Weapons.m_aId[m_ActiveWeapon].m_Firedelay * Server()->TickSpeed() / 1000 * GameServer()->Tuning()->m_WaterHammerTest;
+		}
+		else
+		{
+			m_ReloadTimer = g_pData->m_Weapons.m_aId[m_ActiveWeapon].m_Firedelay * Server()->TickSpeed() / 1000;
+		}
+	}
+		
 }
 
 void CCharacter::HandleHarpoon()
@@ -635,6 +652,7 @@ void CCharacter::OnDirectInput(CNetObj_PlayerInput *pNewInput)
 void CCharacter::ResetInput()
 {
 	m_Input.m_Direction = 0;
+	m_Input.m_DirectionVertical = 0;
 	m_Input.m_Hook = 0;
 	// simulate releasing the fire button
 	if((m_Input.m_Fire&1) != 0)
@@ -1041,7 +1059,8 @@ void CCharacter::Snap(int SnappingClient)
 	pCharacter->m_AttackTick = m_AttackTick;
 
 	pCharacter->m_Direction = m_Input.m_Direction;
-
+	pCharacter->m_DirectionVertical = m_Input.m_DirectionVertical;
+	
 	if(m_pPlayer->GetCID() == SnappingClient || SnappingClient == -1 ||
 		(!Config()->m_SvStrictSpectateMode && m_pPlayer->GetCID() == GameServer()->m_apPlayers[SnappingClient]->GetSpectatorID()))
 	{

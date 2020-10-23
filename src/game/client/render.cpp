@@ -340,7 +340,7 @@ void CRenderTools::RenderTee(CAnimState *pAnim, const CTeeRenderInfo *pInfo, int
 	vec2 Direction = Dir;
 	vec2 Position = Pos;
 	bool IsBot = pInfo->m_BotTexture.IsValid();
-
+	bool HasDivingGear = pInfo->m_DivingGearTexture.IsValid();
 	// first pass we draw the outline
 	// second pass we draw the filling
 	for(int p = 0; p < 2; p++)
@@ -355,6 +355,7 @@ void CRenderTools::RenderTee(CAnimState *pAnim, const CTeeRenderInfo *pInfo, int
 			{
 				vec2 BodyPos = Position + vec2(pAnim->GetBody()->m_X, pAnim->GetBody()->m_Y)*AnimScale;
 				IGraphics::CQuadItem BodyItem(BodyPos.x, BodyPos.y, BaseSize, BaseSize);
+				IGraphics::CQuadItem DivingGearItem(BodyPos.x, BodyPos.y-10.0f, BaseSize + 15.0f, BaseSize + 15.0f);
 				IGraphics::CQuadItem BotItem(BodyPos.x+(2.f/3.f)*AnimScale, BodyPos.y+(-16+2.f/3.f)*AnimScale, BaseSize, BaseSize); // x+0.66, y+0.66 to correct some rendering bug
 				IGraphics::CQuadItem Item;
 
@@ -511,6 +512,23 @@ void CRenderTools::RenderTee(CAnimState *pAnim, const CTeeRenderInfo *pInfo, int
 					}
 					Item = BodyItem;
 					Graphics()->QuadsDraw(&Item, 1);
+					Graphics()->QuadsEnd();
+				}
+				if (!OutLine && HasDivingGear)
+				{
+					Graphics()->TextureSet(pInfo->m_DivingGearTexture);
+					Graphics()->QuadsBegin();
+					Graphics()->QuadsSetRotation(pAnim->GetBody()->m_Angle * pi * 2);
+					Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+					int Flag = Direction.x < 0.0f ? SPRITE_FLAG_FLIP_X : 0;
+					SelectSprite(SPRITE_TEE_DIVING_GEAR, Flag, 0, 0);
+					//Item = DivingGearItem;
+					float EyeScale = BaseSize * 1.0f;
+					//float h = Emote == EMOTE_BLINK ? BaseSize * 0.15f / 2.0f : EyeScale / 2.0f;
+					vec2 Offset = vec2(Direction.x * 0.125f, -0.05f + Direction.y * 0.10f) * BaseSize;
+					IGraphics::CQuadItem QuadItem(BodyPos.x + Offset.x, BodyPos.y + Offset.y, EyeScale, EyeScale);
+					Graphics()->QuadsDraw(&QuadItem, 1);
+					//Graphics()->QuadsDraw(&Item, 1);
 					Graphics()->QuadsEnd();
 				}
 			}

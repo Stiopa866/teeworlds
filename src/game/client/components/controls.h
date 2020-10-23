@@ -15,6 +15,8 @@ public:
 	CNetObj_PlayerInput m_LastData;
 	int m_InputDirectionLeft;
 	int m_InputDirectionRight;
+	int m_InputDirectionUp;
+	int m_InputDirectionDown;
 
 	CControls();
 
@@ -28,5 +30,6 @@ public:
 
 	int SnapInput(int *pData);
 	void ClampMousePos();
+	float GetMaxMouseDistance() const;
 };
 #endif

@@ -83,6 +83,7 @@ Objects = [
 
 	NetObject("PlayerInput", [
 		NetIntRange("m_Direction", -1, 1),
+                NetIntRange("m_DirectionVertical", -1, 1),
 		NetIntAny("m_TargetX"),
 		NetIntAny("m_TargetY"),
 
@@ -167,7 +168,8 @@ Objects = [
 
 		NetIntAny("m_Angle"),
 		NetIntRange("m_Direction", -1, 1),
-
+                NetIntRange("m_DirectionVertical", -1, 1),
+                
 		NetIntRange("m_Jumped", 0, 3),
 		NetIntRange("m_HookedPlayer", -1, 'MAX_CLIENTS-1'),
 		NetIntRange("m_HookState", -1, 5),
@@ -244,7 +246,9 @@ Objects = [
 	]),
 
 
-	NetEvent("Explosion:Common", []),
+	NetEvent("Explosion:Common", [
+            NetIntAny("m_Radius"),
+        ]),
 	NetEvent("Spawn:Common", []),
 	NetEvent("HammerHit:Common", []),
 

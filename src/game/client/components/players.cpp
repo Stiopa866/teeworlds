@@ -169,7 +169,7 @@ void CPlayers::RenderPlayer(
 	{
 		m_pClient->UsePredictedChar(&Prev, &Player, &IntraTick, ClientID);
 	}
-	const bool WorldPaused = m_pClient->IsWorldPaused();
+	const bool Paused = m_pClient->IsWorldPaused() || m_pClient->IsDemoPlaybackPaused();
 
 	vec2 Direction = direction(Angle);
 	vec2 Position = mix(vec2(Prev.m_X, Prev.m_Y), vec2(Player.m_X, Player.m_Y), IntraTick);
@@ -179,10 +179,18 @@ void CPlayers::RenderPlayer(
 
 	RenderInfo.m_GotAirJump = Player.m_Jumped&2?0:1;
 
+	bool Swimming = Collision()->CheckPoint(Player.m_X, Player.m_Y, 8) && Player.m_VelY<0; //is in water and has floating tendency
 	bool Stationary = Player.m_VelX <= 1 && Player.m_VelX >= -1;
 	bool InAir = !Collision()->CheckPoint(Player.m_X, Player.m_Y+16);
 	bool WantOtherDir = (Player.m_Direction == -1 && Vel.x > 0) || (Player.m_Direction == 1 && Vel.x < 0);
+	//bool DivingGear = Player.m_DivingGear;
 
+	if (Player.m_DivingGear)
+	{
+		RenderInfo.m_DivingGearTexture = m_pClient->m_pSkins->m_DivingGearTexture;
+	}
+	else
+		RenderInfo.m_DivingGearTexture.Invalidate();
 	// evaluate animation
 	const float WalkTimeMagic = 100.0f;
 	float WalkTime =
@@ -190,10 +198,17 @@ void CPlayers::RenderPlayer(
 			? fmod(Position.x, WalkTimeMagic)
 			: WalkTimeMagic - fmod(-Position.x, WalkTimeMagic))
 		/ WalkTimeMagic;
+	float FloatTime =
+		((Position.y >= 0)
+			? fmod(Position.y, WalkTimeMagic)
+			: WalkTimeMagic - fmod(-Position.y, WalkTimeMagic))
+		/ WalkTimeMagic;
 	CAnimState State;
 	State.Set(&g_pData->m_aAnimations[ANIM_BASE], 0);
 
-	if(InAir)
+	if (Swimming)
+		State.Add(&g_pData->m_aAnimations[ANIM_SWIM], FloatTime, 1.0f);
+	else if(InAir)
 		State.Add(&g_pData->m_aAnimations[ANIM_INAIR], 0, 1.0f); // TODO: some sort of time here
 	else if(Stationary)
 		State.Add(&g_pData->m_aAnimations[ANIM_IDLE], 0, 1.0f); // TODO: some sort of time here
@@ -201,12 +216,21 @@ void CPlayers::RenderPlayer(
 		State.Add(&g_pData->m_aAnimations[ANIM_WALK], WalkTime, 1.0f);
 
 	static float s_LastGameTickTime = Client()->GameTickTime();
-	if(!WorldPaused)
+	if(!Paused)
 		s_LastGameTickTime = Client()->GameTickTime();
 	if (Player.m_Weapon == WEAPON_HAMMER)
 	{
-		float ct = (Client()->PrevGameTick()-Player.m_AttackTick)/(float)SERVER_TICK_SPEED + s_LastGameTickTime;
-		State.Add(&g_pData->m_aAnimations[ANIM_HAMMER_SWING], clamp(ct*5.0f,0.0f,1.0f), 1.0f);
+		if (Collision()->TestBox(vec2(Player.m_X, Player.m_Y), vec2(28.0f, 28.0f), 8)&&m_pClient->m_Tuning.m_WaterHammerTest!=1.0f)
+		{
+			float ct = (Client()->PrevGameTick() - Player.m_AttackTick) / (float)SERVER_TICK_SPEED * 1 / m_pClient->m_Tuning.m_WaterHammerTest;
+			//+ s_LastGameTickTime
+			State.Add(&g_pData->m_aAnimations[ANIM_HAMMER_SWING], clamp(ct * 5.0f, 0.0f, 1.0f), 1.0f);
+		}
+		else
+		{
+			float ct = (Client()->PrevGameTick() - Player.m_AttackTick) / (float)SERVER_TICK_SPEED + s_LastGameTickTime;
+			State.Add(&g_pData->m_aAnimations[ANIM_HAMMER_SWING], clamp(ct * 5.0f, 0.0f, 1.0f), 1.0f);
+		}
 	}
 	if (Player.m_Weapon == WEAPON_NINJA)
 	{
@@ -232,17 +256,41 @@ void CPlayers::RenderPlayer(
 
 	// draw gun
 	{
-		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
+		if (Player.m_Weapon == WEAPON_HARPOON)
+		{
+			Graphics()->TextureSet(g_pData->m_aImages[IMAGE_HARPOON].m_Id);
+		}
+		else
+		{
+			Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
+		}
+		
 		Graphics()->QuadsBegin();
 		Graphics()->QuadsSetRotation(State.GetAttach()->m_Angle*pi*2+Angle);
-
-		// normal weapons
-		int iw = clamp(Player.m_Weapon, 0, NUM_WEAPONS-1);
-		RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[iw].m_pSpriteBody, Direction.x < 0 ? SPRITE_FLAG_FLIP_Y : 0);
-
 		vec2 Dir = Direction;
 		float Recoil = 0.0f;
 		vec2 p;
+		int iw = clamp(Player.m_Weapon, 0, NUM_WEAPONS - 1);
+		if (Player.m_Weapon == WEAPON_HARPOON&&Player.m_AmmoCount)
+		{
+			p = Position + Dir * g_pData->m_Weapons.m_aId[iw].m_Offsetx - Dir*Recoil*10.0f;
+			p.y += g_pData->m_Weapons.m_aId[iw].m_Offsety;
+			RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[iw].m_pSpriteProj, Direction.x < 0 ? SPRITE_FLAG_FLIP_Y : 0);
+			float OffsetY = -g_pData->m_Weapons.m_aId[iw].m_Muzzleoffsety;
+			if (Direction.x < 0)
+				OffsetY = -OffsetY;
+
+			vec2 DirY(-Dir.y, Dir.x);
+			vec2 MuzzlePos = p + Dir * (g_pData->m_Weapons.m_aId[iw].m_Muzzleoffsetx + 20.0f) + DirY * OffsetY;
+
+			RenderTools()->DrawSprite(MuzzlePos.x, MuzzlePos.y, g_pData->m_Weapons.m_aId[iw].m_VisualSize*0.67f);
+		}
+		// normal weapons
+		
+		RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[iw].m_pSpriteBody, Direction.x < 0 ? SPRITE_FLAG_FLIP_Y : 0);
+
+		
+		
 		if (Player.m_Weapon == WEAPON_HAMMER)
 		{
 			// Static position for hammer
@@ -283,21 +331,10 @@ void CPlayers::RenderPlayer(
 			{
 				int IteX = random_int() % g_pData->m_Weapons.m_aId[iw].m_NumSpriteMuzzles;
 				static int s_LastIteX = IteX;
-				if(Client()->State() == IClient::STATE_DEMOPLAYBACK)
-				{
-					const IDemoPlayer::CInfo *pInfo = DemoPlayer()->BaseInfo();
-					if(pInfo->m_Paused)
-						IteX = s_LastIteX;
-					else
-						s_LastIteX = IteX;
-				}
+				if(Paused)
+					IteX = s_LastIteX;
 				else
-				{
-					if(WorldPaused)
-						IteX = s_LastIteX;
-					else
-						s_LastIteX = IteX;
-				}
+					s_LastIteX = IteX;
 				if(g_pData->m_Weapons.m_aId[iw].m_aSpriteMuzzles[IteX])
 				{
 					vec2 Dir = vec2(pPlayerChar->m_X,pPlayerChar->m_Y) - vec2(pPrevChar->m_X, pPrevChar->m_Y);
@@ -319,7 +356,7 @@ void CPlayers::RenderPlayer(
 			// TODO: should be an animation
 			Recoil = 0;
 			static float s_LastIntraTick = IntraTick;
-			if(!WorldPaused)
+			if(!Paused)
 				s_LastIntraTick = IntraTick;
 
 			float a = (Client()->GameTick()-Player.m_AttackTick+s_LastIntraTick)/5.0f;
@@ -329,6 +366,7 @@ void CPlayers::RenderPlayer(
 			p.y += g_pData->m_Weapons.m_aId[iw].m_Offsety;
 			RenderTools()->DrawSprite(p.x, p.y, g_pData->m_Weapons.m_aId[iw].m_VisualSize);
 		}
+		
 
 		if (Player.m_Weapon == WEAPON_GUN || Player.m_Weapon == WEAPON_SHOTGUN)
 		{
@@ -345,21 +383,10 @@ void CPlayers::RenderPlayer(
 
 				int IteX = random_int() % g_pData->m_Weapons.m_aId[iw].m_NumSpriteMuzzles;
 				static int s_LastIteX = IteX;
-				if(Client()->State() == IClient::STATE_DEMOPLAYBACK)
-				{
-					const IDemoPlayer::CInfo *pInfo = DemoPlayer()->BaseInfo();
-					if(pInfo->m_Paused)
-						IteX = s_LastIteX;
-					else
-						s_LastIteX = IteX;
-				}
+				if(Paused)
+					IteX = s_LastIteX;
 				else
-				{
-					if(WorldPaused)
-						IteX = s_LastIteX;
-					else
-						s_LastIteX = IteX;
-				}
+					s_LastIteX = IteX;
 				if (Alpha > 0.0f && g_pData->m_Weapons.m_aId[iw].m_aSpriteMuzzles[IteX])
 				{
 					float OffsetY = -g_pData->m_Weapons.m_aId[iw].m_Muzzleoffsety;

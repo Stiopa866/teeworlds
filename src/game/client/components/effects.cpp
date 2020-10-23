@@ -248,7 +248,7 @@ void CEffects::PlayerDeath(vec2 Pos, int ClientID)
 }
 
 
-void CEffects::Explosion(vec2 Pos)
+void CEffects::Explosion(vec2 Pos, float Radius)
 {
 	// add to flow
 	for(int y = -8; y <= 8; y++)
@@ -267,7 +267,7 @@ void CEffects::Explosion(vec2 Pos)
 	p.m_Spr = SPRITE_PART_EXPL01;
 	p.m_Pos = Pos;
 	p.m_LifeSpan = 0.4f;
-	p.m_StartSize = 150.0f;
+	p.m_StartSize = 150.0f*(2+ Radius)/3;
 	p.m_EndSize = 0;
 	p.m_Rot = frandom()*pi*2;
 	m_pClient->m_pParticles->Add(CParticles::GROUP_EXPLOSIONS, &p);
@@ -279,7 +279,7 @@ void CEffects::Explosion(vec2 Pos)
 		p.SetDefault();
 		p.m_Spr = SPRITE_PART_SMOKE;
 		p.m_Pos = Pos;
-		p.m_Vel = RandomDir() * ((1.0f + frandom()*0.2f) * 1000.0f);
+		p.m_Vel = RandomDir() * ((1.0f + frandom()*0.2f) * 1000.0f * (2+Radius)/3);
 		p.m_LifeSpan = 0.5f + frandom()*0.4f;
 		p.m_StartSize = 32.0f + frandom()*8;
 		p.m_EndSize = 0;

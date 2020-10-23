@@ -81,8 +81,8 @@ void CCharacterCore::Reset()
 void CCharacterCore::HandleSwimming(vec2 TargetDirection)
 {
 	vec2 ProposedVel, MaxSpeed;
-	MaxSpeed.x = TargetDirection.x * m_pWorld->m_Tuning.m_LiquidDivingCursorMaxSpeed;
-	MaxSpeed.y = TargetDirection.y * m_pWorld->m_Tuning.m_LiquidDivingCursorMaxSpeed;
+	MaxSpeed.x = m_DivingGear ? TargetDirection.x * m_pWorld->m_Tuning.m_LiquidDivingCursorMaxSpeed : TargetDirection.x * m_pWorld->m_Tuning.m_LiquidCursorMaxSpeed;
+	MaxSpeed.y = m_DivingGear ? TargetDirection.y * m_pWorld->m_Tuning.m_LiquidDivingCursorMaxSpeed : TargetDirection.y * m_pWorld->m_Tuning.m_LiquidCursorMaxSpeed;
 	ProposedVel.x = m_Vel.x + TargetDirection.x;
 	ProposedVel.y = m_Vel.y + TargetDirection.y;
 	if (TargetDirection.x > 0)
@@ -139,11 +139,12 @@ void CCharacterCore::Tick(bool UseInput)
 	}
 	float Accel = Grounded ? m_pWorld->m_Tuning.m_GroundControlAccel : m_pWorld->m_Tuning.m_AirControlAccel;
 	float Friction = Grounded ? m_pWorld->m_Tuning.m_GroundFriction : m_pWorld->m_Tuning.m_AirFriction;
-
+	m_DirectionVertical = m_Input.m_DirectionVertical;
 	// handle input
 	if(UseInput)
 	{
 		m_Direction = m_Input.m_Direction;
+		
 		m_Angle = (int)(angle(vec2(m_Input.m_TargetX, m_Input.m_TargetY))*256.0f);
 
 		// handle jump
@@ -169,13 +170,16 @@ void CCharacterCore::Tick(bool UseInput)
 			}
 			else
 			{
-				if (m_DivingGear)
-				{
-					if (m_pWorld->m_Tuning.m_LiquidDivingCursor)
+				if (m_pWorld->m_Tuning.m_LiquidDivingCursor)
+					if(!(m_pWorld->m_Tuning.m_LiquidCursorRequireDiving && !m_DivingGear))
 						HandleSwimming(TargetDirection);
+				//if (m_DivingGear)
+				//{
+					// (m_pWorld->m_Tuning.m_LiquidDivingCursor)
+						//(TargetDirection);
 					//else
 						//sm_Vel.y = SaturatedAdd(-m_pWorld->m_Tuning.m_LiquidSwimmingTopAccel, 1.0f, m_Vel.y, -m_pWorld->m_Tuning.m_Gravity - m_pWorld->m_Tuning.m_LiquidSwimmingAccel);
-				}
+				//}
 			}
 		}
 		else
@@ -203,7 +207,7 @@ void CCharacterCore::Tick(bool UseInput)
 	}
 
 	// add the speed modification according to players wanted direction
-	if (!(IsInWater() && m_pWorld->m_Tuning.m_LiquidDivingCursor && m_DivingGear && m_Input.m_Jump && UseInput))
+	if (!(IsInWater() && m_pWorld->m_Tuning.m_LiquidDivingCursor))
 	{
 		if (m_Direction < 0)
 			m_Vel.x = SaturatedAdd(-MaxSpeed, MaxSpeed, m_Vel.x, -Accel);
@@ -237,7 +241,8 @@ void CCharacterCore::Tick(bool UseInput)
 	}
 	else if(m_HookState == HOOK_FLYING)
 	{
-		vec2 NewPos = m_HookPos+m_HookDir*m_pWorld->m_Tuning.m_HookFireSpeed;
+		vec2 NewPos;
+		NewPos = m_pCollision->TestBox(m_HookPos, vec2(1.0f, 1.0f), 8) ? m_HookPos + m_HookDir * m_pWorld->m_Tuning.m_HookFireSpeed * m_pWorld->m_Tuning.m_HookLiquidSlowdown : m_HookPos + m_HookDir * m_pWorld->m_Tuning.m_HookFireSpeed;
 		if(distance(m_Pos, NewPos) > m_pWorld->m_Tuning.m_HookLength)
 		{
 			m_HookState = HOOK_RETRACT_START;
@@ -250,7 +255,7 @@ void CCharacterCore::Tick(bool UseInput)
 		int Hit = m_pCollision->IntersectLine(m_HookPos, NewPos, &NewPos, 0);
 		if(Hit)
 		{
-			if(Hit&CCollision::COLFLAG_NOHOOK)
+			if (Hit & CCollision::COLFLAG_NOHOOK)
 				GoingToRetract = true;
 			else
 				GoingToHitGround = true;
@@ -424,23 +429,39 @@ void CCharacterCore::HandleWater(bool UseInput)
 	m_Jumped = 1;
 	if (m_DivingGear)
 	{
+		//Cursor Swimming
 		if (m_pWorld->m_Tuning.m_LiquidDivingCursor)
 		{
-			if(!m_Input.m_Jump || !UseInput)
+			if (!m_Input.m_Jump)
 			{
 				m_Vel.y *= m_pWorld->m_Tuning.m_LiquidVerticalDecel;
 				m_Vel.x *= m_pWorld->m_Tuning.m_LiquidHorizontalDecel;
 			}
 			return;
 		}
+		// Regular
 		m_Vel.y *= m_pWorld->m_Tuning.m_LiquidVerticalDecel;
-		if (m_pWorld->m_Tuning.m_LiquidPushDownInstead)
+		if (UseInput)
 		{
-			m_Vel.y -= UseInput && m_Input.m_Jump ? -m_pWorld->m_Tuning.m_LiquidPushDown : m_pWorld->m_Tuning.m_LiquidPushDown;
-		}
-		else
-		{
-			m_Vel.y -= UseInput && m_Input.m_Jump ? -m_pWorld->m_Tuning.m_LiquidPushOut : m_pWorld->m_Tuning.m_LiquidPushOut;
+			if (m_pWorld->m_Tuning.m_LiquidUseAscendDescend)
+			{
+				if (m_Input.m_Jump || m_Input.m_DirectionVertical == -1)
+				{
+					m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushOut * 2;
+				}
+				else if (m_Input.m_DirectionVertical == 1)
+				{
+					m_Vel.y -= -m_pWorld->m_Tuning.m_LiquidPushOut;
+				}
+				else
+				{
+					m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushOut;
+				}
+			}
+			else
+			{
+				m_Vel.y -= m_Input.m_Jump || m_Input.m_DirectionVertical == 1 ? -m_pWorld->m_Tuning.m_LiquidPushOut : m_pWorld->m_Tuning.m_LiquidPushOut;
+			}
 		}
 		if (absolute(m_Vel.x) > m_pWorld->m_Tuning.m_LiquidDivingGearMaxHorizontalVelocity)
 		{
@@ -448,20 +469,43 @@ void CCharacterCore::HandleWater(bool UseInput)
 		}
 		return;
 	}
+	if (m_pWorld->m_Tuning.m_LiquidDivingCursor&&!m_pWorld->m_Tuning.m_LiquidCursorRequireDiving)
+	{
+		if (!m_Input.m_Jump)
+		{
+			m_Vel.y *= m_pWorld->m_Tuning.m_LiquidVerticalDecel;
+			m_Vel.x *= m_pWorld->m_Tuning.m_LiquidHorizontalDecel;
+		}
+		return;
+	}
 	int Pressure = DepthInWater();
 	m_Vel.y *= (m_pWorld->m_Tuning.m_LiquidVerticalDecel*Pressure);
-	if (m_pWorld->m_Tuning.m_LiquidPushDownInstead)
+	if (UseInput)
 	{
-		m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushDown;
+		if (m_pWorld->m_Tuning.m_LiquidUseAscendDescend)
+		{
+			if (m_Input.m_Jump || m_Input.m_DirectionVertical == -1)
+			{
+				m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushOut * 2;
+			}
+			else if (m_Input.m_DirectionVertical == 1)
+			{
+				m_Vel.y -= -m_pWorld->m_Tuning.m_LiquidPushOut * m_pWorld->m_Tuning.m_LiquidFractionofSwimming;
+			}
+			else
+			{
+				m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushOut;
+			}
+		}
+		else
+		{
+			m_Vel.y -= m_Input.m_Jump || m_Input.m_DirectionVertical == 1 ? -m_pWorld->m_Tuning.m_LiquidPushOut * m_pWorld->m_Tuning.m_LiquidFractionofSwimming : m_pWorld->m_Tuning.m_LiquidPushOut;
+		}
 	}
-	else
-	{
-		m_Vel.y -= m_pWorld->m_Tuning.m_LiquidPushOut;
-	}
+	
 	
 	m_Vel.x *= (m_pWorld->m_Tuning.m_LiquidVerticalDecel * Pressure);
 }
-
 bool CCharacterCore::IsInWater()
 {
 	return (m_pCollision->TestBox(vec2(m_Pos.x, m_Pos.y), vec2(PHYS_SIZE, PHYS_SIZE + 1.0f) * (2.0f / 3.0f), 8));
@@ -553,6 +597,7 @@ void CCharacterCore::Write(CNetObj_CharacterCore *pObjCore) const
 	pObjCore->m_HookedPlayer = m_HookedPlayer;
 	pObjCore->m_Jumped = m_Jumped;
 	pObjCore->m_Direction = m_Direction;
+	pObjCore->m_DirectionVertical = m_DirectionVertical;
 	pObjCore->m_Angle = m_Angle;
 	pObjCore->m_DivingGear = m_DivingGear;
 }
@@ -572,6 +617,7 @@ void CCharacterCore::Read(const CNetObj_CharacterCore *pObjCore)
 	m_HookedPlayer = pObjCore->m_HookedPlayer;
 	m_Jumped = pObjCore->m_Jumped;
 	m_Direction = pObjCore->m_Direction;
+	m_DirectionVertical = pObjCore->m_DirectionVertical;
 	m_Angle = pObjCore->m_Angle;
 	m_DivingGear = pObjCore->m_DivingGear;
 }
