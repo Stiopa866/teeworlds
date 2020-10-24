@@ -10,6 +10,7 @@ CLayers::CLayers()
 	m_LayersStart = 0;
 	m_pGameGroup = 0;
 	m_pGameLayer = 0;
+	m_pWaterLayer = 0;
 	m_pMap = 0;
 }
 
@@ -54,7 +55,13 @@ void CLayers::InitGameLayer()
 						m_pGameGroup->m_ClipH = 0;
 					}
 
-					break;
+					continue;
+				}
+				if (pTilemap->m_Flags & TILESLAYERFLAG_WATER)
+				{
+					m_pWaterLayer = pTilemap;
+
+					continue;
 				}
 			}
 		}

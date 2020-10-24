@@ -258,6 +258,7 @@ void CMapLayers::OnRender()
 	vec2 Center = *m_pClient->m_pCamera->GetCenter();
 
 	bool PassedGameLayer = false;
+	bool PassedWaterLayer = false;
 
 	for(int g = 0; g < pLayers->NumGroups(); g++)
 	{
@@ -288,11 +289,17 @@ void CMapLayers::OnRender()
 			CMapItemLayer *pLayer = pLayers->GetLayer(pGroup->m_StartLayer+l);
 			bool Render = false;
 			bool IsGameLayer = false;
+			bool IsWaterLayer = false;
 
 			if(pLayer == (CMapItemLayer*)pLayers->GameLayer())
 			{
 				IsGameLayer = true;
 				PassedGameLayer = true;
+			}
+			if (pLayer == (CMapItemLayer*)pLayers->WaterLayer())
+			{
+				IsWaterLayer = true;
+				PassedWaterLayer = true;
 			}
 
 			if(m_Type == -1)
@@ -336,7 +343,7 @@ void CMapLayers::OnRender()
 					}
 				}
 
-				if(!IsGameLayer)
+				if(!IsGameLayer&&!IsWaterLayer)
 				{
 					if(pLayer->m_Type == LAYERTYPE_TILES)
 					{

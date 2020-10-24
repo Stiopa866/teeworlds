@@ -14,7 +14,7 @@
 
 CCollision::CCollision()
 {
-	m_pTiles = 0;
+	m_pCollisionTiles = 0;
 	m_Width = 0;
 	m_Height = 0;
 	m_pLayers = 0;
@@ -25,31 +25,45 @@ void CCollision::Init(class CLayers *pLayers)
 	m_pLayers = pLayers;
 	m_Width = m_pLayers->GameLayer()->m_Width;
 	m_Height = m_pLayers->GameLayer()->m_Height;
-	m_pTiles = static_cast<CTile *>(m_pLayers->Map()->GetData(m_pLayers->GameLayer()->m_Data));
-
+	m_pTiles = static_cast<CTile*>(m_pLayers->Map()->GetData(m_pLayers->GameLayer()->m_Data));
+	m_pCollisionTiles = new CTile[m_Width * m_Height];
 	for(int i = 0; i < m_Width*m_Height; i++)
 	{
 		int Index = m_pTiles[i].m_Index;
-
-		if(Index > 128)
-			continue;
-
+		//if (Index > 128)
+			//continue;
 		switch(Index)
 		{
 		case TILE_DEATH:
-			m_pTiles[i].m_Index = COLFLAG_DEATH;
+			m_pCollisionTiles[i].m_Index = COLFLAG_DEATH;
 			break;
 		case TILE_SOLID:
-			m_pTiles[i].m_Index = COLFLAG_SOLID;
+			m_pCollisionTiles[i].m_Index = COLFLAG_SOLID;
 			break;
 		case TILE_NOHOOK:
-			m_pTiles[i].m_Index = COLFLAG_SOLID|COLFLAG_NOHOOK;
+			m_pCollisionTiles[i].m_Index = COLFLAG_SOLID|COLFLAG_NOHOOK;
 			break;
 		case TILE_WATER:
-			m_pTiles[i].m_Index = COLFLAG_WATER;
+			m_pCollisionTiles[i].m_Index = COLFLAG_WATER;
 			break;
 		default:
-			m_pTiles[i].m_Index = 0;
+			m_pCollisionTiles[i].m_Index = 0;
+		}
+	}
+	if (m_pLayers->WaterLayer())
+	{
+		CTile* m_pWaterTiles = static_cast<CTile*>(m_pLayers->Map()->GetData(m_pLayers->WaterLayer()->m_Data));
+		for (int i = 0; i < m_Width * m_Height; i++)
+		{
+			int Index = m_pWaterTiles[i].m_Index;
+			switch (Index)
+			{
+			case TILE_SOLID:
+				m_pCollisionTiles[i].m_Index |= COLFLAG_WATER;
+				break;
+			default:
+				m_pCollisionTiles[i].m_Index |= 0;
+			}
 		}
 	}
 }
@@ -59,7 +73,7 @@ int CCollision::GetTile(int x, int y) const
 	int Nx = clamp(x/32, 0, m_Width-1);
 	int Ny = clamp(y/32, 0, m_Height-1);
 
-	return m_pTiles[Ny*m_Width+Nx].m_Index > 128 ? 0 : m_pTiles[Ny*m_Width+Nx].m_Index;
+	return m_pCollisionTiles[Ny*m_Width+Nx].m_Index > 128 ? 0 : m_pCollisionTiles[Ny*m_Width+Nx].m_Index;
 }
 
 bool CCollision::IsTile(int x, int y, int Flag) const

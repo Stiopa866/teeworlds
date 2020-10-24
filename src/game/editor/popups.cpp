@@ -254,6 +254,7 @@ int CEditor::PopupLayer(CEditor *pEditor, CUIRect View)
 {
 	CLayer *pCurrentLayer = pEditor->GetSelectedLayer(0);
 	bool IsGameLayer = pEditor->m_Map.m_pGameLayer == pCurrentLayer;
+	bool IsWaterLayer = pEditor->m_Map.m_pWaterLayer == pCurrentLayer;
 
 	// remove layer button
 	CUIRect Button;
@@ -268,7 +269,7 @@ int CEditor::PopupLayer(CEditor *pEditor, CUIRect View)
 	}
 
 	// layer name
-	if(!IsGameLayer)
+	if(!IsGameLayer&&!IsWaterLayer)
 	{
 		View.HSplitBottom(5.0f, &View, &Button);
 		View.HSplitBottom(12.0f, &View, &Button);

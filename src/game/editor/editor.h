@@ -293,6 +293,7 @@ class CEditorMap
 {
 	void MakeGameGroup(CLayerGroup *pGroup);
 	void MakeGameLayer(CLayer *pLayer);
+	void MakeWaterLayer(CLayer* pLayer);
 public:
 	CEditor *m_pEditor;
 	bool m_Modified;
@@ -326,6 +327,7 @@ public:
 	CMapInfo m_MapInfoTmp;
 
 	class CLayerGame *m_pGameLayer;
+	class CLayerWater* m_pWaterLayer;
 	CLayerGroup *m_pGameGroup;
 
 	CEnvelope *NewEnvelope(int Channels)
@@ -448,6 +450,7 @@ public:
 
 	IGraphics::CTextureHandle m_Texture;
 	int m_Game;
+	int m_Water;
 	int m_Image;
 	int m_Width;
 	int m_Height;
@@ -496,6 +499,15 @@ public:
 	~CLayerGame();
 
 	virtual int RenderProperties(CUIRect *pToolbox);
+};
+
+class CLayerWater: public CLayerTiles
+{
+public:
+	CLayerWater(int w, int h);
+	~CLayerWater();
+
+	virtual int RenderProperties(CUIRect* pToolbox);
 };
 
 class CEditor : public IEditor
