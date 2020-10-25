@@ -293,8 +293,9 @@ class CEditorMap
 {
 	void MakeGameGroup(CLayerGroup *pGroup);
 	void MakeGameLayer(CLayer *pLayer);
-	void MakeWaterLayer(CLayer* pLayer);
+	
 public:
+	void MakeWaterLayer(CLayer* pLayer);
 	CEditor *m_pEditor;
 	bool m_Modified;
 
@@ -786,6 +787,8 @@ public:
 
 	int DoButton_Menu(const void *pID, const char *pText, int Checked, const CUIRect *pRect, int Flags, const char *pToolTip);
 	int DoButton_MenuItem(const void *pID, const char *pText, int Checked, const CUIRect *pRect, int Flags=0, const char *pToolTip=0);
+
+	int DoButton_AddWaterLayer(const void* pID, const char* pText, int Checked, const CUIRect* pRect, int Flags, const char* pToolTip);
 
 	int DoEditBox(void *pID, const CUIRect *pRect, char *pStr, unsigned StrSize, float FontSize, float *Offset, bool Hidden=false, int Corners=CUI::CORNER_ALL);
 

@@ -279,6 +279,20 @@ int CEditor::PopupLayer(CEditor *pEditor, CUIRect View)
 		if(pEditor->DoEditBox(&s_Name, &Button, pCurrentLayer->m_aName, sizeof(pCurrentLayer->m_aName), 10.0f, &s_Name))
 			pEditor->m_Map.m_Modified = true;
 	}
+	if (IsGameLayer && !pEditor->m_Map.m_pWaterLayer)
+	{
+		View.HSplitBottom(5.0f, &View, &Button);
+		View.HSplitBottom(12.0f, &View, &Button);
+		static float s_Name = 0;
+		//pEditor->UI()->DoLabel(&Button, "Add Water Layer", 10.0f, CUI::ALIGN_LEFT);
+		Button.VSplitLeft(0.0f, 0, &Button);
+		if (pEditor->DoButton_AddWaterLayer(&s_Name, "Add Water Layer", 0, &Button, 0, ""))
+		{
+			pEditor->m_Map.m_Modified = true;
+			pEditor->m_Map.MakeWaterLayer(new CLayerWater(50, 50));
+			pEditor->m_Map.m_pGameGroup->AddLayer(pEditor->m_Map.m_pWaterLayer);
+		}
+	}
 
 	View.HSplitBottom(10.0f, &View, 0);
 

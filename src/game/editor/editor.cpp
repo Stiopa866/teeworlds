@@ -642,6 +642,13 @@ int CEditor::DoButton_ButtonDec(const void *pID, const char *pText, int Checked,
 	return DoButton_Editor_Common(pID, pText, Checked, pRect, Flags, pToolTip);
 }
 
+int CEditor::DoButton_AddWaterLayer(const void* pID, const char* pText, int Checked, const CUIRect* pRect, int Flags, const char* pToolTip)
+{
+	RenderTools()->DrawUIRect(pRect, GetButtonColor(pID, Checked), CUI::CORNER_L, 3.0f);
+	UI()->DoLabel(pRect, pText ? pText : "-", 10, CUI::ALIGN_CENTER);
+	return DoButton_Editor_Common(pID, pText, Checked, pRect, Flags, pToolTip);
+}
+
 void CEditor::RenderGrid(CLayerGroup *pGroup)
 {
 	if(!m_GridActive)
