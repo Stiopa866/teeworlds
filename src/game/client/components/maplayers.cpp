@@ -14,6 +14,8 @@
 #include <game/client/component.h>
 #include <game/client/render.h>
 
+#include <generated/client_data.h>
+
 #include "camera.h"
 #include "mapimages.h"
 #include "menus.h"
@@ -302,7 +304,9 @@ void CMapLayers::OnRender()
 				PassedWaterLayer = true;
 			}
 
-			if(m_Type == -1)
+			if (m_Type == -1)
+				Render = true;
+			else if (IsWaterLayer)
 				Render = true;
 			else if(m_Type == 0)
 			{
@@ -343,9 +347,19 @@ void CMapLayers::OnRender()
 					}
 				}
 
-				if(!IsGameLayer&&!IsWaterLayer)
+				if(!IsGameLayer)
 				{
-					if(pLayer->m_Type == LAYERTYPE_TILES)
+					if (IsWaterLayer)
+					{
+						CMapItemLayerTilemap* pTMap = (CMapItemLayerTilemap*)pLayer;
+						Graphics()->TextureSet(g_pData->m_aImages[IMAGE_WATER].m_Id);
+						CTile* pTiles = (CTile*)pLayers->Map()->GetData(pTMap->m_Data);
+						Graphics()->BlendNormal();
+						vec4 Color = vec4(pTMap->m_Color.r / 255.0f, pTMap->m_Color.g / 255.0f, pTMap->m_Color.b / 255.0f, 127.0f / 255.0f);
+						RenderTools()->RenderWaterMap(pTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, Color, TILERENDERFLAG_EXTEND | LAYERRENDERFLAG_OPAQUE,
+							EnvelopeEval, this, pTMap->m_ColorEnv, pTMap->m_ColorEnvOffset, Client()->GameTick()%64);
+					}
+					else if(pLayer->m_Type == LAYERTYPE_TILES)
 					{
 						CMapItemLayerTilemap *pTMap = (CMapItemLayerTilemap *)pLayer;
 						if(pTMap->m_Image == -1)

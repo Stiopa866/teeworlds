@@ -187,7 +187,14 @@ void CPlayers::RenderPlayer(
 
 	if (Player.m_DivingGear)
 	{
-		RenderInfo.m_DivingGearTexture = m_pClient->m_pSkins->m_DivingGearTexture;
+		if (m_pClient->Config()->m_ClShowDivingGear)
+		{
+			RenderInfo.m_DivingGearTexture = m_pClient->m_pSkins->m_DivingGearTexture;
+		}
+		else if (Collision()->CheckPoint(Player.m_X, Player.m_Y, 8))
+			RenderInfo.m_DivingGearTexture = m_pClient->m_pSkins->m_DivingGearTexture;
+		else
+			RenderInfo.m_DivingGearTexture.Invalidate();
 	}
 	else
 		RenderInfo.m_DivingGearTexture.Invalidate();

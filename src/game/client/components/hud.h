@@ -24,6 +24,7 @@ class CHud : public CComponent
 	void RenderVoting();
 	void RenderNinjaBar(float x, float y, float Progress);
 	void RenderDivingGearBar(float x, float y, float Progress);
+	void RenderDivingGear(float x, float y);
 	void RenderHealthAndAmmo(const CNetObj_Character *pCharacter);
 	void RenderGameTimer();
 	void RenderPauseTimer();

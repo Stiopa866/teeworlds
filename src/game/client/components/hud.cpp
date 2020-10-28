@@ -753,15 +753,48 @@ void CHud::RenderHealthAndAmmo(const CNetObj_Character *pCharacter)
 			Array[h] = IGraphics::CQuadItem(x + h * 12, y + 36, 12, 12);
 		Graphics()->QuadsDrawTL(Array, h);
 
-
+		Graphics()->QuadsEnd();
+		Graphics()->WrapNormal();
 	}
-	if (pCharacter->m_DivingBreath > -1)
+	else if (pCharacter->m_DivingBreath > -1)
 	{
 		RenderDivingGearBar(x, y + 36, (float)pCharacter->m_DivingBreath / 100);
+		Graphics()->QuadsEnd();
+		Graphics()->WrapNormal();
+	}
+	else if (pCharacter->m_DivingGear && !Config()->m_ClShowDivingGear)
+	{
+		Graphics()->QuadsEnd();
+		Graphics()->WrapNormal();
+		RenderDivingGear(x, y + 36);
+	}
+	else
+	{
+		Graphics()->QuadsEnd();
+		Graphics()->WrapNormal();
 	}
 	//Graphics()->QuadsDrawTL(Array, i);
+	//Graphics()->QuadsEnd();
+	//Graphics()->WrapNormal();
+}
+
+void CHud::RenderDivingGear(float x, float y)
+{
+	IGraphics::CQuadItem Item(x+12, y+12, 18, 18);
+	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_DIVING_GEAR].m_Id);
+	Graphics()->QuadsBegin();
+	RenderTools()->SelectSprite(SPRITE_DIVING_GEAR);
+	Graphics()->QuadsDraw(&Item, 1);
 	Graphics()->QuadsEnd();
-	Graphics()->WrapNormal();
+	/*Graphics()->TextureClear();
+	
+	
+	
+	
+	
+	Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	
+	*/
 }
 
 void CHud::RenderSpectatorHud()
