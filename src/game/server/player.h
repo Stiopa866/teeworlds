@@ -8,6 +8,7 @@
 
 enum
 {
+	WEAPON_DROWNING = -4, //drowning
 	WEAPON_GAME = -3, // team switching etc
 	WEAPON_SELF = -2, // console kill command
 	WEAPON_WORLD = -1, // death tiles etc

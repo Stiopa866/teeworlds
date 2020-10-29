@@ -78,6 +78,7 @@ public:
 	void RenderTee(class CAnimState *pAnim, const CTeeRenderInfo *pInfo, int Emote, vec2 Dir, vec2 Pos);
 	void RenderTeeHand(const CTeeRenderInfo *pInfo, vec2 CenterPos, vec2 Dir, float AngleOffset,
 					   vec2 PostRotOffset);
+	void RenderWaterTee(CAnimState* pAnim, const CTeeRenderInfo* pInfo, float Angle, vec2 Pos, float EyeAngle, float Transparency);
 
 	// map render methods (gc_render_map.cpp)
 	static void RenderEvalEnvelope(CEnvPoint *pPoints, int NumPoints, int Channels, float Time, float *pResult);

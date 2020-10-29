@@ -141,7 +141,7 @@ public:
 	void CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamage, float RadiusMultiplier=1.0f);
 	void CreateHammerHit(vec2 Pos);
 	void CreatePlayerSpawn(vec2 Pos);
-	void CreateDeath(vec2 Pos, int Who);
+	void CreateDeath(vec2 Pos, int Who, bool Drowned=0);
 	void CreateSound(vec2 Pos, int Sound, int64 Mask=-1);
 
 	// network

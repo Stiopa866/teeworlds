@@ -648,11 +648,11 @@ void CCharacter::Tick()
 			{
 				if (!GameServer()->Tuning()->m_LiquidTicksPerSuffocationDmg.Get())
 				{
-					TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 2, GetPlayer()->GetCID(), WEAPON_WORLD, GameServer()->Tuning()->m_LiquidOnlyHeartDmg && DMGTYPE_HEART); //works as if the tick delay was 1, but 1 tick delay deals 1 dmg this one deals 2
+					TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 2, GetPlayer()->GetCID(), WEAPON_DROWNING, GameServer()->Tuning()->m_LiquidOnlyHeartDmg && DMGTYPE_HEART); //works as if the tick delay was 1, but 1 tick delay deals 1 dmg this one deals 2
 				}
 				else if(!(m_BreathTick % (GameServer()->Tuning()->m_LiquidTicksPerSuffocationDmg.Get() / 100)))
 				{
-					TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 1, GetPlayer()->GetCID(), WEAPON_WORLD, GameServer()->Tuning()->m_LiquidOnlyHeartDmg && DMGTYPE_HEART);
+					TakeDamage(vec2(0.f, 0.f), vec2(0.f, 0.f), 1, GetPlayer()->GetCID(), WEAPON_DROWNING, GameServer()->Tuning()->m_LiquidOnlyHeartDmg && DMGTYPE_HEART);
 				}
 			}
 		}
@@ -789,6 +789,12 @@ bool CCharacter::IncreaseArmor(int Amount)
 
 void CCharacter::Die(int Killer, int Weapon)
 {
+	bool Drowned = false;
+	if (Weapon == WEAPON_DROWNING)
+	{
+		Drowned = true;
+		Weapon = WEAPON_WORLD;
+	}
 	// we got to wait 0.5 secs before respawning
 	m_Alive = false;
 	m_pPlayer->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
@@ -837,7 +843,7 @@ void CCharacter::Die(int Killer, int Weapon)
 
 	GameWorld()->RemoveEntity(this);
 	GameWorld()->m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
-	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID(), Drowned);
 }
 
 bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon, int Flag)

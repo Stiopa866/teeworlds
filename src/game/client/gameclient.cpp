@@ -22,6 +22,7 @@
 
 #include "gameclient.h"
 
+#include "components/animchars.h"
 #include "components/binds.h"
 #include "components/broadcast.h"
 #include "components/camera.h"
@@ -89,6 +90,7 @@ void FormatTimeDiff(char *pBuf, int Size, int Time, int Precision, bool ForceSig
 }
 
 // instantiate all systems
+static CAnimChars gs_AnimChars;
 static CInfoMessages gs_InfoMessages;
 static CCamera gs_Camera;
 static CChat gs_Chat;
@@ -232,6 +234,7 @@ void CGameClient::OnConsoleInit()
 	m_pBlacklist = Kernel()->RequestInterface<IBlacklist>();
 
 	// setup pointers
+	m_pAnimChars = &::gs_AnimChars;
 	m_pBinds = &::gs_Binds;
 	m_pBroadcast = &::gs_Broadcast;
 	m_pGameConsole = &::gs_GameConsole;
@@ -271,6 +274,7 @@ void CGameClient::OnConsoleInit()
 	m_All.Add(&gs_MapLayersBackGround); // first to render
 	m_All.Add(&m_pParticles->m_RenderTrail);
 	m_All.Add(m_pItems);
+	m_All.Add(m_pAnimChars);
 	m_All.Add(&gs_Players);
 	m_All.Add(&gs_MapLayersForeGround);
 	m_All.Add(&m_pParticles->m_RenderExplosions);
@@ -1100,7 +1104,15 @@ void CGameClient::ProcessEvents()
 		else if(Item.m_Type == NETEVENTTYPE_DEATH)
 		{
 			CNetEvent_Death *ev = (CNetEvent_Death *)pData;
-			m_pEffects->PlayerDeath(vec2(ev->m_X, ev->m_Y), ev->m_ClientID);
+			if (ev->m_Drowned)
+			{
+				Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "debug", "Received");
+				m_pAnimChars->Add(vec2(ev->m_X, ev->m_Y), m_aClients[ev->m_ClientID].m_RenderInfo, m_aClients[ev->m_ClientID].m_Angle);
+				m_pSounds->PlayAt(CSounds::CHN_WORLD, SOUND_TEE_CRY, 1.0f, vec2(ev->m_X, ev->m_Y));
+				//DrowningChar();
+			}
+			else
+				m_pEffects->PlayerDeath(vec2(ev->m_X, ev->m_Y), ev->m_ClientID);
 		}
 		else if(Item.m_Type == NETEVENTTYPE_SOUNDWORLD)
 		{

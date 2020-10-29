@@ -245,6 +245,7 @@ Objects = [
 
 	NetEvent("Death:Common", [
 		NetIntRange("m_ClientID", 0, 'MAX_CLIENTS-1'),
+                NetBool("m_Drowned"),
 	]),
 
 	NetEvent("SoundWorld:Common", [

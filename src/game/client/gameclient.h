@@ -328,6 +328,7 @@ public:
 	class CCamera *m_pCamera;
 	class CControls *m_pControls;
 	class CEffects *m_pEffects;
+	class CAnimChars* m_pAnimChars;
 	class CSounds *m_pSounds;
 	class CMotd *m_pMotd;
 	class CMapImages *m_pMapimages;
