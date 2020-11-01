@@ -896,6 +896,8 @@ set(EXPECTED_DATA
   editor/entities.png
   emoticons.png
   fonts/DejaVuSans.ttf
+  fonts/SourceHanSans.ttc
+  fonts/index.json
   game.png
   languages/belarusian.json
   languages/bosnian.json
@@ -1179,7 +1181,7 @@ if(NOT EXISTS ${PROJECT_SOURCE_DIR}/datasrc/maps/dm1.map)
   endforeach()
 endif()
 
-set_glob(DATA GLOB_RECURSE "json;map;png;rules;ttf;txt;wv" datasrc ${EXPECTED_DATA})
+set_glob(DATA GLOB_RECURSE "json;map;png;rules;ttc;ttf;txt;wv" datasrc ${EXPECTED_DATA})
 
 ########################################################################
 # COPY DATA AND DLLS
@@ -1420,7 +1422,8 @@ if(CLIENT)
     serverbrowser_filter.h
     sound.cpp
     sound.h
-    text.cpp
+    textrender.cpp
+    textrender.h
   )
   set_src(GAME_CLIENT GLOB_RECURSE src/game/client
     animstate.cpp

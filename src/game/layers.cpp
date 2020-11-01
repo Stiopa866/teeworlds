@@ -26,6 +26,7 @@ void CLayers::Init(class IKernel *pKernel, IMap *pMap)
 
 void CLayers::InitGameLayer()
 {
+	bool FoundWaterLayer = false;
 	for(int g = 0; g < NumGroups(); g++)
 	{
 		CMapItemGroup *pGroup = GetGroup(g);
@@ -60,11 +61,15 @@ void CLayers::InitGameLayer()
 				if (pTilemap->m_Flags & TILESLAYERFLAG_WATER)
 				{
 					m_pWaterLayer = pTilemap;
-
+					FoundWaterLayer = true;
 					continue;
 				}
 			}
 		}
+	}
+	if (!FoundWaterLayer)
+	{
+		m_pWaterLayer = 0;
 	}
 }
 
