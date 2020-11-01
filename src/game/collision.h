@@ -30,7 +30,25 @@ public:
 	CCollision();
 	void Init(class CLayers *pLayers);
 	//void InitializeWater();
-	bool CheckPoint(float x, float y, int Flag=COLFLAG_SOLID) const { return IsTile(round_to_int(x), round_to_int(y), Flag); }
+	bool CheckPoint(float x, float y, int Flag=COLFLAG_SOLID) const
+	{
+		int Tx = round_to_int(x);
+		int Ty = round_to_int(y);
+		if (Flag == 8)
+		{
+			if (IsTile(Tx, Ty - 32, 8)) //water above carry on
+			{
+			}
+			else
+			{ //boi u done goofed
+				if (Ty % 32 < 16)
+				{
+					return false;
+				}
+			}
+		}
+		return IsTile(Tx, Ty, Flag);
+	}
 	bool CheckWaterPoint(float x, float y, int Flag = COLFLAG_SOLID) const { return IsAirTile(round_to_int(x), round_to_int(y), Flag); }
 	bool CheckPoint(vec2 Pos, int Flag=COLFLAG_SOLID) const { return CheckPoint(Pos.x, Pos.y, Flag); }
 	bool CheckWaterPoint(vec2 Pos, int Flag = COLFLAG_SOLID) const { return CheckWaterPoint(Pos.x, Pos.y, Flag); }
