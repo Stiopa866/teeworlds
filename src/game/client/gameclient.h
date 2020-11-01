@@ -318,6 +318,7 @@ public:
 	class CGameConsole *m_pGameConsole;
 	class CBinds *m_pBinds;
 	class CBroadcast *m_pBroadcast;
+	class CWater* m_pWater;
 	class CParticles *m_pParticles;
 	class CMenus *m_pMenus;
 	class CSkins *m_pSkins;

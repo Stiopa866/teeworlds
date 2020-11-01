@@ -644,6 +644,7 @@ container.sprites.Add(Sprite("water1C", set_water, 1,12,1,1))
 container.sprites.Add(Sprite("water1D", set_water, 1,13,1,1))
 container.sprites.Add(Sprite("water1E", set_water, 1,14,1,1))
 container.sprites.Add(Sprite("water1F", set_water, 1,15,1,1))
+container.sprites.Add(Sprite("water20", set_water, 2,0,1,1))
 container.sprites.Add(Sprite("water30", set_water, 3,0,1,1))
 
 anim = Animation("base")

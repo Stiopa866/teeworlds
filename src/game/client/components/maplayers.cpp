@@ -12,6 +12,7 @@
 #include <game/layers.h>
 #include <game/client/gameclient.h>
 #include <game/client/component.h>
+#include <game/client/components/water.h>
 #include <game/client/render.h>
 
 #include <generated/client_data.h>
@@ -20,6 +21,7 @@
 #include "mapimages.h"
 #include "menus.h"
 #include "maplayers.h"
+
 
 CMapLayers::CMapLayers(int Type)
 {
@@ -356,6 +358,8 @@ void CMapLayers::OnRender()
 						CTile* pTiles = (CTile*)pLayers->Map()->GetData(pTMap->m_Data);
 						Graphics()->BlendNormal();
 						vec4 Color = vec4(pTMap->m_Color.r / 255.0f, pTMap->m_Color.g / 255.0f, pTMap->m_Color.b / 255.0f, 127.0f / 255.0f);
+
+						m_pClient->m_pWater->Render();
 						RenderTools()->RenderWaterMap(pTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, Color, TILERENDERFLAG_EXTEND | LAYERRENDERFLAG_OPAQUE,
 							EnvelopeEval, this, pTMap->m_ColorEnv, pTMap->m_ColorEnvOffset, Client()->GameTick()%64);
 					}

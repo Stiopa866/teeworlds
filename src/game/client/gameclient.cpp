@@ -51,6 +51,7 @@
 #include "components/spectator.h"
 #include "components/stats.h"
 #include "components/voting.h"
+#include "components/water.h"
 
 inline void AppendDecimals(char *pBuf, int Size, int Time, int Precision)
 {
@@ -113,6 +114,7 @@ static CDamageInd gsDamageInd;
 static CVoting gs_Voting;
 static CSpectator gs_Spectator;
 static CStats gs_Stats;
+static CWater gs_Water;
 
 static CPlayers gs_Players;
 static CNamePlates gs_NamePlates;
@@ -254,7 +256,7 @@ void CGameClient::OnConsoleInit()
 	m_pMapLayersBackGround = &::gs_MapLayersBackGround;
 	m_pMapLayersForeGround = &::gs_MapLayersForeGround;
 	m_pStats = &::gs_Stats;
-
+	m_pWater = &::gs_Water;
 	// make a list of all the systems, make sure to add them in the corrent render order
 	m_All.Add(m_pSkins);
 	m_All.Add(m_pCountryFlags);
@@ -270,6 +272,7 @@ void CGameClient::OnConsoleInit()
 
 	m_All.Add(&gs_MapLayersBackGround); // first to render
 	m_All.Add(&m_pParticles->m_RenderTrail);
+	m_All.Add(m_pWater);
 	m_All.Add(m_pItems);
 	m_All.Add(&gs_Players);
 	m_All.Add(&gs_MapLayersForeGround);
@@ -465,8 +468,7 @@ int CGameClient::OnSnapInput(int *pData)
 void CGameClient::OnConnected()
 {
 	m_Layers.Init(Kernel());
-	m_Collision.Init(Layers());
-
+	m_Collision.Init(Layers(), m_pWater);
 	for(int i = 0; i < m_All.m_Num; i++)
 	{
 		m_All.m_paComponents[i]->OnMapLoad();

@@ -545,10 +545,11 @@ void CRenderTools::RenderWaterMap(CTile* pTiles, int w, int h, float Scale, vec4
 					}
 					else
 					{
-						int Tick2 = Tick/4;
-						int Sprite = x % 2 ? SPRITE_WATER10 : SPRITE_WATER00;
-						Sprite += Tick2;
-						SelectSprite(Sprite);
+						SelectSprite(SPRITE_WATER20);
+						//int Tick2 = Tick/4;
+						//int Sprite = x % 2 ? SPRITE_WATER10 : SPRITE_WATER00;
+					//	Sprite += Tick2;
+						//SelectSprite(Sprite);
 					}
 					
 					/*float x0 = 0;

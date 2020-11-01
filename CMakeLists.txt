@@ -1493,6 +1493,8 @@ if(CLIENT)
     components/stats.h
     components/voting.cpp
     components/voting.h
+    components/water.cpp
+    components/water.h
     gameclient.cpp
     gameclient.h
     lineinput.cpp

@@ -11,6 +11,7 @@
 #include <game/mapitems.h>
 #include <game/layers.h>
 #include <game/collision.h>
+#include <game/client/components/water.h>
 
 CCollision::CCollision()
 {
@@ -20,8 +21,9 @@ CCollision::CCollision()
 	m_pLayers = 0;
 }
 
-void CCollision::Init(class CLayers *pLayers)
+void CCollision::Init(class CLayers *pLayers, class CWater *pWater)
 {
+	m_pWater = pWater;
 	m_pLayers = pLayers;
 	m_Width = m_pLayers->GameLayer()->m_Width;
 	m_Height = m_pLayers->GameLayer()->m_Height;
@@ -313,11 +315,18 @@ void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elas
 					Vel.x *= -Elasticity;
 				}
 			}
-
+			if (m_pWater)
+			{
+				if (!TestBox(vec2(Pos.x, Pos.y), Size, COLFLAG_WATER) && TestBox(vec2(NewPos.x, NewPos.y), Size, COLFLAG_WATER))
+				{
+					//m_pWater->HitWater(NewPos.x, NewPos.y, -pInoutVel->y);
+				}
+			}
+			
 			Pos = NewPos;
 		}
 	}
-
+	
 	*pInoutPos = Pos;
 	*pInoutVel = Vel;
 }

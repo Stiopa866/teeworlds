@@ -12,6 +12,7 @@
 
 #include <game/client/components/flow.h>
 #include <game/client/components/effects.h>
+#include <game/client/components/water.h>
 
 #include "items.h"
 
@@ -61,9 +62,15 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 	vec2 StartVel(pCurrent->m_VelX/100.0f, pCurrent->m_VelY/100.0f);
 	vec2 Pos;
 	vec2 PrevPos;
-	if(pCurrent->m_Water)
+	if (pCurrent->m_Water)
 	{
+		
 		Pos = CalcPos(StartPos, StartVel, Curvature, Speed* WaterResistance, Ct);
+		if (!Collision()->TestBox(CalcPos(StartPos, StartVel, Curvature, Speed * WaterResistance, Ct - 0.005f), vec2(1.0f, 1.0f), 8))
+		{
+			Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "A");
+			m_pClient->m_pWater->HitWater(Pos.x, Pos.y, 1);
+		}
 		PrevPos = CalcPos(StartPos, StartVel, Curvature, Speed* WaterResistance, Ct - 0.001f);
 	}
 	else

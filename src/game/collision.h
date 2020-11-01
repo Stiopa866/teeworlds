@@ -12,11 +12,11 @@ class CCollision
 	int m_Width;
 	int m_Height;
 	class CLayers *m_pLayers;
+	class CWater* m_pWater;
 
 	bool IsTile(int x, int y, int Flag=COLFLAG_SOLID) const;
 	bool IsAirTile(int x, int y, int Flag = COLFLAG_SOLID) const;
 	int GetTile(int x, int y) const;
-
 public:
 	class CTile* m_pCollisionTiles;
 	enum
@@ -28,7 +28,7 @@ public:
 	};
 
 	CCollision();
-	void Init(class CLayers *pLayers);
+	void Init(class CLayers* pLayers, class CWater* pWater=0x0);
 	//void InitializeWater();
 	bool CheckPoint(float x, float y, int Flag=COLFLAG_SOLID) const
 	{
