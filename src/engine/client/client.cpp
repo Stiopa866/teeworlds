@@ -1710,9 +1710,6 @@ void CClient::Update()
 
 			m_GameIntraTick = (Now - PrevtickStart) / (float)(CurtickStart-PrevtickStart);
 			m_GameTickTime = (Now - PrevtickStart) / (float)Freq; //(float)SERVER_TICK_SPEED);
-			char aBuf[64];
-			str_format(aBuf, sizeof(aBuf), "%d", m_CurGameTick);
-			Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "debug", aBuf);
 
 			CurtickStart = NewPredTick*time_freq()/50;
 			PrevtickStart = PrevPredTick*time_freq()/50;
