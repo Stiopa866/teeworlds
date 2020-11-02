@@ -899,6 +899,7 @@ set(EXPECTED_DATA
   fonts/SourceHanSans.ttc
   fonts/index.json
   game.png
+  harpoon.png
   languages/belarusian.json
   languages/bosnian.json
   languages/brazilian_portuguese.json
@@ -973,6 +974,7 @@ set(EXPECTED_DATA
   mapres/winter_mountains.png
   mapres/winter_mountains2.png
   mapres/winter_mountains3.png
+  mapres/water.png
   maps/ctf1.map
   maps/ctf2.map
   maps/ctf3.map
