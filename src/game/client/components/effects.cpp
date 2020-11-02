@@ -163,6 +163,32 @@ void CEffects::SkidTrail(vec2 Pos, vec2 Vel)
 	m_pClient->m_pParticles->Add(CParticles::GROUP_GENERAL, &p);
 }
 
+
+void CEffects::Droplet(vec2 Pos, vec2 Vel)
+{
+	if (!m_Add100hz)
+		return;
+
+	for (int i = 0; i < 32; i++)
+	{
+		CParticle p;
+		p.SetDefault();
+		p.m_Spr = SPRITE_DROPLET;
+		p.m_Pos = Pos;
+		p.m_Vel = vec2(RandomDir().x * (powf(frandom(), 3) * 600.0f), absolute(Vel.y));
+		p.m_LifeSpan = 0.3f + frandom() * 0.3f;
+		p.m_StartSize = 16.0f;
+		p.m_EndSize = p.m_StartSize;
+		p.m_Rot = angle(vec2(p.m_Vel));
+		p.m_Rotspeed = 0;
+		p.m_Gravity = 1;
+		p.m_Friction = 1.0f;
+		p.m_Color = vec4(0xb5 / 255.0f, 0x50 / 255.0f, 0xcb / 255.0f, 0.75f);
+		m_pClient->m_pParticles->Add(CParticles::GROUP_GENERAL, &p);
+
+	}
+}
+
 void CEffects::BulletTrail(vec2 Pos)
 {
 	if(!m_Add100hz)

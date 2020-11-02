@@ -17,7 +17,7 @@
 #include "items.h"
 
 
-void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
+void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID, const CNetObj_Projectile* pPrev)
 {
 	// get positions
 	float Curvature = 0;
@@ -66,12 +66,12 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID)
 	{
 		
 		Pos = CalcPos(StartPos, StartVel, Curvature, Speed* WaterResistance, Ct);
-		if (!Collision()->TestBox(CalcPos(StartPos, StartVel, Curvature, Speed * WaterResistance, Ct - 0.005f), vec2(1.0f, 1.0f), 8))
+		PrevPos = CalcPos(StartPos, StartVel, Curvature, Speed* WaterResistance, Ct - 0.001f);
+		if (!pPrev->m_Water)
 		{
 			Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "A");
-			m_pClient->m_pWater->HitWater(Pos.x, Pos.y, 1);
+			m_pClient->m_pWater->HitWater(Pos.x, Pos.y, 200);
 		}
-		PrevPos = CalcPos(StartPos, StartVel, Curvature, Speed* WaterResistance, Ct - 0.001f);
 	}
 	else
 	{
@@ -330,7 +330,10 @@ void CItems::OnRender()
 
 		if(Item.m_Type == NETOBJTYPE_PROJECTILE)
 		{
-			RenderProjectile((const CNetObj_Projectile *)pData, Item.m_ID);
+			const void* pPrev = Client()->SnapFindItem(IClient::SNAP_PREV, Item.m_Type, Item.m_ID);
+			if (pPrev)
+				RenderProjectile((const CNetObj_Projectile*)pData, Item.m_ID, (const CNetObj_Projectile*)pPrev);
+			//RenderProjectile((const CNetObj_Projectile *)pData, Item.m_ID);
 		}
 		else if(Item.m_Type == NETOBJTYPE_PICKUP)
 		{

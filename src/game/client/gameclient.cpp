@@ -455,7 +455,7 @@ int CGameClient::OnSnapInput(int *pData)
 void CGameClient::OnConnected()
 {
 	m_Layers.Init(Kernel());
-	m_Collision.Init(Layers(), m_pWater);
+	m_Collision.Init(Layers(), &WaterSplash);
 	for(int i = 0; i < m_All.m_Num; i++)
 	{
 		m_All.m_paComponents[i]->OnMapLoad();
@@ -2000,6 +2000,11 @@ void CGameClient::ConchainXmasHatUpdate(IConsole::IResult *pResult, void *pUserD
 		if(pClient->m_aClients[i].m_Active)
 			pClient->m_aClients[i].UpdateRenderInfo(pClient, i, true);
 	}
+}
+
+void CGameClient::WaterSplash(float x, float y, float Force)
+{
+	gs_Water.HitWater(x, y, Force);
 }
 
 IGameClient *CreateGameClient()

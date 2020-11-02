@@ -608,6 +608,7 @@ container.sprites.Add(Sprite("part_bubble1", set_particles, 6,0,1,1))
 container.sprites.Add(Sprite("part_bubble2", set_particles, 7,0,1,1))
 container.sprites.Add(Sprite("part_bubble3", set_particles, 6,1,1,1))
 container.sprites.Add(Sprite("part_bubble4", set_particles, 7,1,1,1))
+container.sprites.Add(Sprite("droplet", set_particles, 6,2,1,1))
 container.sprites.Add(Sprite("diving_gear", set_diving_gear, 1,1,6,6))
 container.sprites.Add(Sprite("water_star", set_game, 18,2,2,2))
 

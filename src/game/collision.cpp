@@ -11,7 +11,6 @@
 #include <game/mapitems.h>
 #include <game/layers.h>
 #include <game/collision.h>
-#include <game/client/components/water.h>
 
 CCollision::CCollision()
 {
@@ -21,9 +20,10 @@ CCollision::CCollision()
 	m_pLayers = 0;
 }
 
-void CCollision::Init(class CLayers *pLayers, class CWater *pWater)
+void CCollision::Init(class CLayers *pLayers, void (*ptr)(float,float,float))
 {
-	m_pWater = pWater;
+	//m_pWater = pWater;
+	pointer = ptr;
 	m_pLayers = pLayers;
 	m_Width = m_pLayers->GameLayer()->m_Width;
 	m_Height = m_pLayers->GameLayer()->m_Height;
@@ -315,11 +315,18 @@ void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elas
 					Vel.x *= -Elasticity;
 				}
 			}
-			if (m_pWater)
+			if (pointer)
 			{
 				if (!TestBox(vec2(Pos.x, Pos.y), Size, COLFLAG_WATER) && TestBox(vec2(NewPos.x, NewPos.y), Size, COLFLAG_WATER))
 				{
-					//m_pWater->HitWater(NewPos.x, NewPos.y, -pInoutVel->y);
+				//	m_pWater->HitWater(NewPos.x, NewPos.y, -pInoutVel->y);
+					//CGameClient::WaterSplash(NewPos.x, NewPos.y, -pInoutVel->y, m_pWater);
+					(*pointer)(NewPos.x, NewPos.y, -pInoutVel->y);
+				}
+				else if (TestBox(vec2(Pos.x, Pos.y), Size, COLFLAG_WATER) && !TestBox(vec2(NewPos.x, NewPos.y), Size, COLFLAG_WATER))
+				{
+					//m_pWater->HitWater(NewPos.x, NewPos.y, pInoutVel->y);
+					(*pointer)(NewPos.x, NewPos.y, pInoutVel->y);
 				}
 			}
 			

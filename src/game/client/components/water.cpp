@@ -8,6 +8,8 @@
 #include <game/collision.h>
 #include <generated/client_data.h>
 #include <engine/config.h>
+#include <game/client/gameclient.h>
+#include <game/client/components/effects.h>
 
 enum {
 	DESIRED_HEIGHT = 16
@@ -15,6 +17,7 @@ enum {
 
 void CWater::Init()
 {
+	Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "Init Called");
 	m_pLayers = Layers();
 	if (!m_pLayers->WaterLayer())
 		return;
@@ -63,7 +66,8 @@ void CWater::OnReset()
 		}
 		m_NumOfSurfaces = 0;
 
-		delete [] m_aWaterSurfaces;
+		delete[] m_aWaterSurfaces;
+		m_aWaterSurfaces = 0;
 	}
 }
 
@@ -81,6 +85,9 @@ int CWater::AmountOfSurfaceTiles(int Coord, int End)
 
 void CWater::Render()
 {
+	m_pLayers = Layers();
+	if (!m_pLayers->WaterLayer())
+		return;
 	Tick();
 	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 	Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
@@ -127,9 +134,9 @@ void CWater::WaterFreeform(float X, float Y, int A, int B, float Size, CWaterSur
 		X + B * Size, //bottom right corner
 		Y + 32.0f, 
 		X + A * 4, //top left corner
-		Y + 32.0f - Surface->m_aVertex[A]->m_Height,
+		Y + 32.0f - 16.0f - (Surface->m_aVertex[A]->m_Height - 16.0f) * Surface->m_Scale,
 		X + B * 4, //top right corner
-		Y + 32.0f - Surface->m_aVertex[B]->m_Height
+		Y + 32.0f - 16.0f - (Surface->m_aVertex[B]->m_Height - 16.0f) * Surface->m_Scale
 
 	);
 	Graphics()->QuadsDrawFreeform(&Item, 1);
@@ -144,6 +151,7 @@ void CWater::HitWater(float x, float y, float Force)
 			if (y > m_aWaterSurfaces[i]->m_Coordinates.m_Y * 32.0f && y < (m_aWaterSurfaces[i]->m_Coordinates.m_Y) * 32.0f + 32.0f)
 			{
 				m_aWaterSurfaces[i]->HitWater(x, y, Force);
+				m_pClient->m_pEffects->Droplet(vec2(x, y), vec2(0, Force));
 				break;
 			}
 			else
@@ -208,18 +216,30 @@ void CWaterSurface::Tick()
 			if (i < m_AmountOfVertex - 1)
 			{
 				RightDelta[i] = Spread * (m_aVertex[i]->m_Height - m_aVertex[i + 1]->m_Height);
-				m_aVertex[i + 1]->m_Velo+= RightDelta[i];
+				m_aVertex[i + 1]->m_Velo += RightDelta[i];
 			}
 		}
-
 		for (int i = 0; i < m_AmountOfVertex; i++)
 		{
 			if (i > 0)
 				m_aVertex[i - 1]->m_Height += LeftDelta[i];
 			if (i < m_AmountOfVertex - 1)
 				m_aVertex[i + 1]->m_Height += RightDelta[i];
+
 		}
 	}
+	float MaxHeight = 0;
+	float Scale = 1;
+	for (int i = 0; i < m_AmountOfVertex; i++)
+	{
+		if (absolute(m_aVertex[i]->m_Height-16) > MaxHeight)
+			MaxHeight = absolute(m_aVertex[i]->m_Height-16.0f);
+	}
+	if (MaxHeight > 16.0f)
+	{
+		Scale = 16.0f / MaxHeight;
+	}
+	m_Scale = Scale;
 }
 
 CVertex::CVertex(float Height)

@@ -39,6 +39,7 @@ public:
 	class CVertex** m_aVertex;
 	int m_AmountOfVertex;
 	int m_Length;
+	float m_Scale;
 
 	void Remove();
 	void Tick();

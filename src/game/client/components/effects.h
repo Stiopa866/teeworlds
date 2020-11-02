@@ -20,6 +20,7 @@ public:
 	void WaterBubble(vec2 Pos);
 	void SmokeTrail(vec2 Pos, vec2 Vel);
 	void SkidTrail(vec2 Pos, vec2 Vel);
+	void Droplet(vec2 Pos, vec2 Vel);
 	void BulletTrail(vec2 Pos);
 	void PlayerSpawn(vec2 Pos);
 	void PlayerDeath(vec2 Pos, int ClientID);

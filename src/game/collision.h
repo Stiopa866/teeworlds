@@ -12,7 +12,7 @@ class CCollision
 	int m_Width;
 	int m_Height;
 	class CLayers *m_pLayers;
-	class CWater* m_pWater;
+	class CGameClient* m_pWater;
 
 	bool IsTile(int x, int y, int Flag=COLFLAG_SOLID) const;
 	bool IsAirTile(int x, int y, int Flag = COLFLAG_SOLID) const;
@@ -28,8 +28,9 @@ public:
 	};
 
 	CCollision();
-	void Init(class CLayers* pLayers, class CWater* pWater=0x0);
+	void Init(class CLayers* pLayers, void (*ptr)(float, float, float) = 0x0);
 	//void InitializeWater();
+	void (*pointer)(float,float,float);
 	bool CheckPoint(float x, float y, int Flag=COLFLAG_SOLID) const
 	{
 		int Tx = round_to_int(x);
@@ -49,7 +50,42 @@ public:
 		}
 		return IsTile(Tx, Ty, Flag);
 	}
-	bool CheckWaterPoint(float x, float y, int Flag = COLFLAG_SOLID) const { return IsAirTile(round_to_int(x), round_to_int(y), Flag); }
+	bool CheckWaterPoint(float x, float y, int Flag = COLFLAG_SOLID) const
+	{
+		int Tx = round_to_int(x);
+		int Ty = round_to_int(y);
+		if (Flag == 8)
+		{
+			if (IsTile(Tx, Ty - 32, 8)) //water above carry on
+			{
+			}
+			else
+			{ //boi u done goofed
+				if (Ty % 32 < 16)
+				{
+					return false;
+				}
+			}
+		}
+		else if (Flag == 0)
+		{
+			if ((!IsTile(Tx, Ty - 32, 8))&& IsTile(Tx, Ty, 8)) //water is here but not above
+			{
+				if (Ty % 32 < 16)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else
+			{
+			}
+		}
+		return IsAirTile(Tx, Ty, Flag);
+	}
 	bool CheckPoint(vec2 Pos, int Flag=COLFLAG_SOLID) const { return CheckPoint(Pos.x, Pos.y, Flag); }
 	bool CheckWaterPoint(vec2 Pos, int Flag = COLFLAG_SOLID) const { return CheckWaterPoint(Pos.x, Pos.y, Flag); }
 	int GetCollisionAt(float x, float y) const { return GetTile(round_to_int(x), round_to_int(y)); }
