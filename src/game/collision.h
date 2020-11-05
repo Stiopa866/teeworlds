@@ -5,6 +5,11 @@
 
 #include <base/vmath.h>
 
+enum CollisionAlgorithmFlags
+{
+	CLAFLAG_SOLID_WATER = 1, //react to water as if it was a solid tile
+	CLAFLAG_SEPARATE_AIR_TILE = 2, //functions will return true if COLFLAG_AIR is put into them
+};
 class CCollision
 {
 	class CTile* m_pTiles;
@@ -15,12 +20,13 @@ class CCollision
 	class CGameClient* m_pWater;
 
 	bool IsTile(int x, int y, int Flag=COLFLAG_SOLID) const;
-	bool IsAirTile(int x, int y, int Flag = COLFLAG_SOLID) const;
+	//bool IsAirTile(int x, int y, int Flag = COLFLAG_SOLID) const;
 	int GetTile(int x, int y) const;
 public:
 	class CTile* m_pCollisionTiles;
 	enum
 	{
+		COLFLAG_AIR = 0,
 		COLFLAG_SOLID = 1,
 		COLFLAG_DEATH = 2,
 		COLFLAG_NOHOOK = 4,
@@ -31,65 +37,10 @@ public:
 	void Init(class CLayers* pLayers, void (*ptr)(float, float, float) = 0x0);
 	//void InitializeWater();
 	void (*pointer)(float,float,float);
-	bool CheckPoint(float x, float y, int Flag=COLFLAG_SOLID) const
-	{
-		int Tx = round_to_int(x);
-		int Ty = round_to_int(y);
-		if (Flag == 8)
-		{
-			if (IsTile(Tx, Ty - 32, 8)) //water above carry on
-			{
-			}
-			else
-			{ //boi u done goofed
-				if (Ty % 32 < 16)
-				{
-					return false;
-				}
-			}
-		}
-		return IsTile(Tx, Ty, Flag);
-	}
-	bool CheckWaterPoint(float x, float y, int Flag = COLFLAG_SOLID) const
-	{
-		int Tx = round_to_int(x);
-		int Ty = round_to_int(y);
-		if (Flag == 8)
-		{
-			if (IsTile(Tx, Ty - 32, 8)) //water above carry on
-			{
-			}
-			else
-			{ //boi u done goofed
-				if (Ty % 32 < 16)
-				{
-					return false;
-				}
-			}
-		}
-		else if (Flag == 0)
-		{
-			if ((!IsTile(Tx, Ty - 32, 8))&& IsTile(Tx, Ty, 8)) //water is here but not above
-			{
-				if (Ty % 32 < 16)
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
-			else
-			{
-			}
-		}
-		return IsAirTile(Tx, Ty, Flag);
-	}
-	bool CheckPoint(vec2 Pos, int Flag=COLFLAG_SOLID) const { return CheckPoint(Pos.x, Pos.y, Flag); }
-	bool CheckWaterPoint(vec2 Pos, int Flag = COLFLAG_SOLID) const { return CheckWaterPoint(Pos.x, Pos.y, Flag); }
+	bool CheckPoint(float x, float y, int Flag = COLFLAG_SOLID) const;
+	bool CheckPoint(vec2 Pos, int Flag = COLFLAG_SOLID) const;
 	int GetCollisionAt(float x, float y) const { return GetTile(round_to_int(x), round_to_int(y)); }
-	int GetWaterCollisionAt(float x, float y, int Flag) const { return IsAirTile(round_to_int(x), round_to_int(y), Flag); }
+	int GetWaterCollisionAt(float x, float y, int Flag) const { return IsTile(round_to_int(x), round_to_int(y), Flag); }
 	int GetWidth() const { return m_Width; };
 	int GetHeight() const { return m_Height; };
 	int IntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *pOutBeforeCollision) const;
@@ -98,8 +49,6 @@ public:
 	void Diffract(vec2* pInoutPos, vec2* pInoutVel, float Elasticity, int* pBounces, int Flag) const;
 	void MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elasticity, bool *pDeath=0) const;
 	void MoveWaterBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float Elasticity, bool* pDeath = 0, float Severity = 0.95) const;
-	bool TestBox(vec2 Pos, vec2 Size, int Flag=COLFLAG_SOLID) const;
-	bool TestWaterBox(vec2 Pos, vec2 Size, int Flag = COLFLAG_SOLID) const;
 };
 
 #endif

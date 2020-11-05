@@ -80,17 +80,56 @@ int CCollision::GetTile(int x, int y) const
 
 bool CCollision::IsTile(int x, int y, int Flag) const
 {
-	return GetTile(x, y)&Flag;
-}
-bool CCollision::IsAirTile(int x, int y, int Flag) const
-{
-	if (Flag == 0)
+	if (Flag == COLFLAG_AIR)
 	{
 		return !GetTile(x, y);
 	}
 	return GetTile(x, y) & Flag;
+	//return GetTile(x, y)&Flag;
 }
 
+bool CCollision::CheckPoint(float x, float y, int Flag) const
+{
+	int Tx = round_to_int(x);
+	int Ty = round_to_int(y);
+
+	if (Flag == 8)
+	{
+		if (IsTile(Tx, Ty - 32, 8)) //water above carry on
+		{
+		}
+		else
+		{ //boi u done goofed
+			if (Ty % 32 < 16)
+			{
+				return false;
+			}
+		}
+	}
+	else if (Flag == 0)
+	{
+		if ((!IsTile(Tx, Ty - 32, 8)) && IsTile(Tx, Ty, 8)) //water is here but not above
+		{
+			if (Ty % 32 < 16)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+		}
+	}
+	return IsTile(Tx, Ty, Flag);
+}
+
+bool CCollision::CheckPoint(vec2 Pos, int Flag) const
+{
+	return CheckPoint(Pos.x, Pos.y, Flag);
+}
 // TODO: rewrite this smarter!
 int CCollision::IntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *pOutBeforeCollision) const
 {
@@ -135,7 +174,7 @@ int CCollision::IntersectLineWithWater(vec2 Pos0, vec2 Pos1, vec2* pOutCollision
 			return 1;
 				//GetCollisionAt(Pos.x, Pos.y);
 		}
-		else if (CheckWaterPoint(Pos.x, Pos.y, Flag))
+		else if (CheckPoint(Pos.x, Pos.y, Flag))
 		{
 			if (pOutCollision)
 				*pOutCollision = Pos;
@@ -198,10 +237,10 @@ void CCollision::Diffract(vec2* pInoutPos, vec2* pInoutVel, float Elasticity, in
 
 	vec2 Pos = *pInoutPos;
 	vec2 Vel = *pInoutVel;
-	if (CheckWaterPoint(Pos + Vel, Flag))
+	if (CheckPoint(Pos + Vel, Flag))
 	{
 		int Affected = 0;
-		if (CheckWaterPoint(Pos.x + Vel.x, Pos.y, Flag))
+		if (CheckPoint(Pos.x + Vel.x, Pos.y, Flag))
 		{
 			pInoutVel->x *= -Elasticity;
 			pInoutPos->x += clamp(-Elasticity * Vel.x, -1.0f, 1.0f);
@@ -210,7 +249,7 @@ void CCollision::Diffract(vec2* pInoutPos, vec2* pInoutVel, float Elasticity, in
 			Affected++;
 		}
 
-		if (CheckWaterPoint(Pos.x, Pos.y + Vel.y, Flag))
+		if (CheckPoint(Pos.x, Pos.y + Vel.y, Flag))
 		{
 			pInoutVel->y *= -Elasticity;
 			pInoutPos->y += clamp(-Elasticity * Vel.y, -1.0f, 1.0f);
@@ -244,19 +283,6 @@ bool CCollision::TestBox(vec2 Pos, vec2 Size, int Flag) const
 	if(CheckPoint(Pos.x-Size.x, Pos.y+Size.y, Flag))
 		return true;
 	if(CheckPoint(Pos.x+Size.x, Pos.y+Size.y, Flag))
-		return true;
-	return false;
-}
-bool CCollision::TestWaterBox(vec2 Pos, vec2 Size, int Flag) const
-{
-	Size *= 0.5f;
-	if (CheckWaterPoint(Pos.x - Size.x, Pos.y - Size.y, Flag))
-		return true;
-	if (CheckWaterPoint(Pos.x + Size.x, Pos.y - Size.y, Flag))
-		return true;
-	if (CheckWaterPoint(Pos.x - Size.x, Pos.y + Size.y, Flag))
-		return true;
-	if (CheckWaterPoint(Pos.x + Size.x, Pos.y + Size.y, Flag))
 		return true;
 	return false;
 }
