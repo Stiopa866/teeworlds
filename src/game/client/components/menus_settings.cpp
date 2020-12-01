@@ -910,8 +910,12 @@ void CMenus::RenderSettingsGeneral(CUIRect MainView)
 	// left side
 	GameLeft.HSplitTop(Spacing, 0, &GameLeft);
 	GameLeft.HSplitTop(ButtonHeight, &Button, &GameLeft);
+
+	// TODO: make space for camera settings
+	CUIRect CheckBoxLeft, CheckBoxRight;
+	Button.VSplitMid(&CheckBoxLeft, &CheckBoxRight);
 	static int s_DynamicCameraButton = 0;
-	if(DoButton_CheckBox(&s_DynamicCameraButton, Localize("Dynamic Camera"), Config()->m_ClDynamicCamera, &Button))
+	if(DoButton_CheckBox(&s_DynamicCameraButton, Localize("Dynamic Camera"), Config()->m_ClDynamicCamera, &CheckBoxLeft))
 	{
 		if(Config()->m_ClDynamicCamera)
 		{
@@ -928,6 +932,20 @@ void CMenus::RenderSettingsGeneral(CUIRect MainView)
 			Config()->m_ClMouseMaxDistanceDynamic = 1000;
 			Config()->m_ClMouseFollowfactor = 60;
 			Config()->m_ClMouseDeadzone = 300;
+		}
+	}
+
+	static int s_SmoothCameraButton = 0;
+	if(DoButton_CheckBox(&s_SmoothCameraButton, Localize("Smooth Camera"), Config()->m_ClCameraSmoothness, &CheckBoxRight))
+	{
+		if(Config()->m_ClCameraSmoothness)
+		{
+			Config()->m_ClCameraSmoothness = 0;
+		}
+		else
+		{
+			Config()->m_ClCameraSmoothness = 50;
+			Config()->m_ClCameraStabilizing = 50;
 		}
 	}
 
@@ -1355,7 +1373,7 @@ void CMenus::RenderSettingsPlayer(CUIRect MainView)
 
 		Bottom.VSplitLeft(100.0f, &Label, &Button);
 		Label.y += 17.0f;
-		UI()->DoLabel(&Label, Localize("Country:"), ButtonHeight*ms_FontmodHeight*0.8f, CUI::ALIGN_CENTER);
+		UI()->DoLabel(&Label, Localize("Flag:"), ButtonHeight*ms_FontmodHeight*0.8f, CUI::ALIGN_CENTER);
 
 		Button.w = (SkinHeight - 20.0f) * 2 + 20.0f;
 		RenderTools()->DrawUIRect(&Button, vec4(0.0f, 0.0f, 0.0f, 0.25f), CUI::CORNER_ALL, 5.0f);
