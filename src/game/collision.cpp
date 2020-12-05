@@ -273,9 +273,15 @@ void CCollision::Diffract(vec2* pInoutPos, vec2* pInoutVel, float Elasticity, in
 }
 
 
-bool CCollision::TestBox(vec2 Pos, vec2 Size, int Flag) const
+bool CCollision::TestBox(vec2 Pos, vec2 Size, int Flag, int CLAFlag) const
 {
 	Size *= 0.5f;
+	if (CLAFlag & CLAFLAG_FULLY_SUBMERGED)
+	{
+		if (CheckPoint(Pos.x - Size.x, Pos.y - Size.y, Flag) && CheckPoint(Pos.x + Size.x, Pos.y - Size.y, Flag) && CheckPoint(Pos.x - Size.x, Pos.y + Size.y, Flag) && CheckPoint(Pos.x + Size.x, Pos.y + Size.y, Flag))
+			return true;
+		return false;
+	}
 	if(CheckPoint(Pos.x-Size.x, Pos.y-Size.y, Flag))
 		return true;
 	if(CheckPoint(Pos.x+Size.x, Pos.y-Size.y, Flag))

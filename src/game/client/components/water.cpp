@@ -10,6 +10,7 @@
 #include <engine/config.h>
 #include <game/client/gameclient.h>
 #include <game/client/components/effects.h>
+#include <engine/shared/config.h>
 
 enum {
 	DESIRED_HEIGHT = 16
@@ -56,7 +57,7 @@ void CWater::Init()
 
 void CWater::OnReset()
 {
-	if (Client()->State() == IClient::STATE_OFFLINE || Client()->State() == IClient::STATE_DEMOPLAYBACK)
+	if (Client()->State() == IClient::STATE_OFFLINE || Client()->State() == IClient::STATE_DEMOPLAYBACK || !Config()->m_GfxAnimateWater)
 	{
 		m_pLayers = 0x0;
 		m_pWaterTiles = 0x0;
@@ -139,31 +140,96 @@ void CWater::WaterFreeform(float X, float Y, int A, int B, float Size, CWaterSur
 		Y + 32.0f - 16.0f - (Surface->m_aVertex[B]->m_Height - 16.0f) * Surface->m_Scale
 
 	);
+	IGraphics::CFreeformItem Item2(
+		X + A * Size, //bottom left corner
+		Y + 32.0f,
+		X + B * Size, //bottom right corner
+		Y + 32.0f,
+		X + A * 4, //top left corner
+		Y + 32.0f - 16.0f - (Surface->m_aVertex[A]->m_Height - 16.0f) * Surface->m_Scale,
+		X + B * 4, //top right corner
+		Y + 32.0f - 16.0f - (Surface->m_aVertex[B]->m_Height - 16.0f) * Surface->m_Scale
+
+	);
+	IGraphics::CFreeformItem Item3(
+		X + A * Size, //bottom left corner
+		Y + 32.0f,
+		X + B * Size, //bottom right corner
+		Y + 32.0f,
+		X + A * 4, //top left corner
+		Y + 32.0f - 16.0f - (Surface->m_aVertex[A]->m_Height - 16.0f) * Surface->m_Scale,
+		X + B * 4, //top right corner
+		Y + 32.0f - 16.0f - (Surface->m_aVertex[B]->m_Height - 16.0f) * Surface->m_Scale
+
+	);
 	Graphics()->QuadsDrawFreeform(&Item, 1);
+	//Graphics()->QuadsDrawFreeform(&Item2, 1);
+	//Graphics()->QuadsDrawFreeform(&Item3, 1);
 }
 
 void CWater::HitWater(float x, float y, float Force)
 {
+	Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "HitWater");
+	CWaterSurface* Target;
+	if(FindSurface(&Target, x, y))
+	{
+		Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "HitWater2");
+		Target->HitWater(x, y, Force);
+		if (absolute(Force) >= 5)
+		{
+			Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "Droplet Spawn2");
+			m_pClient->m_pEffects->Droplet(vec2(x, y), vec2(0, Force));
+		}
+	}
+}
+
+bool CWater::FindSurface(CWaterSurface** Pointer, float x, float y)
+{
 	for (int i = 0; i < m_NumOfSurfaces;i++)
 	{
-		if (x > m_aWaterSurfaces[i]->m_Coordinates.m_X * 32.0f && x < (m_aWaterSurfaces[i]->m_Coordinates.m_X + m_aWaterSurfaces[i]->m_Length) * 32.0f)
+		if (y < m_aWaterSurfaces[i]->m_Coordinates.m_Y * 32.0f + 32.0f)
 		{
-			if (y > m_aWaterSurfaces[i]->m_Coordinates.m_Y * 32.0f && y < (m_aWaterSurfaces[i]->m_Coordinates.m_Y) * 32.0f + 32.0f)
+			if (y > m_aWaterSurfaces[i]->m_Coordinates.m_Y * 32.0f)
 			{
-				m_aWaterSurfaces[i]->HitWater(x, y, Force);
-				m_pClient->m_pEffects->Droplet(vec2(x, y), vec2(0, Force));
-				break;
+				if (x > m_aWaterSurfaces[i]->m_Coordinates.m_X * 32.0f && x < (m_aWaterSurfaces[i]->m_Coordinates.m_X + m_aWaterSurfaces[i]->m_Length) * 32.0f)
+				{
+					*Pointer = m_aWaterSurfaces[i];
+
+					return true;
+				}
+				else
+					continue;
 			}
 			else
-				continue;
+				return false; //the explanation is a bit complicated
 		}
 		else
 			continue;
 	}
+	return false;
+}
+
+bool CWater::IsUnderWater(vec2 Pos)
+{
+	CWaterSurface* Target;
+	if (FindSurface(&Target, Pos.x, Pos.y))
+	{
+		return Target->IsUnderWater(Pos);
+	}
+	else
+	{
+		return m_pClient->Collision()->TestBox(Pos, vec2(1.0f, 1.0f), 8);
+	}
+	//return false;
 }
 
 void CWater::Tick()
 {
+	if (!Config()->m_GfxAnimateWater)
+	{
+		OnReset();
+		return;
+	}
 	for (int i = 0; i < m_NumOfSurfaces;i++)
 	{
 		m_aWaterSurfaces[i]->Tick();
@@ -187,6 +253,34 @@ void CWaterSurface::HitWater(float x, float y, float Force)
 	int RealX = (int)(x - m_Coordinates.m_X * 32.0f);
 	RealX /= 4;
 	m_aVertex[RealX]->m_Velo += Force;
+}
+
+float CWaterSurface::PositionOfVertex(float Height, bool ToScale)
+{
+	float Scale = ToScale ? m_Scale : 1.0f;
+	return m_Coordinates.m_Y * 32.0f + 32.0f - 16.0f - (Height - 16.0f) * Scale;
+}
+
+bool CWaterSurface::IsUnderWater(vec2 Pos)
+{
+
+	int RealX = (int)(Pos.x - m_Coordinates.m_X * 32.0f);
+	RealX /= 4;
+	if (PositionOfVertex(m_aVertex[RealX]->m_Height) < Pos.y)
+	{
+		//char aBuf[128];
+		//str_format(aBuf, sizeof(aBuf), "%f %f", PositionOfVertex(m_aVertex[RealX]->m_Height, Pos.y));
+		//Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
+		if (RealX + 1 == m_AmountOfVertex)
+		{
+			return true;
+		}
+		else if (PositionOfVertex(m_aVertex[RealX+1]->m_Height) < Pos.y)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void CWaterSurface::Tick()

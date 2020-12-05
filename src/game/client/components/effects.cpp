@@ -166,24 +166,34 @@ void CEffects::SkidTrail(vec2 Pos, vec2 Vel)
 
 void CEffects::Droplet(vec2 Pos, vec2 Vel)
 {
-	if (!m_Add100hz)
-		return;
+	//if (!m_Add100hz)
+		//return;
 
-	for (int i = 0; i < 32; i++)
+	float YVel = absolute(Vel.y);
+	YVel = sqrtf(YVel);
+	Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "Droplet Spawn");
+	for (int i = 0; i < 16; i++)
 	{
 		CParticle p;
 		p.SetDefault();
 		p.m_Spr = SPRITE_DROPLET;
 		p.m_Pos = Pos;
-		p.m_Vel = vec2(RandomDir().x * (powf(frandom(), 3) * 600.0f), absolute(Vel.y));
-		p.m_LifeSpan = 0.3f + frandom() * 0.3f;
-		p.m_StartSize = 16.0f;
+		p.m_Flags |= PFLAG_DESTROY_IN_ANIM_WATER;
+		p.m_Flags |= PFLAG_DESTROY_ON_IMPACT;
+		p.m_Vel = vec2(YVel * RandomDir().x * frandom() * Config()->m_GfxWaterXmultiplier, -YVel * Config()->m_GfxWaterYmultiplier * frandom()); //50
+		//char aBuf[64];
+		//str_format(aBuf, sizeof(aBuf), "%f, %f", p.m_Vel.x, p.m_Vel.y);
+		//Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
+		p.m_LifeSpan = 10.0f;
+		p.m_StartSize = 32.0f + frandom()*20.0f;
 		p.m_EndSize = p.m_StartSize;
 		p.m_Rot = angle(vec2(p.m_Vel));
 		p.m_Rotspeed = 0;
-		p.m_Gravity = 1;
-		p.m_Friction = 1.0f;
-		p.m_Color = vec4(0xb5 / 255.0f, 0x50 / 255.0f, 0xcb / 255.0f, 0.75f);
+		p.m_Gravity = Config()->m_GfxWatergravity; //750
+		p.m_Friction = Config()->m_GfxWaterfriction * 1.0f /100;
+		p.m_RotationByVel = true;
+		p.m_Water = true;
+		p.m_Color = vec4(0, 157.0f / 255.0f * 0.5f, 1 * 0.5f, 1 * 0.5f);
 		m_pClient->m_pParticles->Add(CParticles::GROUP_GENERAL, &p);
 
 	}

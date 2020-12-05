@@ -20,6 +20,8 @@ public:
 	int AmountOfSurfaceTiles(int Coord, int End);
 	void HitWater(float x, float y, float Force);
 	void WaterFreeform(float X, float Y, int A, int B, float Size, CWaterSurface* Surface);
+	bool IsUnderWater(vec2 Pos);
+	bool FindSurface(CWaterSurface** Pointer, float x, float y);
 
 	int m_NumOfSurfaces;
 };
@@ -41,9 +43,11 @@ public:
 	int m_Length;
 	float m_Scale;
 
+	bool IsUnderWater(vec2 Pos);
 	void Remove();
 	void Tick();
 	void HitWater(float x, float y, float Force);
+	float PositionOfVertex(float Height, bool ToScale = true);
 };
 
 class CVertex

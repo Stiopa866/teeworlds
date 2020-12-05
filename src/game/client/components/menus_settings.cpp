@@ -22,6 +22,7 @@
 #include <game/client/render.h>
 #include <game/client/gameclient.h>
 #include <game/client/animstate.h>
+#include <game/client/components/water.h>
 
 #include "binds.h"
 #include "countryflags.h"
@@ -1857,8 +1858,17 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 	if(DoButton_CheckBox(&s_ButtonGfxHighDetail, Localize("High Detail"), Config()->m_GfxHighDetail, &Button))
 		Config()->m_GfxHighDetail ^= 1;
 
+	Texture.HSplitTop(Spacing, 0, &Texture);
+	Texture.HSplitTop(ButtonHeight, &Button, &Texture);
+	static int s_ButtonGfxAnimateWater = 0;
+	if (DoButton_CheckBox(&s_ButtonGfxAnimateWater, Localize("Animate Water"), Config()->m_GfxAnimateWater, &Button))
+	{
+		Config()->m_GfxAnimateWater ^= 1;
+		m_pClient->m_pWater->Init();
+	}
+
 	// render screen modes
-	MainView.HSplitTop(10.0f, 0, &MainView);
+	MainView.HSplitTop(24.0f, 0, &MainView);
 
 	// display mode list
 	{

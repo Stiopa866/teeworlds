@@ -7,6 +7,7 @@
 
 #include "render.h"
 #include <generated/client_data.h>
+#include <engine/shared/config.h>
 
 void ValidateFCurve(const vec2& p0, vec2& p1, vec2& p2, const vec2& p3)
 {
@@ -546,10 +547,13 @@ void CRenderTools::RenderWaterMap(CTile* pTiles, int w, int h, float Scale, vec4
 					else
 					{
 						SelectSprite(SPRITE_WATER20);
-						//int Tick2 = Tick/4;
-						//int Sprite = x % 2 ? SPRITE_WATER10 : SPRITE_WATER00;
-					//	Sprite += Tick2;
-						//SelectSprite(Sprite);
+						if (!m_pConfig->m_GfxAnimateWater)
+						{
+							int Tick2 = Tick/4;
+							int Sprite = x % 2 ? SPRITE_WATER10 : SPRITE_WATER00;
+							Sprite += Tick2;
+							SelectSprite(Sprite);
+						}
 					}
 					
 					/*float x0 = 0;

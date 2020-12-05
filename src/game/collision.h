@@ -9,6 +9,8 @@ enum CollisionAlgorithmFlags
 {
 	CLAFLAG_SOLID_WATER = 1, //react to water as if it was a solid tile
 	CLAFLAG_SEPARATE_AIR_TILE = 2, //functions will return true if COLFLAG_AIR is put into them
+	CLAFLAG_FULLY_SUBMERGED = 4, //check if the object is fully submerged
+
 };
 class CCollision
 {
@@ -39,6 +41,7 @@ public:
 	void (*pointer)(float,float,float);
 	bool CheckPoint(float x, float y, int Flag = COLFLAG_SOLID) const;
 	bool CheckPoint(vec2 Pos, int Flag = COLFLAG_SOLID) const;
+	//bool CheckWaterPoint(vec2 Pos, int Flag = COLFLAG_SOLID) const { return CheckPoint(Pos.x, Pos.y, Flag); }
 	int GetCollisionAt(float x, float y) const { return GetTile(round_to_int(x), round_to_int(y)); }
 	int GetWaterCollisionAt(float x, float y, int Flag) const { return IsTile(round_to_int(x), round_to_int(y), Flag); }
 	int GetWidth() const { return m_Width; };
@@ -49,6 +52,7 @@ public:
 	void Diffract(vec2* pInoutPos, vec2* pInoutVel, float Elasticity, int* pBounces, int Flag) const;
 	void MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elasticity, bool *pDeath=0) const;
 	void MoveWaterBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float Elasticity, bool* pDeath = 0, float Severity = 0.95) const;
+	bool TestBox(vec2 Pos, vec2 Size, int Flag=COLFLAG_SOLID, int CLAFlag = 0) const;
 };
 
 #endif

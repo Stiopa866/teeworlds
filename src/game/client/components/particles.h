@@ -6,6 +6,16 @@
 #include <game/client/component.h>
 
 // particles
+
+enum ParticleFlags
+{
+	PFLAG_NONE = 0,
+	PFLAG_DESTROY_IN_AIR = 1, // Particle is destroyed in air
+	PFLAG_DESTROY_IN_WATER = 2, // Particle is destroyed in water tile
+	PFLAG_DESTROY_ON_IMPACT = 4, //Particle is destroyed on impact with a solid tile
+	PFLAG_DESTROY_IN_ANIM_WATER = 8, //Particle is destroyed in animwater water (under surface)
+};
+
 struct CParticle
 {
 	void SetDefault()
@@ -18,10 +28,12 @@ struct CParticle
 		m_Rotspeed = 0;
 		m_Gravity = 0;
 		m_Friction = 0;
+		m_Flags = PFLAG_NONE;
 		m_FlowAffected = 1.0f;
 		m_Color = vec4(1,1,1,1);
 		m_Water = false;
 		m_BubbleStage = 0;
+		m_RotationByVel = false;
 	}
 
 	vec2 m_Pos;
@@ -44,7 +56,9 @@ struct CParticle
 
 	vec4 m_Color;
 	
+	bool m_RotationByVel;
 	bool m_Water;
+	int m_Flags;
 	int m_BubbleStage;
 	// set by the particle system
 	float m_Life;
@@ -84,6 +98,7 @@ private:
 
 	void RenderGroup(int Group);
 	void Update(float TimePassed);
+	void RemoveParticle(int Group, int Entry);
 
 	template<int TGROUP>
 	class CRenderGroup : public CComponent
