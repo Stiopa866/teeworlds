@@ -120,9 +120,9 @@ void CCharacterCore::Tick(bool UseInput)
 
 	// get ground state
 	bool Grounded = false;
-	if(m_pCollision->CheckPoint(m_Pos.x+PHYS_SIZE/2, m_Pos.y+PHYS_SIZE/2+5))
+	if(m_pCollision->CheckPoint(m_Pos.x+PHYS_SIZE/2, m_Pos.y+PHYS_SIZE/2+5,1+CCollision::COLFLAG_WATER))
 		Grounded = true;
-	if(m_pCollision->CheckPoint(m_Pos.x-PHYS_SIZE/2, m_Pos.y+PHYS_SIZE/2+5))
+	if(m_pCollision->CheckPoint(m_Pos.x-PHYS_SIZE/2, m_Pos.y+PHYS_SIZE/2+5, 1 + CCollision::COLFLAG_WATER))
 		Grounded = true;
 
 	vec2 TargetDirection = normalize(vec2(m_Input.m_TargetX, m_Input.m_TargetY));
@@ -508,12 +508,12 @@ void CCharacterCore::HandleWater(bool UseInput)
 }
 bool CCharacterCore::IsInWater()
 {
-	return (m_pCollision->TestBox(vec2(m_Pos.x, m_Pos.y), vec2(PHYS_SIZE, PHYS_SIZE + 1.0f) * (2.0f / 3.0f), 8));
+	return (m_pCollision->TestBox(vec2(m_Pos.x, m_Pos.y), vec2(PHYS_SIZE, PHYS_SIZE + 1.0f) * (2.0f / 3.0f), CCollision::COLFLAG_WATER));
 }
 
 bool CCharacterCore::IsFloating()
 { 
-	return (!m_pCollision->TestBox(vec2(m_Pos.x, m_Pos.y - 16.0f), vec2(PHYS_SIZE, PHYS_SIZE + 1.0f) * (2.0f / 3.0f), 8));
+	return (!m_pCollision->TestBox(vec2(m_Pos.x, m_Pos.y - 16.0f), vec2(PHYS_SIZE, PHYS_SIZE + 1.0f) * (2.0f / 3.0f), CCollision::COLFLAG_WATER));
 }
 
 int CCharacterCore::DepthInWater()
@@ -525,7 +525,7 @@ int CCharacterCore::DepthInWater()
 	int Depth = 0;
 	while (Depth <= 10)
 	{
-		if (m_pCollision->TestBox(vec2(m_Pos.x, m_Pos.y - 32.0f * Depth), vec2(PHYS_SIZE, PHYS_SIZE + 1.0f) * (2.0f / 3.0f), 8))
+		if (m_pCollision->TestBox(vec2(m_Pos.x, m_Pos.y - 32.0f * Depth), vec2(PHYS_SIZE, PHYS_SIZE + 1.0f) * (2.0f / 3.0f), CCollision::COLFLAG_WATER))
 		{
 			Depth++;
 		}

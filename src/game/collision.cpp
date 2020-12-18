@@ -276,6 +276,8 @@ void CCollision::Diffract(vec2* pInoutPos, vec2* pInoutVel, float Elasticity, in
 bool CCollision::TestBox(vec2 Pos, vec2 Size, int Flag, int CLAFlag) const
 {
 	Size *= 0.5f;
+	if (CLAFlag & CLAFLAG_SOLID_WATER)
+		Flag += COLFLAG_WATER;
 	if (CLAFlag & CLAFLAG_FULLY_SUBMERGED)
 	{
 		if (CheckPoint(Pos.x - Size.x, Pos.y - Size.y, Flag) && CheckPoint(Pos.x + Size.x, Pos.y - Size.y, Flag) && CheckPoint(Pos.x - Size.x, Pos.y + Size.y, Flag) && CheckPoint(Pos.x + Size.x, Pos.y + Size.y, Flag))
@@ -293,7 +295,7 @@ bool CCollision::TestBox(vec2 Pos, vec2 Size, int Flag, int CLAFlag) const
 	return false;
 }
 
-void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elasticity, bool *pDeath) const
+void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elasticity, bool *pDeath, int CLAFlag) const
 {
 	// do the move
 	vec2 Pos = *pInoutPos;
@@ -319,7 +321,7 @@ void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elas
 				*pDeath = true;
 			}
 
-			if(TestBox(vec2(NewPos.x, NewPos.y), Size))
+			if(TestBox(vec2(NewPos.x, NewPos.y), Size, 1 ,CLAFLAG_SOLID_WATER))
 			{
 				int Hits = 0;
 
