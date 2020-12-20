@@ -321,7 +321,7 @@ void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elas
 				*pDeath = true;
 			}
 
-			if(TestBox(vec2(NewPos.x, NewPos.y), Size, 1 ,CLAFLAG_SOLID_WATER))
+			if(TestBox(vec2(NewPos.x, NewPos.y), Size))
 			{
 				int Hits = 0;
 
