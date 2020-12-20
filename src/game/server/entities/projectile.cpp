@@ -47,10 +47,10 @@ vec2 CProjectile::GetPos(float Time)
 	float WaterResistance = GameServer()->Tuning()->m_LiquidProjectileResistance;
 	switch(m_Type)
 	{
-		case WEAPON_HARPOON:
-			Curvature = GameServer()->Tuning()->m_HarpoonCurvature;
-			Speed = GameServer()->Tuning()->m_HarpoonSpeed;
-			break;
+		//case WEAPON_HARPOON:
+			//Curvature = GameServer()->Tuning()->m_HarpoonCurvature;
+			//Speed = GameServer()->Tuning()->m_HarpoonSpeed;
+			//break;
 
 		case WEAPON_GRENADE:
 			Curvature = GameServer()->Tuning()->m_GrenadeCurvature;

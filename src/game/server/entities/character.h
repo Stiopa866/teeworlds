@@ -54,6 +54,11 @@ public:
 	void ResetInput();
 	void FireWeapon();
 
+	void DeallocateHarpoon();
+	void DeallocateVictimHarpoon();
+	void HarpoonDrag(vec2 Vel);
+	void HandleHarpoon();
+
 	int NumOfBreathBubbles();
 	int DivingBreathAmount();
 
@@ -84,6 +89,8 @@ private:
 	// weapon info
 	CEntity *m_apHitObjects[10];
 	int m_NumObjectsHit;
+	class CHarpoon* m_pHarpoon;
+	class CHarpoon* m_pBeingHookedByHarpoon;
 
 	struct WeaponStat
 	{

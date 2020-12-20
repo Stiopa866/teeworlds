@@ -52,6 +52,7 @@ public:
 	void Diffract(vec2* pInoutPos, vec2* pInoutVel, float Elasticity, int* pBounces, int Flag) const;
 	void MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elasticity, bool *pDeath=0, int CLAFLAG = 0) const;
 	void MoveWaterBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float Elasticity, bool* pDeath = 0, float Severity = 0.95) const;
+	void MoveHarpoonBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, float Elasticity, int* Grounded) const;
 	bool TestBox(vec2 Pos, vec2 Size, int Flag=COLFLAG_SOLID, int CLAFlag = 0) const;
 };
 

@@ -9,6 +9,7 @@
 
 #include "character.h"
 #include "laser.h"
+#include "harpoon.h"
 #include "projectile.h"
 
 //input count
@@ -95,6 +96,11 @@ void CCharacter::SetWeapon(int W)
 		return;
 
 	m_LastWeapon = m_ActiveWeapon;
+	if (m_pHarpoon)
+	{
+		m_pHarpoon->DeallocateOwner();
+		DeallocateHarpoon();
+	}
 	m_QueuedWeapon = -1;
 	m_ActiveWeapon = W;
 	GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SWITCH);
@@ -264,6 +270,11 @@ void CCharacter::HandleWeaponSwitch()
 
 void CCharacter::FireWeapon()
 {
+	if (m_ActiveWeapon == WEAPON_HARPOON)
+	{
+		HandleHarpoon();
+		return;
+	}
 	if(m_ReloadTimer != 0)
 		return;
 
@@ -466,6 +477,60 @@ void CCharacter::FireWeapon()
 		}
 	}
 		
+}
+
+void CCharacter::HandleHarpoon()
+{
+	/*
+		No such thing as reload timer, one harpoon to be fired per collection
+	*/
+	bool WillFire = false;
+
+	DoWeaponSwitch();
+	vec2 Direction = normalize(vec2(m_LatestInput.m_TargetX, m_LatestInput.m_TargetY));
+	if (m_pHarpoon) //has fired a harpoon
+	{
+		if (CountInput(m_LatestPrevInput.m_Fire, m_LatestInput.m_Fire).m_Presses)
+			WillFire = true;
+		if (m_LatestInput.m_Fire & 1 && m_pHarpoon->m_Grounded >= 2)
+			WillFire = true;
+		if (!WillFire)
+			return;
+		if (m_pHarpoon->m_Grounded == HARPOON_FLYING) //command the harpoon to retract
+		{
+			m_pHarpoon->m_Grounded = HARPOON_RETRACTING; //Nothing can be done while the Harpoon is retracting
+		}
+		if (m_pHarpoon->m_Grounded >= 2) //command the harpoon to drag
+		{
+			m_pHarpoon->Drag();
+		}
+	}
+	else
+	{
+		if (!CountInput(m_LatestPrevInput.m_Fire, m_LatestInput.m_Fire).m_Presses)
+			return;
+		if (m_aWeapons[m_ActiveWeapon].m_Ammo)
+		{
+			vec2 ProjStartPos = m_Pos + Direction * GetProximityRadius() * 0.75f;
+			m_pHarpoon = new CHarpoon(GameWorld(), ProjStartPos, Direction, m_pPlayer->GetCID(), this);
+			m_aWeapons[m_ActiveWeapon].m_Ammo--;
+			m_AttackTick = Server()->Tick();
+		}
+
+	}
+}
+
+void CCharacter::DeallocateHarpoon()
+{
+	m_pHarpoon = 0x0;
+}
+void CCharacter::DeallocateVictimHarpoon()
+{
+	m_pBeingHookedByHarpoon = 0x0;
+}
+void CCharacter::HarpoonDrag(vec2 Vel)
+{
+	m_Core.m_Vel += Vel;
 }
 
 void CCharacter::HandleWeapons()
@@ -790,6 +855,15 @@ bool CCharacter::IncreaseArmor(int Amount)
 void CCharacter::Die(int Killer, int Weapon)
 {
 	// we got to wait 0.5 secs before respawning
+	if (m_pHarpoon)
+	{
+		m_pHarpoon->DeallocateOwner();
+		DeallocateHarpoon();
+	}
+	if (m_pBeingHookedByHarpoon)
+	{
+		m_pBeingHookedByHarpoon->RemoveHarpoon();
+	}
 	m_Alive = false;
 	m_pPlayer->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
 	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, (Killer < 0) ? 0 : GameServer()->m_apPlayers[Killer], Weapon);

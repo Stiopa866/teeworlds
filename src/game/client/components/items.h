@@ -11,6 +11,7 @@ class CItems : public CComponent
 	void RenderFlag(const CNetObj_Flag *pPrev, const CNetObj_Flag *pCurrent, const CNetObj_GameDataFlag *pPrevGameDataFlag, const CNetObj_GameDataFlag *pCurGameDataFlag);
 	void RenderLaser(const struct CNetObj_Laser *pCurrent);
 	void RenderPlayer(const CNetObj_Character* pCurrent);
+	void RenderHarpoon(const struct CNetObj_Harpoon* pCurrent);
 
 public:
 	virtual void OnRender();

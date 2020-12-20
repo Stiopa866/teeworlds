@@ -23,12 +23,12 @@ void CItems::RenderProjectile(const CNetObj_Projectile *pCurrent, int ItemID, co
 	float Curvature = 0;
 	float Speed = 0;
 	float WaterResistance = m_pClient->m_Tuning.m_LiquidProjectileResistance;
-	if (pCurrent->m_Type == WEAPON_HARPOON)
-	{
-		Curvature = m_pClient->m_Tuning.m_HarpoonCurvature;
-		Speed = m_pClient->m_Tuning.m_HarpoonSpeed;
-	}
-	else if(pCurrent->m_Type == WEAPON_GRENADE)
+	//if (pCurrent->m_Type == WEAPON_HARPOON)
+	//{
+		//Curvature = m_pClient->m_Tuning.m_HarpoonCurvature;
+		//Speed = m_pClient->m_Tuning.m_HarpoonSpeed;
+	//}
+	if(pCurrent->m_Type == WEAPON_GRENADE)
 	{
 		Curvature = m_pClient->m_Tuning.m_GrenadeCurvature;
 		Speed = m_pClient->m_Tuning.m_GrenadeSpeed;
@@ -150,7 +150,7 @@ void CItems::RenderPickup(const CNetObj_Pickup *pPrev, const CNetObj_Pickup *pCu
 		SPRITE_PICKUP_NINJA,
 		SPRITE_PICKUP_GUN,
 		SPRITE_PICKUP_HAMMER,
-		SPRITE_PICKUP_NINJA,
+		SPRITE_PICKUP_HARPOON,
 		SPRITE_DIVING_GEAR,
 		};
 
@@ -239,7 +239,6 @@ void CItems::RenderFlag(const CNetObj_Flag *pPrev, const CNetObj_Flag *pCurrent,
 	Graphics()->QuadsDraw(&QuadItem, 1);
 	Graphics()->QuadsEnd();
 }
-
 
 void CItems::RenderLaser(const struct CNetObj_Laser *pCurrent)
 {
@@ -350,7 +349,10 @@ void CItems::OnRender()
 			
 			RenderPlayer((const CNetObj_Character*)pData);
 		}
-
+		else if (Item.m_Type == NETOBJTYPE_HARPOON)
+		{
+			RenderHarpoon((const CNetObj_Harpoon*)pData);
+		}
 	}
 
 	// render flag
@@ -372,3 +374,25 @@ void CItems::OnRender()
 	}
 }
 
+void CItems::RenderHarpoon(const CNetObj_Harpoon* pCurrent)
+{
+	static float s_LastGameTickTime = Client()->GameTickTime();
+	if (!m_pClient->IsWorldPaused())
+		s_LastGameTickTime = Client()->GameTickTime();
+
+	vec2 Pos(pCurrent->m_X, pCurrent->m_Y);
+	vec2 Vel(pCurrent->m_Dir_X / 100.0f, pCurrent->m_Dir_Y / 100.0f);
+	//vec2 Pos;
+	//vec2 PrevPos;
+
+	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_HARPOON].m_Id);
+	Graphics()->QuadsBegin();
+
+	RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[6].m_pSpriteProj);
+	//vec2 pos = mix(vec2(prev->x, prev->y), vec2(current->x, current->y), Client()->IntraGameTick());
+
+	IGraphics::CQuadItem QuadItem(Pos.x, Pos.y, 32, 32);
+	Graphics()->QuadsDraw(&QuadItem, 1);
+	Graphics()->QuadsSetRotation(0);
+	Graphics()->QuadsEnd();
+}

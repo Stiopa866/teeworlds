@@ -122,6 +122,15 @@ Objects = [
 		NetTick("m_StartTick"),
 	]),
 
+        NetObject("Harpoon", [
+                NetIntAny("m_X"),
+                NetIntAny("m_Y"),
+                NetIntAny("m_Dir_X"),
+                NetIntAny("m_Dir_Y"),
+
+                NetTick("m_SpawnTick"),
+        ]),
+
 	NetObject("Pickup", [
 		NetIntAny("m_X"),
 		NetIntAny("m_Y"),
