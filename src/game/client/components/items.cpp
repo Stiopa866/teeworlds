@@ -388,11 +388,16 @@ void CItems::RenderHarpoon(const CNetObj_Harpoon* pCurrent)
 	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_HARPOON].m_Id);
 	Graphics()->QuadsBegin();
 
-	RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[6].m_pSpriteProj);
+	//float Size = g_pData->m_Weapons.m_aId[WEAPON_HARPOON].m_VisualSize;
+	RenderTools()->SelectSprite(g_pData->m_Weapons.m_aId[6].m_pSpriteProj, Vel.x < 0 ? SPRITE_FLAG_FLIP_Y : 0);
 	//vec2 pos = mix(vec2(prev->x, prev->y), vec2(current->x, current->y), Client()->IntraGameTick());
 
-	IGraphics::CQuadItem QuadItem(Pos.x, Pos.y, 32, 32);
-	Graphics()->QuadsDraw(&QuadItem, 1);
-	Graphics()->QuadsSetRotation(0);
+	
+	//IGraphics::CQuadItem QuadItem(Pos.x, Pos.y, Size, Size);
+	normalize(Vel);
+	Graphics()->QuadsSetRotation(angle(Vel));
+	RenderTools()->DrawSprite(Pos.x, Pos.y, 64.0f);
+	//Graphics()->QuadsDraw(&QuadItem, 1);
+	
 	Graphics()->QuadsEnd();
 }

@@ -479,8 +479,8 @@ void CCollision::MoveHarpoonBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, flo
 					}
 					else
 					{
-						Vel.y = 0;
-						Vel.x = 0;
+						//Vel.y = 0;
+						//Vel.x = 0;
 						*Grounded = HARPOON_IN_GROUND;
 					}
 
@@ -496,8 +496,8 @@ void CCollision::MoveHarpoonBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, flo
 					}
 					else
 					{
-						Vel.x = 0;
-						Vel.y = 0;
+						//Vel.x = 0;
+						//Vel.y = 0;
 						*Grounded = HARPOON_IN_GROUND;
 					}
 
@@ -513,8 +513,8 @@ void CCollision::MoveHarpoonBox(vec2* pInoutPos, vec2* pInoutVel, vec2 Size, flo
 					//Vel.y *= -Elasticity;
 					NewPos.x = Pos.x;
 					//Vel.x *= -Elasticity;
-					Vel.x = 0;
-					Vel.y = 0;
+					//Vel.x = 0;
+					//Vel.y = 0;
 					*Grounded = HARPOON_IN_GROUND;
 				}
 			}
