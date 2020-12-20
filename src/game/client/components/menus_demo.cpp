@@ -20,10 +20,10 @@
 #include "maplayers.h"
 #include "menus.h"
 
-CMenus::CColumn CMenus::ms_aDemoCols[] = {
-	{COL_DEMO_NAME,		CMenus::SORT_DEMONAME, Localize("Name"), 0, 100.0f, 0, {0}, {0}, CUI::ALIGN_CENTER},
-	{COL_DEMO_LENGTH,	CMenus::SORT_LENGTH, Localize("Length"), 1, 80.0f, 0, {0}, {0}, CUI::ALIGN_CENTER},
-	{COL_DEMO_DATE,		CMenus::SORT_DATE, Localize("Date"), 1, 170.0f, 0, {0}, {0}, CUI::ALIGN_CENTER},
+CMenus::CColumn CMenus::ms_aDemoCols[] = { // Localize("Name"); Localize("Length"); Localize("Date"); - these strings are localized within CLocConstString
+	{COL_DEMO_NAME,		CMenus::SORT_DEMONAME, "Name", 0, 100.0f, 0, {0}, {0}, CUI::ALIGN_CENTER},
+	{COL_DEMO_LENGTH,	CMenus::SORT_LENGTH, "Length", 1, 80.0f, 0, {0}, {0}, CUI::ALIGN_CENTER},
+	{COL_DEMO_DATE,		CMenus::SORT_DATE, "Date", 1, 170.0f, 0, {0}, {0}, CUI::ALIGN_CENTER},
 };
 
 void CMenus::RenderDemoPlayer(CUIRect MainView)
@@ -309,10 +309,12 @@ void CMenus::RenderDemoPlayer(CUIRect MainView)
 		DemoPlayer()->GetDemoName(aDemoName, sizeof(aDemoName));
 		char aBuf[128];
 		str_format(aBuf, sizeof(aBuf), Localize("Demofile: %s"), aDemoName);
-		CTextCursor Cursor;
-		TextRender()->SetCursor(&Cursor, NameBar.x, NameBar.y, Button.h*0.5f, TEXTFLAG_RENDER|TEXTFLAG_STOP_AT_END);
-		Cursor.m_LineWidth = MainView.w;
-		TextRender()->TextEx(&Cursor, aBuf, -1);
+		static CTextCursor s_Cursor;
+		s_Cursor.m_FontSize = Button.h*0.5f;
+		s_Cursor.MoveTo(NameBar.x, NameBar.y);
+		s_Cursor.Reset();
+		s_Cursor.m_MaxWidth = MainView.w;
+		TextRender()->TextOutlined(&s_Cursor, aBuf, -1);
 	}
 
 	if(IncreaseDemoSpeed)
@@ -344,8 +346,6 @@ void CMenus::RenderDemoPlayer(CUIRect MainView)
 		m_pClient->m_SuppressEvents = true;
 		DemoPlayer()->SetPos(PositionToSeek);
 		m_pClient->m_SuppressEvents = false;
-		m_pClient->m_pMapLayersBackGround->EnvelopeUpdate();
-		m_pClient->m_pMapLayersForeGround->EnvelopeUpdate();
 	}
 }
 
@@ -502,7 +502,7 @@ void CMenus::RenderDemoList(CUIRect MainView)
 	// do headers
 	for(int i = 0; i < NumCols; i++)
 	{
-		if(DoButton_GridHeader(ms_aDemoCols[i].m_Caption, ms_aDemoCols[i].m_Caption, Config()->m_BrDemoSort == ms_aDemoCols[i].m_Sort, ms_aDemoCols[i].m_Align, &ms_aDemoCols[i].m_Rect, CUI::CORNER_T))
+		if(DoButton_GridHeader(ms_aDemoCols[i].m_Caption, ms_aDemoCols[i].m_Caption, Config()->m_BrDemoSort == ms_aDemoCols[i].m_Sort, ms_aDemoCols[i].m_Align, &ms_aDemoCols[i].m_Rect, CUI::CORNER_ALL))
 		{
 			if(ms_aDemoCols[i].m_Sort != -1)
 			{
@@ -521,7 +521,7 @@ void CMenus::RenderDemoList(CUIRect MainView)
 		}
 	}
 
-	s_ListBox.DoSubHeader(GetListHeaderHeight(), 0.0f);
+	s_ListBox.DoSpacing(GetListHeaderHeight());
 
 	s_ListBox.DoStart(20.0f, m_lDemos.size(), 1, 3, m_DemolistSelectedIndex);
 	for(sorted_array<CDemoItem>::range r = m_lDemos.all(); !r.empty(); r.pop_front())
@@ -562,7 +562,7 @@ void CMenus::RenderDemoList(CUIRect MainView)
 				if(Item.m_Selected)
 				{
 					TextRender()->TextColor(CUI::ms_HighlightTextColor);
-					TextRender()->TextOutlineColor(CUI::ms_HighlightTextOutlineColor);
+					TextRender()->TextSecondaryColor(CUI::ms_HighlightTextOutlineColor);
 				}
 				if(ID == COL_DEMO_NAME)
 				{
@@ -589,7 +589,7 @@ void CMenus::RenderDemoList(CUIRect MainView)
 				}
 				TextRender()->TextColor(CUI::ms_DefaultTextColor);
 				if(Item.m_Selected)
-					TextRender()->TextOutlineColor(CUI::ms_DefaultTextOutlineColor);
+					TextRender()->TextSecondaryColor(CUI::ms_DefaultTextOutlineColor);
 			}
 		}
 	}
@@ -688,16 +688,10 @@ void CMenus::RenderDemoList(CUIRect MainView)
 			}
 			else // file
 			{
-				char aBuf[IO_MAX_PATH_LENGTH];
-				str_format(aBuf, sizeof(aBuf), "%s/%s", m_aCurrentDemoFolder, m_lDemos[m_DemolistSelectedIndex].m_aFilename);
-				const char *pError = Client()->DemoPlayer_Play(aBuf, m_lDemos[m_DemolistSelectedIndex].m_StorageType);
-				if(pError)
-					PopupMessage(Localize("Error loading demo"), pError, Localize("Ok"));
-				else
-				{
-					UI()->SetActiveItem(0);
-					return;
-				}
+				str_format(m_aDemoLoadingFile, sizeof(m_aDemoLoadingFile), "%s/%s", m_aCurrentDemoFolder, m_lDemos[m_DemolistSelectedIndex].m_aFilename);
+				m_DemoLoadingStorageType = m_lDemos[m_DemolistSelectedIndex].m_StorageType;
+				m_Popup = POPUP_LOADING_DEMO;
+				UI()->SetActiveItem(0);
 			}
 		}
 	}
@@ -785,4 +779,12 @@ float CMenus::RenderDemoDetails(CUIRect View)
 
 	//unused
 	return 0.0f;
+}
+
+void CMenus::Con_Play(IConsole::IResult *pResult, void *pUserData)
+{
+	CMenus *pSelf = (CMenus *)pUserData;
+	str_copy(pSelf->m_aDemoLoadingFile, pResult->GetString(0), sizeof(pSelf->m_aDemoLoadingFile));
+	pSelf->m_DemoLoadingStorageType = IStorage::TYPE_ALL;
+	pSelf->m_Popup = POPUP_LOADING_DEMO;
 }

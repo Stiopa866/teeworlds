@@ -134,6 +134,16 @@ const char *CGameClient::GetItemName(int Type) const { return m_NetObjHandler.Ge
 bool CGameClient::IsXmas() const { return Config()->m_ClShowXmasHats == 2 || (Config()->m_ClShowXmasHats == 1 && m_IsXmasDay); }
 bool CGameClient::IsEaster() const { return Config()->m_ClShowEasterEggs == 2 || (Config()->m_ClShowEasterEggs == 1 && m_IsEasterDay); }
 
+bool CGameClient::IsDemoPlaybackPaused() const { return Client()->State() == IClient::STATE_DEMOPLAYBACK && DemoPlayer()->BaseInfo()->m_Paused; }
+float CGameClient::GetAnimationPlaybackSpeed() const
+{
+	if(IsWorldPaused() || IsDemoPlaybackPaused())
+		return 0.0f;
+	if(Client()->State() == IClient::STATE_DEMOPLAYBACK)
+		return DemoPlayer()->BaseInfo()->m_Speed;
+	return 1.0f;
+}
+
 enum
 {
 	STR_TEAM_GAME,
@@ -367,21 +377,8 @@ void CGameClient::OnInit()
 	m_pMenus->InitLoading(TotalWorkAmount);
 	m_pMenus->RenderLoading(4);
 
-	// load default font
-	char aFontName[IO_MAX_PATH_LENGTH];
-	str_format(aFontName, sizeof(aFontName), "fonts/%s", Config()->m_ClFontfile);
-	char aFilename[IO_MAX_PATH_LENGTH];
-	IOHANDLE File = Storage()->OpenFile(aFontName, IOFLAG_READ, IStorage::TYPE_ALL, aFilename, sizeof(aFilename));
-	if(File)
-	{
-		io_close(File);
-		if(TextRender()->LoadFont(aFilename))
-		{
-			char aBuf[256];
-			str_format(aBuf, sizeof(aBuf), "failed to load font. filename='%s'", aFontName);
-			Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "gameclient", aBuf);
-		}
-	}
+	m_pTextRender->LoadFonts(Storage(), Console());
+	m_pTextRender->SetFontLanguageVariant(Config()->m_ClLanguagefile);
 	m_pMenus->RenderLoading(1);
 
 	// set the language
@@ -495,7 +492,6 @@ void CGameClient::OnReset()
 		m_DemoSpecMode = SPEC_FREEVIEW;
 		m_DemoSpecID = -1;
 		m_Tuning = CTuningParams();
-		m_MuteServerBroadcast = false;
 		m_LastGameStartTick = -1;
 		m_LastFlagCarrierRed = FLAG_MISSING;
 		m_LastFlagCarrierBlue = FLAG_MISSING;
@@ -708,7 +704,7 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker)
 				break;
 			case GAMEMSG_TEAM_ALL:
 				{
-					const char *pMsg;
+					const char *pMsg = "";
 					switch(GetStrTeam(aParaI[0], TeamPlay))
 					{
 					case STR_TEAM_GAME: pMsg = Localize("All players were moved to the game"); break;
@@ -716,7 +712,7 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker)
 					case STR_TEAM_BLUE: pMsg = Localize("All players were moved to the blue team"); break;
 					case STR_TEAM_SPECTATORS: pMsg = Localize("All players were moved to the spectators"); break;
 					}
-					m_pBroadcast->DoBroadcast(pMsg);
+					m_pBroadcast->DoClientBroadcast(pMsg);
 				}
 				break;
 			case GAMEMSG_TEAM_BALANCE_VICTIM:
@@ -727,7 +723,7 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker)
 					case STR_TEAM_RED: pMsg = Localize("You were moved to the red team due to team balancing"); break;
 					case STR_TEAM_BLUE: pMsg = Localize("You were moved to the blue team due to team balancing"); break;
 					}
-					m_pBroadcast->DoBroadcast(pMsg);
+					m_pBroadcast->DoClientBroadcast(pMsg);
 				}
 				break;
 			case GAMEMSG_CTF_GRAB:
@@ -797,7 +793,7 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker)
 			m_pChat->AddLine(pText);
 			break;
 		case DO_BROADCAST:
-			m_pBroadcast->DoBroadcast(pText);
+			m_pBroadcast->DoClientBroadcast(pText);
 			break;
 		}
 	}
@@ -862,7 +858,7 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker)
 		m_aClients[pMsg->m_ClientID].m_Country = pMsg->m_Country;
 		for(int i = 0; i < NUM_SKINPARTS; i++)
 		{
-			str_copy(m_aClients[pMsg->m_ClientID].m_aaSkinPartNames[i], pMsg->m_apSkinPartNames[i], MAX_SKIN_LENGTH);
+			str_utf8_copy_num(m_aClients[pMsg->m_ClientID].m_aaSkinPartNames[i], pMsg->m_apSkinPartNames[i], sizeof(m_aClients[pMsg->m_ClientID].m_aaSkinPartNames[i]), MAX_SKIN_LENGTH);
 			m_aClients[pMsg->m_ClientID].m_aUseCustomColors[i] = pMsg->m_aUseCustomColors[i];
 			m_aClients[pMsg->m_ClientID].m_aSkinPartColors[i] = pMsg->m_aSkinPartColors[i];
 		}
@@ -934,7 +930,7 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker)
 
 		for(int i = 0; i < NUM_SKINPARTS; i++)
 		{
-			str_copy(m_aClients[pMsg->m_ClientID].m_aaSkinPartNames[i], pMsg->m_apSkinPartNames[i], MAX_SKIN_LENGTH);
+			str_utf8_copy_num(m_aClients[pMsg->m_ClientID].m_aaSkinPartNames[i], pMsg->m_apSkinPartNames[i], sizeof(m_aClients[pMsg->m_ClientID].m_aaSkinPartNames[i]), MAX_SKIN_LENGTH);
 			m_aClients[pMsg->m_ClientID].m_aUseCustomColors[i] = pMsg->m_aUseCustomColors[i];
 			m_aClients[pMsg->m_ClientID].m_aSkinPartColors[i] = pMsg->m_aSkinPartColors[i];
 		}
