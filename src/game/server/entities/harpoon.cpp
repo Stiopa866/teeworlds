@@ -62,7 +62,7 @@ void CHarpoon::Tick()
 		}
 		else m_Pos = NewPos;
 	}
-	if (m_Grounded == HARPOON_RETRACTING)
+	if (m_Grounded == HARPOON_RETRACTING&&m_pOwnerChar)
 	{
 		vec2 OwnerPos = m_pOwnerChar->GetPos();
 		if (m_Pos.x > OwnerPos.x)
