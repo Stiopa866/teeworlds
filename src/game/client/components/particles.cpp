@@ -201,7 +201,7 @@ void CParticles::RenderGroup(int Group)
 		float Size = mix(m_aParticles[i].m_StartSize, m_aParticles[i].m_EndSize, a);
 		if (m_aParticles[i].m_RotationByVel)
 		{
-			Graphics()->QuadsSetRotation(angle(m_aParticles[i].m_Vel));
+			Graphics()->QuadsSetRotation(angle(m_aParticles[i].m_Vel)+0.5);
 		}
 		else
 		{
@@ -215,14 +215,34 @@ void CParticles::RenderGroup(int Group)
 			m_aParticles[i].m_Color.a
 		); // pow(a, 0.75f) *
 		//Graphics()->SetColor(0, 157.0f / 255.0f * 0.5, 1*0.5, 1 * 0.5);
-		IGraphics::CQuadItem QuadItem(p.x, p.y, Size, Size);
-		Graphics()->QuadsDraw(&QuadItem, 1);
+		
 		if (m_aParticles[i].m_Flags & PFLAG_DESTROY_ON_IMPACT)
 		{
-			IGraphics::CQuadItem QuadItem2(p.x, p.y, Size, Size);
-			Graphics()->QuadsDraw(&QuadItem2, 1);
-			IGraphics::CQuadItem QuadItem3(p.x, p.y, Size, Size);
-			Graphics()->QuadsDraw(&QuadItem3, 1);
+			//IGraphics::CQuadItem QuadItem2(p.x, p.y, Size, Size);
+			//Graphics()->QuadsDraw(&QuadItem2, 1);
+			//IGraphics::CQuadItem QuadItem3(p.x, p.y, Size, Size);
+			//Graphics()->QuadsDraw(&QuadItem3, 1);
+			CParticle::WaterInfo CurrentInfo = m_aParticles[i].m_WaterInfo;
+			IGraphics::CFreeformItem Item(
+				p.x + CurrentInfo.m_OffSetPoints[CurrentInfo.LEFT].m_XOffset, //left corner
+				p.y + CurrentInfo.m_OffSetPoints[CurrentInfo.LEFT].m_YOffset,
+				p.x + CurrentInfo.m_OffSetPoints[CurrentInfo.TOP].m_XOffset, //top corner
+				p.y + CurrentInfo.m_OffSetPoints[CurrentInfo.TOP].m_YOffset, 
+				p.x + CurrentInfo.m_OffSetPoints[CurrentInfo.BOTTOM].m_XOffset, //bottom corner
+				p.y + CurrentInfo.m_OffSetPoints[CurrentInfo.BOTTOM].m_YOffset,
+				
+				p.x + CurrentInfo.m_OffSetPoints[CurrentInfo.RIGHT].m_XOffset, //right corner
+				p.y + CurrentInfo.m_OffSetPoints[CurrentInfo.RIGHT].m_YOffset
+				
+				
+				
+			);
+			Graphics()->QuadsDrawFreeform(&Item, 1);
+		}
+		else
+		{
+			IGraphics::CQuadItem QuadItem(p.x, p.y, Size, Size);
+			Graphics()->QuadsDraw(&QuadItem, 1);
 		}
 		i = m_aParticles[i].m_NextPart;
 	}

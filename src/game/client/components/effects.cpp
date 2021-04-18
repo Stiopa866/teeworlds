@@ -172,7 +172,7 @@ void CEffects::Droplet(vec2 Pos, vec2 Vel)
 	float YVel = absolute(Vel.y);
 	YVel = sqrtf(YVel);
 	Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "Droplet Spawn");
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		CParticle p;
 		p.SetDefault();
@@ -185,16 +185,30 @@ void CEffects::Droplet(vec2 Pos, vec2 Vel)
 		//str_format(aBuf, sizeof(aBuf), "%f, %f", p.m_Vel.x, p.m_Vel.y);
 		//Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 		p.m_LifeSpan = 10.0f;
-		p.m_StartSize = 32.0f + frandom()*20.0f;
+		p.m_StartSize = 32.0f + frandom()*8.0f;
 		p.m_EndSize = p.m_StartSize;
-		p.m_Rot = angle(vec2(p.m_Vel));
+		float Rotation = angle(vec2(p.m_Vel));
+		Rotation += 0.25;
+		p.m_Rot = Rotation;
 		p.m_Rotspeed = 0;
 		p.m_Gravity = Config()->m_GfxWatergravity; //750
 		p.m_Friction = Config()->m_GfxWaterfriction * 1.0f /100;
 		p.m_RotationByVel = true;
 		p.m_Water = true;
 		p.m_Color = vec4(0, 157.0f / 255.0f * 0.5f, 1 * 0.5f, 1 * 0.5f);
-		m_pClient->m_pParticles->Add(CParticles::GROUP_GENERAL, &p);
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.TOP].m_XOffset = 4 * frandom();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.TOP].m_YOffset = 8.0f + 4 * frandom();
+		
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.LEFT].m_XOffset = -8.0f - 4 * frandom();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.LEFT].m_YOffset = 4 * frandom();
+		
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.BOTTOM].m_XOffset = 4 * frandom();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.BOTTOM].m_YOffset = -8.0f - 4 * frandom();
+		
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.RIGHT].m_XOffset = 8.0f + 4 * frandom();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.RIGHT].m_YOffset = 4 * frandom();
+
+		m_pClient->m_pParticles->Add(CParticles::GROUP_PROJECTILE_TRAIL, &p);
 
 	}
 }

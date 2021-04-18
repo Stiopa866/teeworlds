@@ -235,6 +235,7 @@ void CWater::Tick()
 		m_aWaterSurfaces[i]->Tick();
 	}
 }
+
 CWaterSurface::CWaterSurface(int X, int Y, int Length)
 {
 	m_Coordinates.m_X = X;

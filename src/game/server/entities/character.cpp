@@ -492,18 +492,18 @@ void CCharacter::HandleHarpoon()
 	{
 		if (CountInput(m_LatestPrevInput.m_Fire, m_LatestInput.m_Fire).m_Presses)
 			WillFire = true;
-		if (m_LatestInput.m_Fire & 1 && m_pHarpoon->m_Grounded >= 2)
+		if (m_LatestInput.m_Fire & 1 && m_pHarpoon->m_Status >= 2)
 			WillFire = true;
 		if (!WillFire)
 			return;
-		if (m_pHarpoon->m_Grounded == HARPOON_FLYING) //command the harpoon to retract
+		/*if (m_pHarpoon->m_Grounded == HARPOON_FLYING) //command the harpoon to retract
 		{
 			m_pHarpoon->m_Grounded = HARPOON_RETRACTING; //Nothing can be done while the Harpoon is retracting
 		}
 		if (m_pHarpoon->m_Grounded >= 2) //command the harpoon to drag
 		{
 			m_pHarpoon->Drag();
-		}
+		}*/
 	}
 	else
 	{
@@ -530,7 +530,10 @@ void CCharacter::DeallocateVictimHarpoon()
 }
 void CCharacter::HarpoonDrag(vec2 Vel)
 {
-	m_Core.m_Vel += Vel;
+	// Apply hook interaction velocity
+	float DragSpeed = GameServer()->Tuning()->m_HookDragSpeed;
+	m_Core.m_Vel.x = SaturatedAdd(-DragSpeed, DragSpeed, m_Core.m_Vel.x, Vel.x);
+	m_Core.m_Vel.y = SaturatedAdd(-DragSpeed, DragSpeed, m_Core.m_Vel.y, Vel.y);
 }
 
 void CCharacter::HandleWeapons()

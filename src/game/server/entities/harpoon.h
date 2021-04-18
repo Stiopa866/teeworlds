@@ -6,7 +6,7 @@
 enum
 {
 	HARPOON_FLYING,
-	HARPOON_RETRACTING,
+	//HARPOON_RETRACTING, No Retracting system atm
 	HARPOON_IN_GROUND,
 	HARPOON_IN_CHARACTER,
 };
@@ -21,11 +21,13 @@ public:
 	virtual void TickPaused();
 	virtual void Snap(int SnappingClient);
 	void Drag();
+	void Return(); //Unused
 	void RemoveHarpoon();
 	void DeallocateOwner();
 	void DeallocateVictim();
+	void ResetDragVelocity();
 	void FillInfo(CNetObj_Harpoon* pHarpoon);
-	int m_Grounded;
+	int m_Status;
 protected:
 	//bool HitCharacter(vec2 From, vec2 To);
 	//void DoBounce();
@@ -41,6 +43,7 @@ private:
 	int m_SpawnTick;
 	int m_DeathTick=-1;
 	vec2 m_Vel;
+	vec2 m_DragVel;
 	int m_Owner;
 };
 

@@ -64,6 +64,26 @@ struct CParticle
 	float m_Life;
 	int m_PrevPart;
 	int m_NextPart;
+
+	struct WaterInfo
+	{
+		enum
+		{
+			TOP=0,
+			BOTTOM=1,
+			LEFT=2,
+			RIGHT=3,
+		};
+		struct OffSetPoints
+		{
+			float m_XOffset;
+			float m_YOffset;
+		} m_OffSetPoints[4];
+		//float m_XMinusOffSet;
+		//float m_XPlusOffSet;
+		//float m_YMinusOffSet;
+		//float m_YPlusOffSet;
+	} m_WaterInfo;
 };
 
 class CParticles : public CComponent

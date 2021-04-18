@@ -10,9 +10,10 @@ CHarpoon::CHarpoon(CGameWorld* pGameWorld, vec2 Pos, vec2 Direction, int Owner, 
 	m_Pos = Pos;
 	m_pOwnerChar = This;
 	m_Owner = Owner;
+	m_pVictim = 0x0;
 	m_DeathTick = -1;
 	m_Vel = Direction*GameServer()->Tuning()->m_HarpoonInitialSpeed;
-	m_Grounded = HARPOON_FLYING;
+	m_Status = HARPOON_FLYING;
 	m_SpawnTick = GameServer()->Server()->Tick();
 	GameWorld()->InsertEntity(this);
 }
@@ -25,16 +26,15 @@ void CHarpoon::Tick()
 	}
 	else if (m_DeathTick > 0)
 	{
+		if(m_pVictim&&m_pOwnerChar) //Drag the Victim, if there exists one
+			Drag();
 		m_DeathTick--;
 		if (!m_DeathTick)
 		{
 			RemoveHarpoon();
 		}
 	}
-	//char aBuf[64];
-	//str_format(aBuf, sizeof(aBuf), "Harpoon Status %d", m_Grounded);
-	//GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
-	if (!m_Grounded)
+	if (!m_Status)
 	{
 		//Gravity, friction effect
 		m_Vel.y += GameServer()->Tuning()->m_HarpoonCurvature;
@@ -50,43 +50,24 @@ void CHarpoon::Tick()
 		//Move
 		vec2 NewPos = m_Pos;
 		vec2 OldPos = m_Pos;
-		GameServer()->Collision()->MoveHarpoonBox(&NewPos, &m_Vel, vec2(28.0f, 28.0f), GameServer()->Tuning()->m_HarpoonElasticity, &m_Grounded);
+		GameServer()->Collision()->MoveHarpoonBox(&NewPos, &m_Vel, vec2(28.0f, 28.0f), GameServer()->Tuning()->m_HarpoonElasticity, &m_Status);
 		CCharacter* TargetChr = GameWorld()->IntersectCharacter(m_Pos, NewPos, 6.0f, NewPos, m_pOwnerChar);
 		if (TargetChr)
 		{
 			m_pVictim = TargetChr;
 			NewPos = TargetChr->GetPos();
-			m_Grounded = HARPOON_IN_CHARACTER;
+			m_Status = HARPOON_IN_CHARACTER;
 			TargetChr->TakeDamage(m_Vel , m_Vel * -1, 4, m_Owner, 7);
 			m_Pos = TargetChr->GetPos();
+			m_DeathTick = GameServer()->Server()->TickSpeed() * 5; //5 seconds of automatic drag
 		}
 		else m_Pos = NewPos;
 	}
-	if (m_Grounded == HARPOON_RETRACTING&&m_pOwnerChar)
+	/*if (m_Status == HARPOON_RETRACTING&&m_pOwnerChar)
 	{
-		vec2 OwnerPos = m_pOwnerChar->GetPos();
-		if (m_Pos.x > OwnerPos.x)
-		{
-			m_Pos.x = SaturatedAdd(OwnerPos.x, m_Pos.x, m_Pos.x, -GameServer()->Tuning()->m_HarpoonReturnSpeed);
-		}
-		else if (m_Pos.x < OwnerPos.x)
-		{
-			m_Pos.x = SaturatedAdd(m_Pos.x, OwnerPos.x, m_Pos.x, GameServer()->Tuning()->m_HarpoonReturnSpeed * 1.0f);
-		}
-		if (m_Pos.y > OwnerPos.y)
-		{
-			m_Pos.y = SaturatedAdd(OwnerPos.y, m_Pos.y, m_Pos.y, -GameServer()->Tuning()->m_HarpoonReturnSpeed);
-		}
-		else if (m_Pos.y < OwnerPos.y)
-		{
-			m_Pos.y = SaturatedAdd(m_Pos.y, OwnerPos.y, m_Pos.y, GameServer()->Tuning()->m_HarpoonReturnSpeed * 1.0f);
-		}
-		if (m_Pos.y == OwnerPos.y && m_Pos.x == OwnerPos.x)
-		{
-			RemoveHarpoon();
-		}
-	}
-	if (m_pVictim)
+		Return();
+	}*/
+	if (m_pVictim) //If the Harpoon has found its target, stick to it
 	{
 		m_Pos = m_pVictim->GetPos();
 	}
@@ -94,51 +75,45 @@ void CHarpoon::Tick()
 
 void CHarpoon::Drag()
 {
-	if (GameServer()->Tuning()->m_HarpoonScaledWithDistance)
-	{
-		if (m_Grounded == HARPOON_IN_CHARACTER)
-		{
-			vec2 Distance = m_pOwnerChar->GetPos() - m_pVictim->GetPos();
-			Distance /= 200;
-			if (GameServer()->Tuning()->m_HarpoonClampPull)
-			{
-				Distance.x = clamp(Distance.x, -GameServer()->Tuning()->m_HarpoonClampPull, GameServer()->Tuning()->m_HarpoonClampPull * 1.0f);
-				Distance.y = clamp(Distance.y, -GameServer()->Tuning()->m_HarpoonClampPull, GameServer()->Tuning()->m_HarpoonClampPull * 1.0f);
-			}
-			m_pVictim->HarpoonDrag(Distance);
-		}
-		else if (m_Grounded == HARPOON_IN_GROUND)
-		{
-			vec2 Distance = m_Pos - m_pOwnerChar->GetPos();
-			Distance /= 200;
-			if (GameServer()->Tuning()->m_HarpoonClampPull)
-			{
-				Distance.x = clamp(Distance.x, -GameServer()->Tuning()->m_HarpoonClampPull, GameServer()->Tuning()->m_HarpoonClampPull * 1.0f);
-				Distance.y = clamp(Distance.y, -GameServer()->Tuning()->m_HarpoonClampPull, GameServer()->Tuning()->m_HarpoonClampPull * 1.0f);
-			}
-			m_pOwnerChar->HarpoonDrag(Distance);
-		}
-	}
-	else
-	{
-		if (m_Grounded == HARPOON_IN_CHARACTER)
-		{
-			vec2 Distance;
-			Distance.x = GameServer()->Tuning()->m_HarpoonPullValue * sign(m_pOwnerChar->GetPos().x - m_pVictim->GetPos().x);
-			Distance.y = GameServer()->Tuning()->m_HarpoonPullValue * sign(m_pOwnerChar->GetPos().y - m_pVictim->GetPos().y);
+	float Distance = distance(m_pOwnerChar->GetPos(), m_pVictim->GetPos());
+	float Accel = GameServer()->Tuning()->m_HookDragAccel * (Distance / GameServer()->Tuning()->m_HookLength);;
+	vec2 Dir = normalize(m_pOwnerChar->GetPos() - m_pVictim->GetPos());
 
-			m_pVictim->HarpoonDrag(Distance);
-		}
-		else if (m_Grounded == HARPOON_IN_GROUND)
-		{
-			vec2 Distance;
-			Distance.x = GameServer()->Tuning()->m_HarpoonPullValue * sign(m_Pos.x - m_pOwnerChar->GetPos().x);
-			Distance.y = GameServer()->Tuning()->m_HarpoonPullValue * sign(m_Pos.y - m_pOwnerChar->GetPos().y);
-			m_pOwnerChar->HarpoonDrag(Distance);
-		}
-	}
+	// add force to the hooked player
+	m_DragVel += Dir * Accel * 1.5f;
+
+	m_pVictim->HarpoonDrag(m_DragVel);
 }
 
+void CHarpoon::ResetDragVelocity()
+{
+	m_DragVel = vec2(0, 0);
+}
+
+void CHarpoon::Return()
+{
+	vec2 OwnerPos = m_pOwnerChar->GetPos();
+	if (m_Pos.x > OwnerPos.x)
+	{
+		m_Pos.x = SaturatedAdd(OwnerPos.x, m_Pos.x, m_Pos.x, -GameServer()->Tuning()->m_HarpoonReturnSpeed);
+	}
+	else if (m_Pos.x < OwnerPos.x)
+	{
+		m_Pos.x = SaturatedAdd(m_Pos.x, OwnerPos.x, m_Pos.x, GameServer()->Tuning()->m_HarpoonReturnSpeed * 1.0f);
+	}
+	if (m_Pos.y > OwnerPos.y)
+	{
+		m_Pos.y = SaturatedAdd(OwnerPos.y, m_Pos.y, m_Pos.y, -GameServer()->Tuning()->m_HarpoonReturnSpeed);
+	}
+	else if (m_Pos.y < OwnerPos.y)
+	{
+		m_Pos.y = SaturatedAdd(m_Pos.y, OwnerPos.y, m_Pos.y, GameServer()->Tuning()->m_HarpoonReturnSpeed * 1.0f);
+	}
+	if (m_Pos.y == OwnerPos.y && m_Pos.x == OwnerPos.x)
+	{
+		RemoveHarpoon();
+	}
+}
 void CHarpoon::RemoveHarpoon()
 {
 	if(m_pOwnerChar)
@@ -151,10 +126,10 @@ void CHarpoon::RemoveHarpoon()
 void CHarpoon::DeallocateOwner()
 {
 	m_pOwnerChar = 0x0;
-	if (m_Grounded == HARPOON_RETRACTING)
-	{
-		m_Grounded == HARPOON_FLYING;
-	}
+	///if (m_Status == HARPOON_RETRACTING)
+	//{
+		m_Status == HARPOON_FLYING;
+	//}
 }
 void CHarpoon::DeallocateVictim()
 {
