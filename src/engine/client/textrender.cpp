@@ -366,10 +366,16 @@ void CGlyphMap::SetVariantFaceByName(const char *pFamilyName)
 
 bool CGlyphMap::RenderGlyph(CGlyph *pGlyph, bool Render)
 {
-	if(Render && pGlyph->m_Rendered && pGlyph->m_AtlasIndex >= 0 && m_aAtlasPages[pGlyph->m_AtlasIndex].m_ID == pGlyph->m_PageID)
+	if(Render && pGlyph->m_Rendered)
 	{
-		TouchPage(pGlyph->m_AtlasIndex);
-		return true;
+		if(pGlyph->m_AtlasIndex < 0)
+			return false;
+
+		if(m_aAtlasPages[pGlyph->m_AtlasIndex].m_ID == pGlyph->m_PageID)
+		{
+			TouchPage(pGlyph->m_AtlasIndex);
+			return false;
+		}
 	}
 
 	FT_Bitmap *pBitmap;
@@ -977,6 +983,8 @@ void CTextRender::TextDeferred(CTextCursor *pCursor, const char *pText, int Leng
 			}
 		}
 
+		pCursor->m_Width = max(pCursor->m_Advance.x, pCursor->m_Width);
+
 		// newline \n
 		bool ForceNewLine = WordWidth.m_EndsWithNewline && (Flags & TEXTFLAG_ALLOW_NEWLINE);
 		if(ForceNewLine || WordWidth.m_IsBroken)
@@ -1004,7 +1012,6 @@ void CTextRender::TextDeferred(CTextCursor *pCursor, const char *pText, int Leng
 			pCursor->m_LineCount = MaxLines;
 		}
 
-		pCursor->m_Width = max(pCursor->m_Advance.x, pCursor->m_Width);
 		pCur += WordWidth.m_CharCount;
 	}
 

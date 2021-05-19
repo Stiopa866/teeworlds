@@ -96,7 +96,7 @@ void CParticles::Update(float TimePassed)
 			// move the point
 			vec2 Vel = m_aParticles[i].m_Vel*TimePassed;
 			int AmountofBounces = 0;
-			Collision()->MovePoint(&m_aParticles[i].m_Pos, &Vel, 0.1f+0.9f*frandom(), &AmountofBounces);
+			Collision()->MovePoint(&m_aParticles[i].m_Pos, &Vel, 0.1f+0.9f*random_float(), &AmountofBounces);
 			if (m_aParticles[i].m_Flags & PFLAG_DESTROY_ON_IMPACT && AmountofBounces)
 			{
 				m_aParticles[i].m_Life = m_aParticles[i].m_LifeSpan + 1;

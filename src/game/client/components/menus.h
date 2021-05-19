@@ -96,7 +96,7 @@ public:
 		static CConfig *m_pConfig;
 
 	public:
-		static void Init(CMenus *pMenus) { m_pMenus = pMenus; m_pRenderTools = pMenus->RenderTools(); m_pUI = pMenus->UI(); m_pInput = pMenus->Input(); m_pClient = pMenus->Client(); m_pConfig = pMenus->Config(); };
+		static void Init(CMenus *pMenus) { m_pMenus = pMenus; m_pRenderTools = pMenus->RenderTools(); m_pUI = pMenus->UI(); m_pInput = pMenus->Input(); m_pClient = pMenus->Client(); m_pConfig = pMenus->Config(); }
 	};
 
 	class CButtonContainer : public CUIElementBase
@@ -105,7 +105,6 @@ public:
 		float m_FadeStartTime;
 	public:
 		CButtonContainer(bool CleanBackground = false) : m_FadeStartTime(0.0f) { m_CleanBackground = CleanBackground; }
-		const void *GetID() const { return &m_FadeStartTime; }
 		float GetFade(bool Checked = false, float Seconds = 0.6f);
 		bool IsCleanBackground() const { return m_CleanBackground; }
 	};
@@ -283,7 +282,7 @@ private:
 		CListboxItem DoSubheader();
 		int DoEnd();
 		bool FilterMatches(const char *pNeedle) const;
-		bool WasItemActivated() const { return m_ListBoxItemActivated; };
+		bool WasItemActivated() const { return m_ListBoxItemActivated; }
 		float GetScrollBarWidth() const { return m_ScrollRegion.IsScrollbarShown() ? 20 : 0; } // defined in menus_scrollregion.cpp
 	};
 
@@ -413,7 +412,7 @@ private:
 			GAMEICON_SIZE=64,
 			GAMEICON_OLDHEIGHT=192,
 		};
-		CGameIcon() {};
+		CGameIcon() {}
 		CGameIcon(const char *pName) : m_Name(pName) {}
 
 		string m_Name;
@@ -657,26 +656,6 @@ private:
 	void Move(bool Up, int Filter);
 	void InitDefaultFilters();
 
-	class CInfoOverlay
-	{
-	public:
-		enum
-		{
-			OVERLAY_SERVERINFO=0,
-			OVERLAY_HEADERINFO,
-			OVERLAY_PLAYERSINFO,
-		};
-
-		int m_Type;
-		const void *m_pData;
-		float m_X;
-		float m_Y;
-		bool m_Reset;
-	};
-
-	CInfoOverlay m_InfoOverlay;
-	bool m_InfoOverlayActive;
-
 	struct CColumn
 	{
 		int m_ID;
@@ -811,7 +790,6 @@ private:
 	void RenderDetailScoreboard(CUIRect View, const CServerInfo *pInfo, int RowCount, const vec4 &TextColor, const vec4 &TextOutlineColor);
 	void RenderServerbrowserServerDetail(CUIRect View, const CServerInfo *pInfo);
 	void RenderServerbrowserBottomBox(CUIRect View);
-	void RenderServerbrowserOverlay();
 	void RenderFilterHeader(CUIRect View, int FilterIndex);
 	void PopupConfirmRemoveFilter();
 	void PopupConfirmCountryFilter();
@@ -822,7 +800,6 @@ private:
 	static void ConchainServerbrowserUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void ConchainServerbrowserSortingUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	void DoFriendListEntry(CUIRect *pView, CFriendItem *pFriend, const void *pID, const CContactInfo *pFriendInfo, const CServerInfo *pServerInfo, bool Checked, bool Clan = false);
-	void SetOverlay(int Type, float x, float y, const void *pData);
 	void UpdateFriendCounter(const CServerInfo *pEntry);
 	void UpdateFriends();
 
