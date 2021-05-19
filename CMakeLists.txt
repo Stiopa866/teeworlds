@@ -894,6 +894,7 @@ set(EXPECTED_DATA
   fonts/SourceHanSans.ttc
   fonts/index.json
   game.png
+  harpoon.png
   languages/belarusian.json
   languages/bosnian.json
   languages/brazilian_portuguese.json
@@ -968,6 +969,7 @@ set(EXPECTED_DATA
   mapres/winter_mountains.png
   mapres/winter_mountains2.png
   mapres/winter_mountains3.png
+  mapres/water.png
   maps/ctf1.map
   maps/ctf2.map
   maps/ctf3.map
@@ -1008,6 +1010,7 @@ set(EXPECTED_DATA
   skins/body/standard.png
   skins/body/x_ninja.png
   skins/bot.png
+  skins/diving_gear.png
   skins/brownbear.json
   skins/bumbler.json
   skins/cammo.json
@@ -1490,6 +1493,8 @@ if(CLIENT)
     components/stats.h
     components/voting.cpp
     components/voting.h
+    components/water.cpp
+    components/water.h
     gameclient.cpp
     gameclient.h
     lineinput.cpp
@@ -1605,6 +1610,8 @@ set_src(GAME_SERVER GLOB_RECURSE src/game/server
   entities/pickup.h
   entities/projectile.cpp
   entities/projectile.h
+  entities/harpoon.cpp
+  entities/harpoon.h
   entity.cpp
   entity.h
   eventhandler.cpp

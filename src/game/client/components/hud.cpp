@@ -625,7 +625,12 @@ void CHud::RenderCursor()
 
 	vec2 Pos = *m_pClient->m_pCamera->GetCenter();
 	RenderTools()->MapScreenToGroup(Pos.x, Pos.y, Layers()->GameGroup(), m_pClient->m_pCamera->GetZoom());
-	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
+	if (m_pClient->m_Snap.m_pLocalCharacter->m_Weapon == WEAPON_HARPOON)
+	{
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_HARPOON].m_Id);
+	}
+	else
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
 	Graphics()->QuadsBegin();
 
 	// render cursor
@@ -704,6 +709,75 @@ void CHud::RenderNinjaBar(float x, float y, float Progress)
 	Graphics()->QuadsDrawTL(&QuadEndEmpty, 1);
 }
 
+void CHud::RenderDivingGearBar(float x, float y, float Progress)
+{
+	Progress = clamp(Progress, 0.0f, 1.0f);
+	const float EndWidth = 6.0f;
+	const float BarHeight = 12.0f;
+	const float WholeBarWidth = 120.f;
+	const float MiddleBarWidth = WholeBarWidth - (EndWidth * 2.0f);
+
+	IGraphics::CQuadItem QuadStartFull(x, y, EndWidth, BarHeight);
+	RenderTools()->SelectSprite(&g_pData->m_aSprites[SPRITE_DIVING_BAR_FULL_LEFT]);
+	Graphics()->QuadsDrawTL(&QuadStartFull, 1);
+	x += EndWidth;
+
+	const float FullBarWidth = MiddleBarWidth * Progress;
+	const float EmptyBarWidth = MiddleBarWidth - FullBarWidth;
+
+	// full bar
+	IGraphics::CQuadItem QuadFull(x, y, FullBarWidth, BarHeight);
+
+	CDataSprite SpriteBarFull = g_pData->m_aSprites[SPRITE_DIVING_BAR_FULL];
+	// prevent pixel puree, select only a small slice
+	if (Progress < 0.1f)
+	{
+		int spx = SpriteBarFull.m_X;
+		int spy = SpriteBarFull.m_Y;
+		float w = SpriteBarFull.m_W * 0.1f; // magic here
+		int h = SpriteBarFull.m_H;
+		int cx = SpriteBarFull.m_pSet->m_Gridx;
+		int cy = SpriteBarFull.m_pSet->m_Gridy;
+		float x1 = spx / (float)cx;
+		float x2 = (spx + w - 1 / 32.0f) / (float)cx;
+		float y1 = spy / (float)cy;
+		float y2 = (spy + h - 1 / 32.0f) / (float)cy;
+
+		Graphics()->QuadsSetSubset(x1, y1, x2, y2);
+	}
+	else
+		RenderTools()->SelectSprite(&SpriteBarFull);
+
+	Graphics()->QuadsDrawTL(&QuadFull, 1);
+
+	// empty bar
+	// select the middle portion of the sprite so we don't get edge bleeding
+	const CDataSprite SpriteBarEmpty = g_pData->m_aSprites[SPRITE_DIVING_BAR_EMPTY];
+	{
+		float spx = SpriteBarEmpty.m_X + 0.1f;
+		float spy = SpriteBarEmpty.m_Y;
+		float w = SpriteBarEmpty.m_W * 0.5f;
+		int h = SpriteBarEmpty.m_H;
+		int cx = SpriteBarEmpty.m_pSet->m_Gridx;
+		int cy = SpriteBarEmpty.m_pSet->m_Gridy;
+		float x1 = spx / (float)cx;
+		float x2 = (spx + w - 1 / 32.0f) / (float)cx;
+		float y1 = spy / (float)cy;
+		float y2 = (spy + h - 1 / 32.0f) / (float)cy;
+
+		Graphics()->QuadsSetSubset(x1, y1, x2, y2);
+	}
+
+	IGraphics::CQuadItem QuadEmpty(x + FullBarWidth, y, EmptyBarWidth, BarHeight);
+	Graphics()->QuadsDrawTL(&QuadEmpty, 1);
+
+	x += MiddleBarWidth;
+
+	IGraphics::CQuadItem QuadEndEmpty(x, y, EndWidth, BarHeight);
+	RenderTools()->SelectSprite(&g_pData->m_aSprites[SPRITE_DIVING_BAR_EMPTY_RIGHT]);
+	Graphics()->QuadsDrawTL(&QuadEndEmpty, 1);
+}
+
 void CHud::RenderHealthAndAmmo(const CNetObj_Character *pCharacter)
 {
 	if(!pCharacter)
@@ -768,9 +842,58 @@ void CHud::RenderHealthAndAmmo(const CNetObj_Character *pCharacter)
 	RenderTools()->SelectSprite(SPRITE_ARMOR_EMPTY);
 	for(; h < 10; h++)
 		Array[i++] = IGraphics::CQuadItem(x+h*12,y+12,12,12);
-	Graphics()->QuadsDrawTL(Array, i);
+		Graphics()->QuadsDrawTL(Array, i);
+	// render breath bubbles
+	if (pCharacter->m_BreathBubbles > -1)
+	{
+		h = 0;
+		RenderTools()->SelectSprite(SPRITE_BUBBLE);
+		for (; h < min(pCharacter->m_BreathBubbles, 10); h++)
+			Array[h] = IGraphics::CQuadItem(x + h * 12, y + 36, 12, 12);
+		Graphics()->QuadsDrawTL(Array, h);
+
+		Graphics()->QuadsEnd();
+		Graphics()->WrapNormal();
+	}
+	else if (pCharacter->m_DivingBreath > -1)
+	{
+		RenderDivingGearBar(x, y + 36, (float)pCharacter->m_DivingBreath / 100);
+		Graphics()->QuadsEnd();
+		Graphics()->WrapNormal();
+	}
+	else if (pCharacter->m_DivingGear && !Config()->m_ClShowDivingGear)
+	{
+		Graphics()->QuadsEnd();
+		Graphics()->WrapNormal();
+		RenderDivingGear(x, y + 36);
+	}
+	else
+	{
+		Graphics()->QuadsEnd();
+		Graphics()->WrapNormal();
+	}
+	//Graphics()->QuadsDrawTL(Array, i);
+	//Graphics()->QuadsEnd();
+	//Graphics()->WrapNormal();
+}
+
+void CHud::RenderDivingGear(float x, float y)
+{
+	IGraphics::CQuadItem Item(x+12, y+12, 18, 18);
+	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_DIVING_GEAR].m_Id);
+	Graphics()->QuadsBegin();
+	RenderTools()->SelectSprite(SPRITE_DIVING_GEAR);
+	Graphics()->QuadsDraw(&Item, 1);
 	Graphics()->QuadsEnd();
-	Graphics()->WrapNormal();
+	/*Graphics()->TextureClear();
+	
+	
+	
+	
+	
+	Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	
+	*/
 }
 
 void CHud::RenderSpectatorHud()

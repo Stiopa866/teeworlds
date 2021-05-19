@@ -102,6 +102,29 @@ void CEffects::PowerupShine(vec2 Pos, vec2 size)
 	m_pClient->m_pParticles->Add(CParticles::GROUP_GENERAL, &p);
 }
 
+void CEffects::WaterBubble(vec2 Pos)
+{
+	if (!m_Add50hz)
+		return;
+
+	CParticle p;
+	p.SetDefault();
+	p.m_Spr = SPRITE_PART_BUBBLE0;
+	p.m_Pos = Pos + vec2((random_float() - 0.5f)*10, (random_float() - 0.5f)*10);
+	p.m_Vel = vec2(0, 0);
+	p.m_LifeSpan = random_float()*2;
+	p.m_StartSize = 16.0f + random_float()*5;
+	p.m_EndSize = 16.0f - random_float()*10;
+	p.m_Rot = 0;
+	p.m_Rotspeed = 0;
+	p.m_Gravity = -300;
+	p.m_Friction = 0.9f;
+	p.m_FlowAffected = 0.0f;
+	p.m_Water = true;
+	p.m_BubbleStage = 4;
+	m_pClient->m_pParticles->Add(CParticles::GROUP_GENERAL, &p);
+}
+
 void CEffects::SmokeTrail(vec2 Pos, vec2 Vel)
 {
 	if(!m_Add50hz)
@@ -138,6 +161,56 @@ void CEffects::SkidTrail(vec2 Pos, vec2 Vel)
 	p.m_Gravity = random_float()*-500.0f;
 	p.m_Color = vec4(0.75f,0.75f,0.75f,1.0f);
 	m_pClient->m_pParticles->Add(CParticles::GROUP_GENERAL, &p);
+}
+
+
+void CEffects::Droplet(vec2 Pos, vec2 Vel)
+{
+	//if (!m_Add100hz)
+		//return;
+
+	float YVel = absolute(Vel.y);
+	YVel = sqrtf(YVel);
+	Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "Droplet Spawn");
+	for (int i = 0; i < 4; i++)
+	{
+		CParticle p;
+		p.SetDefault();
+		p.m_Spr = SPRITE_DROPLET;
+		p.m_Pos = Pos;
+		p.m_Flags |= PFLAG_DESTROY_IN_ANIM_WATER;
+		p.m_Flags |= PFLAG_DESTROY_ON_IMPACT;
+		p.m_Vel = vec2(YVel * RandomDir().x * random_float() * Config()->m_GfxWaterXmultiplier, -YVel * Config()->m_GfxWaterYmultiplier * random_float()); //50
+		//char aBuf[64];
+		//str_format(aBuf, sizeof(aBuf), "%f, %f", p.m_Vel.x, p.m_Vel.y);
+		//Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
+		p.m_LifeSpan = 10.0f;
+		p.m_StartSize = 32.0f + random_float()*8.0f;
+		p.m_EndSize = p.m_StartSize;
+		float Rotation = angle(vec2(p.m_Vel));
+		Rotation += 0.25;
+		p.m_Rot = Rotation;
+		p.m_Rotspeed = 0;
+		p.m_Gravity = Config()->m_GfxWatergravity; //750
+		p.m_Friction = Config()->m_GfxWaterfriction * 1.0f /100;
+		p.m_RotationByVel = true;
+		p.m_Water = true;
+		p.m_Color = vec4(0, 157.0f / 255.0f * 0.5f, 1 * 0.5f, 1 * 0.5f);
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.TOP].m_XOffset = 4 * random_float();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.TOP].m_YOffset = 8.0f + 4 * random_float();
+		
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.LEFT].m_XOffset = -8.0f - 4 * random_float();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.LEFT].m_YOffset = 4 * random_float();
+		
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.BOTTOM].m_XOffset = 4 * random_float();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.BOTTOM].m_YOffset = -8.0f - 4 * random_float();
+		
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.RIGHT].m_XOffset = 8.0f + 4 * random_float();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.RIGHT].m_YOffset = 4 * random_float();
+
+		m_pClient->m_pParticles->Add(CParticles::GROUP_PROJECTILE_TRAIL, &p);
+
+	}
 }
 
 void CEffects::BulletTrail(vec2 Pos)
@@ -225,7 +298,7 @@ void CEffects::PlayerDeath(vec2 Pos, int ClientID)
 }
 
 
-void CEffects::Explosion(vec2 Pos)
+void CEffects::Explosion(vec2 Pos, float Radius)
 {
 	// add to flow
 	for(int y = -8; y <= 8; y++)
@@ -244,7 +317,7 @@ void CEffects::Explosion(vec2 Pos)
 	p.m_Spr = SPRITE_PART_EXPL01;
 	p.m_Pos = Pos;
 	p.m_LifeSpan = 0.4f;
-	p.m_StartSize = 150.0f;
+	p.m_StartSize = 150.0f*(2+ Radius)/3;
 	p.m_EndSize = 0;
 	p.m_Rot = random_float()*pi*2;
 	m_pClient->m_pParticles->Add(CParticles::GROUP_EXPLOSIONS, &p);
@@ -256,7 +329,7 @@ void CEffects::Explosion(vec2 Pos)
 		p.SetDefault();
 		p.m_Spr = SPRITE_PART_SMOKE;
 		p.m_Pos = Pos;
-		p.m_Vel = RandomDir() * ((1.0f + random_float()*0.2f) * 1000.0f);
+		p.m_Vel = RandomDir() * ((1.0f + random_float()*0.2f) * 1000.0f * (2+Radius)/3);
 		p.m_LifeSpan = 0.5f + random_float()*0.4f;
 		p.m_StartSize = 32.0f + random_float()*8;
 		p.m_EndSize = 0;

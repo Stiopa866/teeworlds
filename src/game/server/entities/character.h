@@ -21,6 +21,12 @@ public:
 	{
 		MIN_KILLMESSAGE_CLIENTVERSION=0x0704,   // todo 0.8: remove me
 	};
+	enum
+	{
+		DMGTYPE_PURE,
+		DMGTYPE_HEART,
+		DMGTYPE_ARMOR,
+	};
 
 	CCharacter(CGameWorld *pWorld);
 
@@ -33,6 +39,8 @@ public:
 	virtual void PostSnap();
 
 	bool IsGrounded();
+	bool HasDivingGear();
+	void GiveDiving();
 
 	void SetWeapon(int W);
 	void HandleWeaponSwitch();
@@ -46,8 +54,16 @@ public:
 	void ResetInput();
 	void FireWeapon();
 
+	void DeallocateHarpoon();
+	void DeallocateVictimHarpoon();
+	void HarpoonDrag(vec2 Vel);
+	void HandleHarpoon();
+
+	int NumOfBreathBubbles();
+	int DivingBreathAmount();
+
 	void Die(int Killer, int Weapon);
-	bool TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon);
+	bool TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon, int Flag = DMGTYPE_PURE);
 
 	bool Spawn(class CPlayer *pPlayer, vec2 Pos);
 	bool Remove();
@@ -69,9 +85,12 @@ private:
 
 	bool m_Alive;
 
+	int TicksInWater;
 	// weapon info
 	CEntity *m_apHitObjects[10];
 	int m_NumObjectsHit;
+	class CHarpoon* m_pHarpoon;
+	class CHarpoon* m_pBeingHookedByHarpoon;
 
 	struct WeaponStat
 	{
@@ -106,6 +125,7 @@ private:
 
 	int m_Health;
 	int m_Armor;
+	int m_BreathTick;
 
 	int m_TriggeredEvents;
 

@@ -47,6 +47,7 @@ compile_commands.json
 cscope.files
 cscope.out
 out
+out2
 tags
 
 # CMake

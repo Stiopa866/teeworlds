@@ -75,6 +75,7 @@ class CGameClient : public IGameClient
 	void LoadFonts();
 
 public:
+	static void WaterSplash(float x, float y, float Force);
 	IKernel *Kernel() { return IInterface::Kernel(); }
 	IEngine *Engine() const { return m_pEngine; }
 	class IGraphics *Graphics() const { return m_pGraphics; }
@@ -320,6 +321,7 @@ public:
 	class CGameConsole *m_pGameConsole;
 	class CBinds *m_pBinds;
 	class CBroadcast *m_pBroadcast;
+	class CWater* m_pWater;
 	class CParticles *m_pParticles;
 	class CMenus *m_pMenus;
 	class CSkins *m_pSkins;

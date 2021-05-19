@@ -36,6 +36,7 @@ public:
 	IGraphics::CTextureHandle m_aTextures[NUM_SKINPARTS];
 	IGraphics::CTextureHandle m_HatTexture;
 	IGraphics::CTextureHandle m_BotTexture;
+	IGraphics::CTextureHandle m_DivingGearTexture;
 	int m_HatSpriteIndex;
 	vec4 m_BotColor;
 	vec4 m_aColors[NUM_SKINPARTS];
@@ -82,6 +83,7 @@ public:
 	static void RenderEvalEnvelope(CEnvPoint *pPoints, int NumPoints, int Channels, float Time, float *pResult);
 	void RenderQuads(CQuad *pQuads, int NumQuads, int Flags, ENVELOPE_EVAL pfnEval, void *pUser);
 	void RenderTilemap(CTile *pTiles, int w, int h, float Scale, vec4 Color, int RenderFlags, ENVELOPE_EVAL pfnEval, void *pUser, int ColorEnv, int ColorEnvOffset);
+	void RenderWaterMap(CTile* pTiles, int w, int h, float Scale, vec4 Color, int RenderFlags, ENVELOPE_EVAL pfnEval, void* pUser, int ColorEnv, int ColorEnvOffset, int Tick);
 
 	// helpers
 	void MapScreenToWorld(float CenterX, float CenterY, float ParallaxX, float ParallaxY,

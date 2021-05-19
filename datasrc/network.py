@@ -1,6 +1,6 @@
 from datatypes import *
 
-Pickups = Enum("PICKUP", ["HEALTH", "ARMOR", "GRENADE", "SHOTGUN", "LASER", "NINJA", "GUN", "HAMMER"])
+Pickups = Enum("PICKUP", ["HEALTH", "ARMOR", "GRENADE", "SHOTGUN", "LASER", "NINJA", "GUN", "HAMMER", "HARPOON", "DIVING" ])
 Emotes = Enum("EMOTE", ["NORMAL", "PAIN", "HAPPY", "SURPRISE", "ANGRY", "BLINK"])
 Emoticons = Enum("EMOTICON", ["OOP", "EXCLAMATION", "HEARTS", "DROP", "DOTDOT", "MUSIC", "SORRY", "GHOST", "SUSHI", "SPLATTEE", "DEVILTEE", "ZOMG", "ZZZ", "WTF", "EYES", "QUESTION"])
 Votes = Enum("VOTE", ["UNKNOWN", "START_OP", "START_KICK", "START_SPEC", "END_ABORT", "END_PASS", "END_FAIL"]) # todo 0.8: add RUN_OP, RUN_KICK, RUN_SPEC; rem UNKNOWN
@@ -87,6 +87,7 @@ Objects = [
 
 	NetObject("PlayerInput", [
 		NetIntRange("m_Direction", -1, 1),
+                NetIntRange("m_DirectionVertical", -1, 1),
 		NetIntAny("m_TargetX"),
 		NetIntAny("m_TargetY"),
 
@@ -111,6 +112,7 @@ Objects = [
 
 		NetIntRange("m_Type", 0, 'NUM_WEAPONS-1'),
 		NetTick("m_StartTick"),
+                NetBool("m_Water"),
 	]),
 
 	NetObject("Laser", [
@@ -121,6 +123,15 @@ Objects = [
 
 		NetTick("m_StartTick"),
 	]),
+
+        NetObject("Harpoon", [
+                NetIntAny("m_X"),
+                NetIntAny("m_Y"),
+                NetIntAny("m_Dir_X"),
+                NetIntAny("m_Dir_Y"),
+
+                NetTick("m_SpawnTick"),
+        ]),
 
 	NetObject("Pickup", [
 		NetIntAny("m_X"),
@@ -163,7 +174,8 @@ Objects = [
 
 		NetIntAny("m_Angle"),
 		NetIntRange("m_Direction", -1, 1),
-
+                NetIntRange("m_DirectionVertical", -1, 1),
+                
 		NetIntRange("m_Jumped", 0, 3),
 		NetIntRange("m_HookedPlayer", -1, 'MAX_CLIENTS-1'),
 		NetIntRange("m_HookState", -1, 5),
@@ -173,6 +185,7 @@ Objects = [
 		NetIntAny("m_HookY"),
 		NetIntAny("m_HookDx"),
 		NetIntAny("m_HookDy"),
+                NetBool("m_DivingGear"),
 	]),
 
 	NetObject("Character:CharacterCore", [
@@ -183,6 +196,8 @@ Objects = [
 		NetEnum("m_Emote", Emotes),
 		NetTick("m_AttackTick"),
 		NetFlag("m_TriggeredEvents", CoreEventFlags),
+                NetIntAny("m_BreathBubbles"),
+                NetIntAny("m_DivingBreath"),
 	]),
 
 	NetObject("PlayerInfo", [
@@ -226,7 +241,7 @@ Objects = [
 
 	NetObject("De_TuneParams", [
 		# todo: should be done differently
-		NetArray(NetIntAny("m_aTuneParams"), 32),
+		NetArray(NetIntAny("m_aTuneParams"), 64),
 	]),
 
 	## Events
@@ -237,7 +252,9 @@ Objects = [
 	]),
 
 
-	NetEvent("Explosion:Common", []),
+	NetEvent("Explosion:Common", [
+            NetIntAny("m_Radius"),
+        ]),
 	NetEvent("Spawn:Common", []),
 	NetEvent("HammerHit:Common", []),
 
