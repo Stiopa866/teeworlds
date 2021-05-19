@@ -110,11 +110,11 @@ void CEffects::WaterBubble(vec2 Pos)
 	CParticle p;
 	p.SetDefault();
 	p.m_Spr = SPRITE_PART_BUBBLE0;
-	p.m_Pos = Pos + vec2((frandom() - 0.5f)*10, (frandom() - 0.5f)*10);
+	p.m_Pos = Pos + vec2((random_float() - 0.5f)*10, (random_float() - 0.5f)*10);
 	p.m_Vel = vec2(0, 0);
-	p.m_LifeSpan = frandom()*2;
-	p.m_StartSize = 16.0f + frandom()*5;
-	p.m_EndSize = 16.0f - frandom()*10;
+	p.m_LifeSpan = random_float()*2;
+	p.m_StartSize = 16.0f + random_float()*5;
+	p.m_EndSize = 16.0f - random_float()*10;
 	p.m_Rot = 0;
 	p.m_Rotspeed = 0;
 	p.m_Gravity = -300;
@@ -180,12 +180,12 @@ void CEffects::Droplet(vec2 Pos, vec2 Vel)
 		p.m_Pos = Pos;
 		p.m_Flags |= PFLAG_DESTROY_IN_ANIM_WATER;
 		p.m_Flags |= PFLAG_DESTROY_ON_IMPACT;
-		p.m_Vel = vec2(YVel * RandomDir().x * frandom() * Config()->m_GfxWaterXmultiplier, -YVel * Config()->m_GfxWaterYmultiplier * frandom()); //50
+		p.m_Vel = vec2(YVel * RandomDir().x * random_float() * Config()->m_GfxWaterXmultiplier, -YVel * Config()->m_GfxWaterYmultiplier * random_float()); //50
 		//char aBuf[64];
 		//str_format(aBuf, sizeof(aBuf), "%f, %f", p.m_Vel.x, p.m_Vel.y);
 		//Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 		p.m_LifeSpan = 10.0f;
-		p.m_StartSize = 32.0f + frandom()*8.0f;
+		p.m_StartSize = 32.0f + random_float()*8.0f;
 		p.m_EndSize = p.m_StartSize;
 		float Rotation = angle(vec2(p.m_Vel));
 		Rotation += 0.25;
@@ -196,17 +196,17 @@ void CEffects::Droplet(vec2 Pos, vec2 Vel)
 		p.m_RotationByVel = true;
 		p.m_Water = true;
 		p.m_Color = vec4(0, 157.0f / 255.0f * 0.5f, 1 * 0.5f, 1 * 0.5f);
-		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.TOP].m_XOffset = 4 * frandom();
-		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.TOP].m_YOffset = 8.0f + 4 * frandom();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.TOP].m_XOffset = 4 * random_float();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.TOP].m_YOffset = 8.0f + 4 * random_float();
 		
-		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.LEFT].m_XOffset = -8.0f - 4 * frandom();
-		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.LEFT].m_YOffset = 4 * frandom();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.LEFT].m_XOffset = -8.0f - 4 * random_float();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.LEFT].m_YOffset = 4 * random_float();
 		
-		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.BOTTOM].m_XOffset = 4 * frandom();
-		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.BOTTOM].m_YOffset = -8.0f - 4 * frandom();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.BOTTOM].m_XOffset = 4 * random_float();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.BOTTOM].m_YOffset = -8.0f - 4 * random_float();
 		
-		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.RIGHT].m_XOffset = 8.0f + 4 * frandom();
-		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.RIGHT].m_YOffset = 4 * frandom();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.RIGHT].m_XOffset = 8.0f + 4 * random_float();
+		p.m_WaterInfo.m_OffSetPoints[p.m_WaterInfo.RIGHT].m_YOffset = 4 * random_float();
 
 		m_pClient->m_pParticles->Add(CParticles::GROUP_PROJECTILE_TRAIL, &p);
 
